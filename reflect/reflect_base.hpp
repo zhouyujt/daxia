@@ -90,7 +90,6 @@ namespace daxia
 
 			const std::string& Tags() const { return tagsStr_; }
 
-			static void EnableThreadSafe(bool enable) { threadSafe_ = enable; }
 		private:
 			void parseTag(const std::string& str)
 			{
@@ -114,10 +113,6 @@ namespace daxia
 				} while (spacePos != string::npos);
 			}
 
-			// memory layout
-		protected:
-			static bool threadSafe_;
-
 		private:
 			size_t size_;
 			const std::type_info& typeInfo_;
@@ -125,8 +120,6 @@ namespace daxia
 			std::map<std::string, std::string> tags_;
 
 		};// class reflect_base
-
-		bool reflect_base::threadSafe_;
 
 	}// namespace reflect
 }// namespace daxia

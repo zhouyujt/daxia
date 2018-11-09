@@ -104,7 +104,9 @@ namespace daxia
 				// buildLayout
 				if (std::is_class<ValueType>::value && !std::is_same<ValueType, std::string>::value)
 				{
-					if (threadSafe_) layoutLocker_.lock();
+#ifdef DAXIA_REFLECT_THREAD_SAFE
+					layoutLocker_.lock();
+#endif // DAXIA_REFLECT_THREAD_SAFE
 
 					if (layout_.empty())
 					{
@@ -113,7 +115,9 @@ namespace daxia
 						buildLayout(start, start, end, layout_, nullptr);
 					}
 
-					if (threadSafe_) layoutLocker_.unlock();
+#ifdef DAXIA_REFLECT_THREAD_SAFE
+					layoutLocker_.unlock();
+#endif // DAXIA_REFLECT_THREAD_SAFE
 				}
 			}
 

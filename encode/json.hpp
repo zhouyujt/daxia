@@ -319,6 +319,7 @@ namespace daxia
 				boost::property_tree::ptree& root,
 				ArrayInfo* parentArray)
 			{
+				using daxia::reflect::reflect_base;
 				using daxia::reflect::reflect;
 
 				const reflect_base* impl = nullptr;
@@ -335,7 +336,7 @@ namespace daxia
 
 				try
 				{
-					const ::reflect<T>& r = *(dynamic_cast<const ::reflect<T>*>(impl));
+					const reflect<T>& r = *(dynamic_cast<const reflect<T>*>(impl));
 					std::string tag = r.Tag(JSON);
 					if (!tag.empty())
 					{
@@ -385,6 +386,7 @@ namespace daxia
 				const boost::property_tree::ptree& root,
 				ArrayInfo* parentArray)
 			{
+				using daxia::reflect::reflect_base;
 				using daxia::reflect::reflect;
 
 				const reflect_base* impl = nullptr;
@@ -401,7 +403,7 @@ namespace daxia
 
 				try
 				{
-					string tag = impl->Tag(JSON);
+					std::string tag = impl->Tag(JSON);
 					if (!tag.empty())
 					{
 						T* p = static_cast<T*>(const_cast<void*>(impl->ValueAddr()));
@@ -705,7 +707,7 @@ namespace daxia
 				typename std::basic_string<Ch>::const_iterator e = s.end();
 				while (b != e)
 				{
-					typedef typename make_unsigned<Ch>::type UCh;
+					typedef typename boost::make_unsigned<Ch>::type UCh;
 					UCh c(*b);
 					// This assumes an ASCII superset. But so does everything in PTree.
 					// We escape everything outside ASCII, because this code can't
