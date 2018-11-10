@@ -20,6 +20,9 @@
 #include <boost/asio.hpp>
 #include <daxia/dxg/common/define.hpp>
 #include <daxia/dxg/common/parser.hpp>
+#include <daxia/encode/strconv.hpp>
+
+#define DXG_CLIENT_HANDLER(error,date,len) [&](const boost::system::error_code& error, const void* date, int len)
 
 namespace daxia
 {
@@ -45,25 +48,18 @@ namespace daxia
 				void EnableHeartbeat(unsigned long milliseconds);
 				void Connect(const char* ip, short port);
 				void Connect(const wchar_t* ip, short port);
+				void Close();
 				void WriteMessage(const void* date, int len);
 			private:
-				void doConnect();
-				void doReconnect();
-				void doWriteMessage();
-				void onRead(const boost::system::error_code& err, size_t len);
-				void hearbeat();
-				void startLogicThread();
-				void stopLogicThread();
-			private:
-				struct Message
+				struct LogicMessage
 				{
 					boost::system::error_code error;
 					int msgID;
 					common::shared_buffer buffer;
 
-					Message(){}
+					LogicMessage(){}
 
-					Message(const boost::system::error_code& error, int msgID, const common::shared_buffer& buffer)
+					LogicMessage(const boost::system::error_code& error, int msgID, const common::shared_buffer& buffer)
 						: error(error)
 						, msgID(msgID)
 						, buffer(buffer)
@@ -72,73 +68,111 @@ namespace daxia
 					}
 				};
 			private:
-				boost::asio::io_service ios_;
+				void doConnect();
+				void doWriteMessage();
+				void onRead(const boost::system::error_code& err, size_t len);
+				void hearbeat();
+				void startLogicThread();
+				void stopLogicThread();
+				void clearMessage();
+				void pushLogciMessage(const LogicMessage& msg);
+			private:
+				boost::asio::io_service netIoService_;
+				boost::asio::io_service logicIoService_;
 				socket sock_;
 				common::shared_buffer buffer_;
-				std::thread IOThread_;
+				std::thread ioThread_;
 				std::thread logicThread_;
 				std::shared_ptr<common::Parser> parser_;
 				std::map<int, handler> handler_;
 				std::mutex writeLocker_;
 				std::queue<common::shared_buffer> writeBufferCache_;
-				bool isWorking_;
-				std::queue<Message> messages_;
-				std::mutex msgLocker_;
+				bool isIoWorking_;
+				bool isLogicWorking_;
+				std::queue<LogicMessage> logicMsgs_;
+				std::mutex logicMsgLocker_;
 				timepoint lastWriteTime_;
 				unsigned long hearbeatInterval_;
 				endpoint endpoint_;
 			};
 
-			Client::Client()
-				: sock_(ios_)
+			inline Client::Client()
+				: sock_(netIoService_)
 				, buffer_(1024 * 8)
-				, isWorking_(false)
+				, isIoWorking_(false)
+				, isLogicWorking_(false)
 				, hearbeatInterval_(0)
 			{
 				parser_ = common::Parser::parser_ptr(new common::DefaultParser);
+				startLogicThread();
 			}
 
-			Client::~Client()
+			inline Client::~Client()
 			{
-				ios_.stop();
-				IOThread_.join();
 				stopLogicThread();
-
-				sock_.close();
+				Close();
 			}
 
-			void Client::SetParser(common::Parser::parser_ptr parser)
+			inline void Client::SetParser(common::Parser::parser_ptr parser)
 			{
 				parser_ = parser;
 			}
 
-			void Client::Handle(int msgID, handler h)
+			inline void Client::Handle(int msgID, handler h)
 			{
 				handler_[msgID] = h;
 			}
 
-			void Client::EnableHeartbeat(unsigned long milliseconds)
+			inline void Client::EnableHeartbeat(unsigned long milliseconds)
 			{
 				hearbeatInterval_ = milliseconds;
 			}
 
-			void Client::Connect(const char* ip, short port)
+			inline void Client::Connect(const char* ip, short port)
 			{
-				endpoint_  = endpoint(boost::asio::ip::address::from_string(ip), port);
-				doConnect();
+				if (isIoWorking_) return;
 
-				IOThread_ = std::thread([&]()
+				isIoWorking_ = true;
+				ioThread_ = std::thread([&]()
 				{
-					ios_.run();
+					while (isIoWorking_)
+					{
+						// 保持netIoService_.run不退出
+						boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
+						timer.async_wait([](const boost::system::error_code& ec)
+						{
+							// do nothing
+						});
+
+						netIoService_.run();
+						netIoService_.reset();
+					}
 				});
+
+				endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
+				doConnect();
 			}
 
-			void Client::Connect(const wchar_t* ip, short port)
+			inline void Client::Connect(const wchar_t* ip, short port)
 			{
-
+				std::string ip2 = daxia::encode::Unicode2Ansi(ip);
+				Connect(ip2.c_str(), port);
 			}
 
-			void Client::WriteMessage(const void* date, int len)
+			inline void Client::Close()
+			{
+				isIoWorking_ = false;
+				if (ioThread_.joinable())
+				{
+					ioThread_.join();
+				}
+
+				netIoService_.stop();
+				sock_.close();
+				clearMessage();
+			}
+
+			inline void Client::WriteMessage(const void* date, int len)
 			{
 				lock_guard locker(writeLocker_);
 
@@ -154,35 +188,20 @@ namespace daxia
 				}
 			}
 
-			void Client::doConnect()
+			inline void Client::doConnect()
 			{
 				sock_.async_connect(endpoint_, [&](const boost::system::error_code& ec)
 				{
+					pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::shared_buffer()));
+
 					if (!ec)
 					{
-						lock_guard locker(msgLocker_);
-						messages_.push(Message(ec, common::DefMsgID_Connect, common::shared_buffer()));
-
 						sock_.async_read_some(buffer_.asio_buffer(), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
-
-						startLogicThread();
-					}
-					else
-					{
-						messages_.push(Message(ec, common::DefMsgID_DisConnect, common::shared_buffer()));
-						doReconnect();
 					}
 				});
 			}
 
-			void Client::doReconnect()
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(common::AutoReconnectInterval));
-				stopLogicThread();
-				doConnect();
-			}
-
-			void Client::doWriteMessage()
+			inline void Client::doWriteMessage()
 			{
 				boost::asio::async_write(sock_, writeBufferCache_.front().asio_buffer(), [&](const boost::system::error_code& ec, std::size_t size)
 				{
@@ -210,7 +229,7 @@ namespace daxia
 				});
 			}
 
-			void Client::onRead(const boost::system::error_code& err, size_t len)
+			inline void Client::onRead(const boost::system::error_code& err, size_t len)
 			{
 				if (!err)
 				{
@@ -267,8 +286,7 @@ namespace daxia
 								buffer_.clear();
 							}
 
-							lock_guard locker(msgLocker_);
-							messages_.push(Message(err, msgID, msg));
+							pushLogciMessage(LogicMessage(err, msgID, msg));
 						}
 					}
 
@@ -276,17 +294,12 @@ namespace daxia
 				}
 				else
 				{
-					msgLocker_.lock();
-					messages_.push(Message(err, common::DefMsgID_DisConnect, common::shared_buffer()));
-					msgLocker_.unlock();
-					sock_.close();
-
-					// 重连
-					doReconnect();
+					pushLogciMessage(LogicMessage(err, common::DefMsgID_DisConnect, common::shared_buffer()));
+					Close();
 				}
 			}
 
-			void Client::hearbeat()
+			inline void Client::hearbeat()
 			{
 				using namespace std::chrono;
 
@@ -300,56 +313,75 @@ namespace daxia
 				}
 			}
 
-			void Client::startLogicThread()
+			inline void Client::startLogicThread()
 			{
-				isWorking_ = true;
+				isLogicWorking_ = true;
 				logicThread_ = std::thread([&]()
 				{
-					using namespace std::chrono;
-
-					while (isWorking_)
+					while (isLogicWorking_)
 					{
-						// 分发消息
-						Message msg;
-						bool hasMsg = false;
-						msgLocker_.lock();
-						if (!messages_.empty())
+						// 保持logicIoService_.run不退出
+						boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::microseconds(1000));
+						timer.async_wait([&](const boost::system::error_code& ec)
 						{
-							hasMsg = true;
-							msg = messages_.front();
-							messages_.pop();
-						}
-						msgLocker_.unlock();
+							// 心跳
+							hearbeat();
+						});
 
-						if (hasMsg)
-						{
-							auto iter = handler_.find(msg.msgID);
-							if (iter != handler_.end())
-							{
-								iter->second(msg.error, msg.buffer.get(), msg.buffer.size());
-							}
-						}
-						else
-						{
-							std::this_thread::sleep_for(milliseconds(1));
-						}
-
-						// 心跳
-						hearbeat();
+						logicIoService_.run();
+						logicIoService_.reset();
 					}
 				});
 			}
 
-			void Client::stopLogicThread()
+			inline void Client::stopLogicThread()
+			{
+				clearMessage();
+
+				isLogicWorking_ = false;
+				if (logicThread_.joinable())
+				{
+					logicThread_.join();
+				}
+			}
+
+			inline void Client::clearMessage()
 			{
 				// clear messages_
-				msgLocker_.lock();
-				std::queue<Message> empty;
-				messages_.swap(empty);
-				msgLocker_.unlock();
+				logicMsgLocker_.lock();
+				std::queue<LogicMessage> empty;
+				logicMsgs_.swap(empty);
+				logicMsgLocker_.unlock();
+			}
 
-				isWorking_ = false;
-				logicThread_.join();
+			inline void Client::pushLogciMessage(const LogicMessage& msg)
+			{
+				lock_guard locker(logicMsgLocker_);
+				logicMsgs_.push(msg);
+
+				logicIoService_.post([&]()
+				{
+					// 分发消息
+					LogicMessage msg;
+					bool hasMsg = false;
+					logicMsgLocker_.lock();
+					if (!logicMsgs_.empty())
+					{
+						hasMsg = true;
+						msg = logicMsgs_.front();
+						logicMsgs_.pop();
+					}
+					logicMsgLocker_.unlock();
+
+					if (hasMsg)
+					{
+						auto iter = handler_.find(msg.msgID);
+						if (iter != handler_.end())
+						{
+							iter->second(msg.error, msg.buffer.get(), msg.buffer.size());
+						}
+					}
+				});
 			}
 
 		}// namespace client
