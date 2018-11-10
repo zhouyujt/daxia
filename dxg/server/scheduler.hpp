@@ -94,38 +94,35 @@ namespace daxia
 				std::queue<NetRequest> netRequests_;
 				netDispatchFunc	dispatch_;
 			private:
-				static long long nextScheduleID__;
-				static std::mutex nextScheduleIDLocker__;
+				long long nextScheduleID_;
+				std::mutex nextScheduleIDLocker_;
 			};
 
-			long long Scheduler::makeScheduleID()
+			inline long long Scheduler::makeScheduleID()
 			{
-				lock_guard locker(nextScheduleIDLocker__);
+				lock_guard locker(nextScheduleIDLocker_);
 
-				return nextScheduleID__++;
+				return nextScheduleID_++;
 			}
 
 			//////////////////////////////////////////////////////////////////////////
-			long long Scheduler::nextScheduleID__ = 0;
-			std::mutex Scheduler::nextScheduleIDLocker__;
-
-			Scheduler::Scheduler()
+			inline Scheduler::Scheduler()
 				: fps_(20)
 				, isWorking_(false)
 			{
 			}
 
-			Scheduler::~Scheduler()
+			inline Scheduler::~Scheduler()
 			{
 
 			}
 
-			void Scheduler::SetFPS(unsigned long fps)
+			inline void Scheduler::SetFPS(unsigned long fps)
 			{
 				fps_ = fps;
 			}
 
-			long long Scheduler::ScheduleUpdate(scheduleFunc func)
+			inline long long Scheduler::ScheduleUpdate(scheduleFunc func)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -138,7 +135,7 @@ namespace daxia
 				return updateFunc.id;
 			}
 
-			long long Scheduler::Schedule(scheduleFunc func, unsigned long duration)
+			inline long long Scheduler::Schedule(scheduleFunc func, unsigned long duration)
 			{
 				using namespace std::chrono;
 
@@ -156,7 +153,7 @@ namespace daxia
 				return scheduleFunc.id;
 			}
 
-			long long Scheduler::ScheduleOnce(scheduleFunc func, unsigned long duration)
+			inline long long Scheduler::ScheduleOnce(scheduleFunc func, unsigned long duration)
 			{
 				using namespace std::chrono;
 				lock_guard locker(scheduleLocker_);
@@ -173,7 +170,7 @@ namespace daxia
 				return scheduleFunc.id;
 			}
 
-			void Scheduler::UnscheduleUpdate(long long scheduleID)
+			inline void Scheduler::UnscheduleUpdate(long long scheduleID)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -187,7 +184,7 @@ namespace daxia
 				}
 			}
 
-			void Scheduler::Unschedule(long long scheduleID)
+			inline void Scheduler::Unschedule(long long scheduleID)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -201,7 +198,7 @@ namespace daxia
 				}
 			}
 
-			void Scheduler::UnscheduleAll()
+			inline void Scheduler::UnscheduleAll()
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -209,18 +206,18 @@ namespace daxia
 				scheduleFuncs_.clear();
 			}
 
-			void Scheduler::SetNetDispatch(netDispatchFunc func)
+			inline void Scheduler::SetNetDispatch(netDispatchFunc func)
 			{
 				dispatch_ = func;
 			}
 
-			void Scheduler::PushNetRequest(Client::client_ptr client, int msgID, const common::shared_buffer data, std::function<void()> finishCallback)
+			inline void Scheduler::PushNetRequest(Client::client_ptr client, int msgID, const common::shared_buffer data, std::function<void()> finishCallback)
 			{
 				lock_guard locker(netRequestLocker_);
 				netRequests_.push(NetRequest(client, msgID, data, finishCallback));
 			}
 
-			void Scheduler::Run()
+			inline void Scheduler::Run()
 			{
 				isWorking_ = true;
 
@@ -301,7 +298,7 @@ namespace daxia
 				});
 			}
 
-			void Scheduler::Stop()
+			inline void Scheduler::Stop()
 			{
 				isWorking_ = false;
 

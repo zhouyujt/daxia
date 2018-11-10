@@ -62,12 +62,12 @@ namespace daxia
 				virtual bool Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const override;
 			};
 
-			size_t DefaultParser::GetPacketHeadLen() const
+			inline size_t DefaultParser::GetPacketHeadLen() const
 			{
 				return sizeof(PacketHead);
 			}
 
-			bool DefaultParser::Marshal(const byte* data, int len, shared_buffer& buffer) const
+			inline bool DefaultParser::Marshal(const byte* data, int len, shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
@@ -88,7 +88,7 @@ namespace daxia
 				return true;
 			}
 
-			bool DefaultParser::Unmarshal(const byte* data, int len, size_t& contentLen) const
+			inline bool DefaultParser::Unmarshal(const byte* data, int len, size_t& contentLen) const
 			{
 				// Êý¾Ý²»×ã
 				if (len < sizeof(PacketHead))
@@ -108,7 +108,7 @@ namespace daxia
 				return true;
 			}
 
-			bool DefaultParser::Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const
+			inline bool DefaultParser::Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const
 			{
 				buffer.clear();
 

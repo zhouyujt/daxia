@@ -41,8 +41,9 @@ namespace daxia
 				typedef std::shared_ptr<Client> client_ptr;
 				typedef std::function<void(const boost::system::error_code&, long long, int, common::shared_buffer)> handler;
 				typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> timepoint;
+			protected:
+				Client(socket_ptr sock, common::Parser::parser_ptr parser, handler onMessage,long long id);
 			public:
-				Client(socket_ptr sock, common::Parser::parser_ptr parser, handler onMessage);
 				~Client();
 			public:
 				// 获取客户端ID
@@ -71,7 +72,6 @@ namespace daxia
 			private:
 				void updateHeartbeat();
 				void doWriteMessage();
-				long long makeClientID();
 				void onRead(const boost::system::error_code& err, size_t len);
 			private:
 				std::shared_ptr<socket> sock_;
@@ -85,52 +85,46 @@ namespace daxia
 				std::mutex writeLocker_;
 				std::queue<common::shared_buffer> writeBufferCache_;
 				timepoint lastReadTime_;
-			private:
-				static long long nextClientID__;
-				static std::mutex nextClientIDLocker__;
 			};
 
 			//////////////////////////////////////////////////////////////////////////
-			long long Client::nextClientID__ = 0;
-			std::mutex Client::nextClientIDLocker__;
-
-			Client::Client(socket_ptr sock, common::Parser::parser_ptr parser, handler onMessage)
+			inline Client::Client(socket_ptr sock, common::Parser::parser_ptr parser, handler onMessage, long long id)
 				: sock_(sock)
 				, parser_(parser)
 				, buffer_(1024 * 8)
 				, onMessage_(onMessage)
+				, id_(id)
 			{
 				updateHeartbeat();
 
-				id_ = makeClientID();
 				endpoint_ = sock_->remote_endpoint();
 
 				sock_->async_read_some(buffer_.asio_buffer(), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
 			}
 
-			Client::~Client()
+			inline Client::~Client()
 			{
 				Close();
 			}
 
-			long long Client::GetClientID() const
+			inline long long Client::GetClientID() const
 			{
 				return id_;
 			}
 
-			void Client::Close()
+			inline void Client::Close()
 			{
 				sock_->close();
 			}
 
-			void Client::SetUserData(const std::string& key, const common::shared_buffer& data)
+			inline void Client::SetUserData(const std::string& key, const common::shared_buffer& data)
 			{
 				lock_guard locker(userDataLocker_);
 
 				userData_[key] = data;
 			}
 
-			void Client::GetUserData(const std::string& key, common::shared_buffer& buff)
+			inline void Client::GetUserData(const std::string& key, common::shared_buffer& buff)
 			{
 				lock_guard locker(userDataLocker_);
 
@@ -141,26 +135,26 @@ namespace daxia
 				}
 			}
 
-			void Client::DeleteUserData(const std::string& key)
+			inline void Client::DeleteUserData(const std::string& key)
 			{
 				lock_guard locker(userDataLocker_);
 
 				userData_.erase(key);
 			}
 
-			void Client::DeleteAllUserData()
+			inline void Client::DeleteAllUserData()
 			{
 				lock_guard locker(userDataLocker_);
 
 				userData_.clear();
 			}
 
-			std::string Client::RemoterAddr() const
+			inline std::string Client::RemoterAddr() const
 			{
 				return (boost::format("%s:%d") % endpoint_.address().to_string() % endpoint_.port()).str();
 			}
 
-			void Client::WriteMessage(const void* date, int len)
+			inline void Client::WriteMessage(const void* date, int len)
 			{
 				lock_guard locker(writeLocker_);
 
@@ -176,7 +170,7 @@ namespace daxia
 				}
 			}
 
-			void Client::updateHeartbeat()
+			inline void Client::updateHeartbeat()
 			{
 				using namespace std::chrono;
 
@@ -185,7 +179,7 @@ namespace daxia
 				lastReadTime_ = now;
 			}
 
-			void Client::doWriteMessage()
+			inline void Client::doWriteMessage()
 			{
 				boost::asio::async_write(*sock_, writeBufferCache_.front().asio_buffer(), [&](const boost::system::error_code& ec, std::size_t size)
 				{
@@ -209,14 +203,7 @@ namespace daxia
 				});
 			}
 
-			long long Client::makeClientID()
-			{
-				lock_guard locker(nextClientIDLocker__);
-
-				return nextClientID__++;
-			}
-
-			void Client::onRead(const boost::system::error_code& err, size_t len)
+			inline void Client::onRead(const boost::system::error_code& err, size_t len)
 			{
 				if (!err)
 				{
@@ -304,6 +291,7 @@ namespace daxia
 					}
 				}
 			}
+
 		}// namespace server
 	}// namespace dxg
 }// namespace daxia

@@ -127,6 +127,7 @@ namespace daxia
 					return boost::asio::buffer(buff_.get() + offset, capacity_ - offset);
 				}
 			};
+
 		}// namespace common
 	}// namespace dxg
 }// namespace daxia

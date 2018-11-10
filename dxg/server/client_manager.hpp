@@ -32,7 +32,7 @@ namespace daxia
 				~ClientManager(){}
 			public:
 				// 增加一个客户端
-				void AddClient(client_ptr c);
+				client_ptr AddClient(Client::socket_ptr sock, common::Parser::parser_ptr parser, Client::handler onMessage);
 
 				// 删除一个客户端
 				void DeleteClient(long long id);
@@ -60,31 +60,37 @@ namespace daxia
 				std::mutex clientsLocker_;
 				std::mutex groupLocker_;
 				Scheduler& scheduler_;
-				long long schedulerID_;
+				long long heartbeatSchedulerId_;
+				long long nextClientId_;
 			};
 
 			//////////////////////////////////////////////////////////////////////////
-			ClientManager::ClientManager(Scheduler& scheduler)
+			inline ClientManager::ClientManager(Scheduler& scheduler)
 				: scheduler_(scheduler)
-				, schedulerID_(-1)
+				, heartbeatSchedulerId_(-1)
+				, nextClientId_(0)
 			{
 			}
 
-			void ClientManager::AddClient(client_ptr c)
+			inline ClientManager::client_ptr ClientManager::AddClient(Client::socket_ptr sock, common::Parser::parser_ptr parser, Client::handler onMessage)
 			{
+				client_ptr client(new Client(sock, parser, onMessage,0));
+
 				lock_guard locker(clientsLocker_);
 
-				clients_[c->GetClientID()] = c;
+				clients_[client->GetClientID()] = client;
+
+				return client;
 			}
 
-			void ClientManager::DeleteClient(long long id)
+			inline void ClientManager::DeleteClient(long long id)
 			{
 				lock_guard locker(clientsLocker_);
 
 				clients_.erase(id);
 			}
 
-			ClientManager::client_ptr ClientManager::GetClient(long long id)
+			inline ClientManager::client_ptr ClientManager::GetClient(long long id)
 			{
 				client_ptr client;
 
@@ -99,7 +105,7 @@ namespace daxia
 				return client;
 			}
 
-			ClientManager::client_ptr ClientManager::GetClientByUserData(const std::string& key, const common::shared_buffer& data)
+			inline ClientManager::client_ptr ClientManager::GetClientByUserData(const std::string& key, const common::shared_buffer& data)
 			{
 				client_ptr client;
 
@@ -126,7 +132,7 @@ namespace daxia
 				return client;
 			}
 
-			void ClientManager::CreateGroup(const std::string& key)
+			inline void ClientManager::CreateGroup(const std::string& key)
 			{
 				lock_guard locker(groupLocker_);
 
@@ -137,7 +143,7 @@ namespace daxia
 				}
 			}
 
-			ClientManager::clientMgr_ptr ClientManager::GetGroup(const std::string& key)
+			inline ClientManager::clientMgr_ptr ClientManager::GetGroup(const std::string& key)
 			{
 				lock_guard locker(groupLocker_);
 
@@ -152,17 +158,17 @@ namespace daxia
 				return mgr;
 			}
 
-			void ClientManager::EnableCheckHeartbeat(unsigned long interval)
+			inline void ClientManager::EnableCheckHeartbeat(unsigned long interval)
 			{
-				if (interval == 0 && schedulerID_ != -1)
+				if (interval == 0 && heartbeatSchedulerId_ != -1)
 				{
 					// 关闭心跳检测
-					scheduler_.Unschedule(schedulerID_);
+					scheduler_.Unschedule(heartbeatSchedulerId_);
 				}
 				else
 				{
 					// 启动心跳检测
-					schedulerID_ = scheduler_.Schedule([&,interval]()
+					heartbeatSchedulerId_ = scheduler_.Schedule([&,interval]()
 					{
 						using namespace std::chrono;
 

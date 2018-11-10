@@ -59,7 +59,7 @@ namespace daxia
 			};
 
 			//////////////////////////////////////////////////////////////////////////
-			void Server::Run(short port, common::Protocol protcol)
+			inline void Server::Run(short port, common::Protocol protcol)
 			{
 				switch (protcol)
 				{
@@ -80,60 +80,61 @@ namespace daxia
 				}
 			}
 
-			void Server::Stop()
+			inline void Server::Stop()
 			{
 				router_.Stop();
 			}
 
-			void Server::SetParser(common::Parser::parser_ptr parser)
+			inline void Server::SetParser(common::Parser::parser_ptr parser)
 			{
 				router_.SetParser(parser);
 			}
 
-			void Server::Handle(int msgID, Controller::controller_ptr controller)
+			inline void Server::Handle(int msgID, Controller::controller_ptr controller)
 			{
 				router_.Handle(msgID, controller);
 			}
 
-			void Server::EnableHeartbeat(unsigned long milliseconds)
+			inline void Server::EnableHeartbeat(unsigned long milliseconds)
 			{
 				router_.EnableHeartbeat(milliseconds);
 			}
 
-			void Server::SetFPS(unsigned long fps)
+			inline void Server::SetFPS(unsigned long fps)
 			{
 				router_.GetScheduler().SetFPS(fps);
 			}
 
-			long long Server::ScheduleUpdate(Scheduler::scheduleFunc func)
+			inline long long Server::ScheduleUpdate(Scheduler::scheduleFunc func)
 			{
 				return router_.GetScheduler().ScheduleUpdate(func);
 			}
 
-			long long Server::Schedule(Scheduler::scheduleFunc func, unsigned long duration)
+			inline long long Server::Schedule(Scheduler::scheduleFunc func, unsigned long duration)
 			{
 				return router_.GetScheduler().Schedule(func, duration);
 			}
 
-			long long Server::ScheduleOnce(Scheduler::scheduleFunc func, unsigned long duration)
+			inline long long Server::ScheduleOnce(Scheduler::scheduleFunc func, unsigned long duration)
 			{
 				return router_.GetScheduler().ScheduleOnce(func, duration);
 			}
 
-			void Server::UnscheduleUpdate(long long scheduleID)
+			inline void Server::UnscheduleUpdate(long long scheduleID)
 			{
 				router_.GetScheduler().UnscheduleUpdate(scheduleID);
 			}
 
-			void Server::Unschedule(long long scheduleID)
+			inline void Server::Unschedule(long long scheduleID)
 			{
 				router_.GetScheduler().Unschedule(scheduleID);
 			}
 
-			void Server::UnscheduleAll()
+			inline void Server::UnscheduleAll()
 			{
 				router_.GetScheduler().UnscheduleAll();
 			}
+
 		}// namespace server
 	}// namespace dxg
 }// namespace daxia
