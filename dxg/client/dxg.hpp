@@ -135,13 +135,13 @@ namespace daxia
 				isIoWorking_ = true;
 				ioThread_ = std::thread([&]()
 				{
+					boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
 					while (isIoWorking_)
 					{
 						// 保持netIoService_.run不退出
-						boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
-						timer.async_wait([](const boost::system::error_code& ec)
+						timer.async_wait([&](const boost::system::error_code& ec)
 						{
-							// do nothing
+							timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
 						});
 
 						netIoService_.run();
@@ -295,7 +295,6 @@ namespace daxia
 				else
 				{
 					pushLogciMessage(LogicMessage(err, common::DefMsgID_DisConnect, common::shared_buffer()));
-					Close();
 				}
 			}
 
@@ -318,14 +317,15 @@ namespace daxia
 				isLogicWorking_ = true;
 				logicThread_ = std::thread([&]()
 				{
+					boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::milliseconds(1000));
 					while (isLogicWorking_)
 					{
 						// 保持logicIoService_.run不退出
-						boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::microseconds(1000));
 						timer.async_wait([&](const boost::system::error_code& ec)
 						{
 							// 心跳
 							hearbeat();
+							timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(1000));
 						});
 
 						logicIoService_.run();
@@ -375,6 +375,11 @@ namespace daxia
 
 					if (hasMsg)
 					{
+						if (msg.msgID == common::DefMsgID_DisConnect)
+						{
+							Close();
+						}
+
 						auto iter = handler_.find(msg.msgID);
 						if (iter != handler_.end())
 						{
