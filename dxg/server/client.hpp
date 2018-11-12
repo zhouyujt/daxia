@@ -18,6 +18,7 @@
 #include <queue>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
+#include <daxia/dxg/common/define.hpp>
 #include <daxia/dxg/common/parser.hpp>
 #include <daxia/dxg/common/shared_buffer.hpp>
 
@@ -161,7 +162,7 @@ namespace daxia
 				bool isWriting = !writeBufferCache_.empty();
 
 				common::shared_buffer buffer;
-				parser_->Marshal(static_cast<const common::byte*>(date), len, buffer);
+				parser_->Marshal(static_cast<const unsigned char*>(date), len, buffer);
 				writeBufferCache_.push(buffer);
 
 				if (!isWriting)

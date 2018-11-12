@@ -22,7 +22,7 @@
 #include <daxia/dxg/common/parser.hpp>
 #include <daxia/encode/strconv.hpp>
 
-#define DXG_CLIENT_HANDLER(error,date,len) [&](const boost::system::error_code& error, const void* date, int len)
+#define DXG_CLIENT_HANDLER(id,error,date,len) [&](int id, const boost::system::error_code& error, const void* date, int len)
 
 namespace daxia
 {
@@ -36,7 +36,7 @@ namespace daxia
 			public:
 				typedef boost::asio::ip::tcp::endpoint endpoint;
 				typedef boost::asio::ip::tcp::socket socket;
-				typedef std::function<void(const boost::system::error_code&, const void*, int)> handler;
+				typedef std::function<void(int, const boost::system::error_code&, const void*, int)> handler;
 				typedef std::lock_guard<std::mutex> lock_guard;
 				typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
 			public:
@@ -179,7 +179,7 @@ namespace daxia
 				bool isWriting = !writeBufferCache_.empty();
 
 				common::shared_buffer buffer;
-				parser_->Marshal(static_cast<const common::byte*>(date), len, buffer);
+				parser_->Marshal(static_cast<const unsigned char*>(date), len, buffer);
 				writeBufferCache_.push(buffer);
 
 				if (!isWriting)
@@ -383,7 +383,15 @@ namespace daxia
 						auto iter = handler_.find(msg.msgID);
 						if (iter != handler_.end())
 						{
-							iter->second(msg.error, msg.buffer.get(), msg.buffer.size());
+							iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+						}
+						else
+						{
+							auto iter = handler_.find(common::DefMsgID_UnHandle);
+							if (iter != handler_.end())
+							{
+								iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+							}
 						}
 					}
 				});

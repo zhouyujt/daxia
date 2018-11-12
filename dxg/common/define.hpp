@@ -32,24 +32,11 @@ namespace daxia
 			{
 				DefMsgID_Connect = -1,
 				DefMsgID_DisConnect = -2,
-				DefMsgID_Heartbeat = -3
-			};
-
-			enum 
-			{
-				AutoReconnectInterval = 3000
+				DefMsgID_Heartbeat = -3,
+				DefMsgID_UnHandle = -4
 			};
 		}
 
-		namespace server
-		{
-			namespace common = daxia::dxg::common;
-		}
-
-		namespace client
-		{
-			namespace common = daxia::dxg::common;
-		}
 	}
 }
 

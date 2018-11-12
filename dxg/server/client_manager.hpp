@@ -118,8 +118,8 @@ namespace daxia
 					auto userDataIter = clientIter->second->userData_.find(key);
 					if (userDataIter != clientIter->second->userData_.end() && userDataIter->second.size() == data.size() && !data.empty())
 					{
-						const common::byte* p1 = userDataIter->second.get();
-						const common::byte* p2 = data.get();
+						const unsigned char* p1 = userDataIter->second.get();
+						const unsigned char* p2 = data.get();
 
 						if (memcmp(p1, p2, data.size()) == 0)
 						{

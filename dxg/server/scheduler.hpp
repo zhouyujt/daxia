@@ -114,7 +114,7 @@ namespace daxia
 
 			inline Scheduler::~Scheduler()
 			{
-
+				Stop();
 			}
 
 			inline void Scheduler::SetFPS(unsigned long fps)
@@ -302,7 +302,10 @@ namespace daxia
 			{
 				isWorking_ = false;
 
-				workThread_.join();
+				if (workThread_.joinable())
+				{
+					workThread_.join();
+				}
 			}
 
 		}// namespace server

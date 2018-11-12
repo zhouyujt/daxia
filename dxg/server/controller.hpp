@@ -13,6 +13,7 @@
 #define __DAXIA_DXG_SERVER_CONTROLLER_HPP
 
 #include <daxia/dxg/common/shared_buffer.hpp>
+#include <daxia/dxg/server/client_manager.hpp>
 #include <daxia/dxg/server/client.hpp>
 #include <daxia/dxg/server/scheduler.hpp>
 
