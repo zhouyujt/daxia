@@ -18,6 +18,7 @@
 #include <queue>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
+#include <boost/any.hpp>
 #include <daxia/dxg/common/define.hpp>
 #include <daxia/dxg/common/parser.hpp>
 #include <daxia/dxg/common/shared_buffer.hpp>
@@ -54,10 +55,11 @@ namespace daxia
 				void Close();
 
 				// 设置自定义数据
-				void SetUserData(const std::string& key, const common::shared_buffer& data);
+				void SetUserData(const std::string& key, boost::any data);
 
 				// 获取自定义数据
-				void GetUserData(const std::string& key, common::shared_buffer& buff);
+				template<class T>
+				bool GetUserData(const std::string& key,T& data);
 
 				// 删除指定的自定义数据
 				void DeleteUserData(const std::string& key);
@@ -70,6 +72,9 @@ namespace daxia
 
 				// 发送消息
 				void WriteMessage(const void* date,int len);
+
+				// 获取接收到的数据包数量
+				unsigned long long GetRecvPacketCount() const;
 			private:
 				void updateHeartbeat();
 				void doWriteMessage();
@@ -79,13 +84,14 @@ namespace daxia
 				endpoint endpoint_;
 				std::shared_ptr<common::Parser> parser_;
 				long long id_;
-				std::map<std::string, common::shared_buffer> userData_;
+				std::map<std::string, boost::any> userData_;
 				std::mutex userDataLocker_;
 				common::shared_buffer buffer_;
 				handler onMessage_;
 				std::mutex writeLocker_;
 				std::queue<common::shared_buffer> writeBufferCache_;
 				timepoint lastReadTime_;
+				unsigned long long recvPacketCount_;
 			};
 
 			//////////////////////////////////////////////////////////////////////////
@@ -95,6 +101,7 @@ namespace daxia
 				, buffer_(1024 * 8)
 				, onMessage_(onMessage)
 				, id_(id)
+				, recvPacketCount_(0)
 			{
 				updateHeartbeat();
 
@@ -118,22 +125,34 @@ namespace daxia
 				sock_->close();
 			}
 
-			inline void Client::SetUserData(const std::string& key, const common::shared_buffer& data)
+			inline void Client::SetUserData(const std::string& key, boost::any data)
 			{
 				lock_guard locker(userDataLocker_);
 
 				userData_[key] = data;
 			}
 
-			inline void Client::GetUserData(const std::string& key, common::shared_buffer& buff)
+			template<class T>
+			inline bool Client::GetUserData(const std::string& key,T& data)
 			{
 				lock_guard locker(userDataLocker_);
 
 				auto iter = userData_.find(key);
 				if (iter != userData_.end())
 				{
-					buff = iter->second;
+					try
+					{
+						data = boost::any_cast<T>(iter->second);
+					}
+					catch (...)
+					{
+						return false;
+					}
+			
+					return true;
 				}
+
+				return  false;
 			}
 
 			inline void Client::DeleteUserData(const std::string& key)
@@ -162,13 +181,18 @@ namespace daxia
 				bool isWriting = !writeBufferCache_.empty();
 
 				common::shared_buffer buffer;
-				parser_->Marshal(static_cast<const unsigned char*>(date), len, buffer);
+				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
 				writeBufferCache_.push(buffer);
 
 				if (!isWriting)
 				{
 					doWriteMessage();
 				}
+			}
+
+			inline unsigned long long Client::GetRecvPacketCount() const
+			{
+				return recvPacketCount_;
 			}
 
 			inline void Client::updateHeartbeat()
@@ -218,7 +242,7 @@ namespace daxia
 
 					// 解析包头
 					size_t contentLen = 0;
-					bool ok = parser_->Unmarshal(buffer_.get(), buffer_.size(),contentLen);
+					bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(),contentLen);
 					if (!ok)
 					{
 						// 包头解析失败，抛弃所有数据重新接收
@@ -245,13 +269,14 @@ namespace daxia
 							}
 
 							sock_->async_read_some(buffer_.asio_buffer(), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
+							++recvPacketCount_;
 							return;
 						}
 
 						// 解析正文
 						int msgID = 0;
 						common::shared_buffer msg(contentLen);
-						bool ok = parser_->Unmarshal(buffer_.get(), buffer_.size(), msgID, msg);
+						bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg);
 						if (!ok)
 						{
 							// 正文解析失败，抛弃所有数据重新接收
@@ -279,6 +304,8 @@ namespace daxia
 							{
 								onMessage_(err, id_, msgID, msg);
 							}
+
+							++recvPacketCount_;
 						}
 					}
 

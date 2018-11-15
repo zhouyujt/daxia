@@ -41,7 +41,8 @@ namespace daxia
 				client_ptr GetClient(long long id);
 
 				// 根据自定义数据获取客户端
-				client_ptr GetClientByUserData(const std::string& key, const common::shared_buffer& data);
+				template<class T>
+				client_ptr GetClientByUserData(const std::string& key, const T& data);
 
 				// 广播一条消息
 				void Broadcast();
@@ -74,9 +75,9 @@ namespace daxia
 
 			inline ClientManager::client_ptr ClientManager::AddClient(Client::socket_ptr sock, common::Parser::parser_ptr parser, Client::handler onMessage)
 			{
-				client_ptr client(new Client(sock, parser, onMessage,0));
-
 				lock_guard locker(clientsLocker_);
+
+				client_ptr client(new Client(sock, parser, onMessage, nextClientId_++));
 
 				clients_[client->GetClientID()] = client;
 
@@ -105,9 +106,10 @@ namespace daxia
 				return client;
 			}
 
-			inline ClientManager::client_ptr ClientManager::GetClientByUserData(const std::string& key, const common::shared_buffer& data)
+			template<class T>
+			inline ClientManager::client_ptr ClientManager::GetClientByUserData(const std::string& key, const T& data)
 			{
-				client_ptr client;
+				client_ptr client = nullptr;
 
 				lock_guard locker(clientsLocker_);
 
@@ -116,16 +118,17 @@ namespace daxia
 					++clientIter)
 				{
 					auto userDataIter = clientIter->second->userData_.find(key);
-					if (userDataIter != clientIter->second->userData_.end() && userDataIter->second.size() == data.size() && !data.empty())
+					if (userDataIter != clientIter->second->userData_.end() && userDataIter->second.type() == typeid(data))
 					{
-						const unsigned char* p1 = userDataIter->second.get();
-						const unsigned char* p2 = data.get();
-
-						if (memcmp(p1, p2, data.size()) == 0)
+						try
 						{
-							client = clientIter->second;
-							break;
+							if (boost::any_cast<T>(userDataIter->second) == data) client = clientIter->second;
 						}
+						catch (...)
+						{
+						}
+
+						if (client) break;
 					}
 				}
 

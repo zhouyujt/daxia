@@ -22,6 +22,16 @@ namespace daxia
 {
 	namespace dxg
 	{
+		namespace server
+		{
+			class Client;
+		}
+
+		namespace client
+		{
+			class Client;
+		}
+
 		namespace common
 		{
 			// 消息解析器基类
@@ -34,9 +44,16 @@ namespace daxia
 				~Parser(){}
 			public:
 				virtual size_t GetPacketHeadLen() const = 0;
-				virtual bool Marshal(const byte* data, int len, shared_buffer& buffer) const = 0;
-				virtual bool Unmarshal(const byte* data, int len, size_t& contentLen) const = 0;
-				virtual bool Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const = 0;
+
+				// server-side
+				virtual bool Marshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const = 0;
+				virtual bool Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const = 0;
+				virtual bool Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const = 0;
+
+				// client-side
+				virtual bool Marshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const = 0;
+				virtual bool Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const = 0;
+				virtual bool Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const = 0;
 			};
 
 			class DefaultParser : public Parser
@@ -57,9 +74,16 @@ namespace daxia
 #pragma pack()
 			public:
 				virtual size_t GetPacketHeadLen() const override;
-				virtual bool Marshal(const byte* data, int len, shared_buffer& buffer) const override;
-				virtual bool Unmarshal(const byte* data, int len, size_t& contentLen) const override;
-				virtual bool Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const override;
+
+				// server-side
+				virtual bool Marshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const override;
+				virtual bool Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const override;
+				virtual bool Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const override;
+				
+				// client-side
+				virtual bool Marshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const override;
+				virtual bool Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const override;
+				virtual bool Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const override;
 			};
 
 			inline size_t DefaultParser::GetPacketHeadLen() const
@@ -67,7 +91,7 @@ namespace daxia
 				return sizeof(PacketHead);
 			}
 
-			inline bool DefaultParser::Marshal(const byte* data, int len, shared_buffer& buffer) const
+			inline bool DefaultParser::Marshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
@@ -88,7 +112,7 @@ namespace daxia
 				return true;
 			}
 
-			inline bool DefaultParser::Unmarshal(const byte* data, int len, size_t& contentLen) const
+			inline bool DefaultParser::Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const
 			{
 				// 数据不足
 				if (len < sizeof(PacketHead))
@@ -108,7 +132,7 @@ namespace daxia
 				return true;
 			}
 
-			inline bool DefaultParser::Unmarshal(const byte* data, int len, int& msgID, shared_buffer& buffer) const
+			inline bool DefaultParser::Unmarshal(daxia::dxg::server::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 
@@ -137,7 +161,7 @@ namespace daxia
 
 				try
 				{
-					msgID = root.get<int>("msgID");
+					msgID = root.get<int>("msgId");
 				}
 				catch (...)
 				{
@@ -148,6 +172,21 @@ namespace daxia
 				memcpy(buffer.get(), data + sizeof(PacketHead), len - sizeof(PacketHead));
 
 				return true;
+			}
+
+			inline bool DefaultParser::Marshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
+			{
+				return Marshal(static_cast<daxia::dxg::server::Client*>(nullptr), data, len, buffer);
+			}
+
+			inline bool DefaultParser::Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const
+			{
+				return Unmarshal(static_cast<daxia::dxg::server::Client*>(nullptr), data, len, contentLen);
+			}
+
+			inline bool DefaultParser::Unmarshal(daxia::dxg::client::Client* client, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const
+			{
+				return Unmarshal(static_cast<daxia::dxg::server::Client*>(nullptr), data, len, msgID, buffer);
 			}
 
 		}// namespace common
