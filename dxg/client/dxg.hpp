@@ -162,12 +162,12 @@ namespace daxia
 			inline void Client::Close()
 			{
 				isIoWorking_ = false;
+				netIoService_.stop();
 				if (ioThread_.joinable())
 				{
 					ioThread_.join();
 				}
 
-				netIoService_.stop();
 				sock_.close();
 				clearMessage();
 			}
@@ -179,7 +179,7 @@ namespace daxia
 				bool isWriting = !writeBufferCache_.empty();
 
 				common::shared_buffer buffer;
-				parser_->Marshal(static_cast<const unsigned char*>(date), len, buffer);
+				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
 				writeBufferCache_.push(buffer);
 
 				if (!isWriting)
@@ -243,7 +243,7 @@ namespace daxia
 
 					// 解析包头
 					size_t contentLen = 0;
-					bool ok = parser_->Unmarshal(buffer_.get(), buffer_.size(), contentLen);
+					bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), contentLen);
 					if (!ok)
 					{
 						// 包头解析失败，抛弃所有数据重新接收
@@ -262,7 +262,7 @@ namespace daxia
 						// 解析正文
 						int msgID = 0;
 						common::shared_buffer msg(contentLen);
-						bool ok = parser_->Unmarshal(buffer_.get(), buffer_.size(), msgID, msg);
+						bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg);
 						if (!ok)
 						{
 							// 正文解析失败，抛弃所有数据重新接收
