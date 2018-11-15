@@ -38,7 +38,7 @@ namespace daxia
 			class Server
 			{
 			public:
-				Server() : router_(*this){}
+				Server(){}
 				~Server(){ Stop(); }
 			public:
 				void Run(short port, common::Protocol protcol = common::Protocol_TCP);

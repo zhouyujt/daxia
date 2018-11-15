@@ -35,7 +35,7 @@ namespace daxia
 				typedef std::shared_ptr<acceptor> acceptor_ptr;
 				typedef boost::system::error_code error_code;
 			public:
-				Router(Server& server);
+				Router();
 				~Router();
 			public:
 				void RunAsTCP(short port);
@@ -60,12 +60,10 @@ namespace daxia
 				ClientManager::clientMgr_ptr clientMgr_;
 				std::vector<std::thread> ioThreads_;
 				Scheduler scheduler_;
-				Server& server_;
 			};
 
 			//////////////////////////////////////////////////////////////////////////
-			inline Router::Router(Server& server)
-				: server_(server)
+			inline Router::Router()
 			{
 				clientMgr_ = ClientManager::clientMgr_ptr(new ClientManager(scheduler_));
 				parser_ = common::Parser::parser_ptr(new common::DefaultParser);
@@ -154,7 +152,15 @@ namespace daxia
 				auto iter = controllers_.find(msgID);
 				if (iter != controllers_.end())
 				{
-					iter->second->Proc(server_, client, clientMgr_,data);
+					iter->second->Proc(msgID, client, clientMgr_, data);
+				}
+				else
+				{
+					auto iter = controllers_.find(common::DefMsgID_UnHandle);
+					if (iter != controllers_.end())
+					{
+						iter->second->Proc(msgID, client, clientMgr_, data);
+					}
 				}
 			}
 

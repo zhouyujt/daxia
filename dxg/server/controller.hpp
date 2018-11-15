@@ -34,7 +34,7 @@ namespace daxia
 				Controller(){}
 				virtual ~Controller(){}
 			public:
-				virtual void Proc(Server& server, Client::client_ptr client, ClientManager::clientMgr_ptr clientMgr, const common::shared_buffer data) = 0;
+				virtual void Proc(int msgId, Client::client_ptr client, ClientManager::clientMgr_ptr clientMgr, const common::shared_buffer data) = 0;
 			};
 
 		}// namespace server
