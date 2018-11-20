@@ -42,22 +42,22 @@ namespace daxia
 				void RunAsUDP(short port);
 				void RunAsWebsocket(short port, const std::string& path);
 				void RunAsHTTP(short port);
-				void SetParser(common::Parser::parser_ptr parser);
+				void SetParser(common::Parser::ptr parser);
 				void Stop();
-				void Handle(int msgID, Controller::controller_ptr controller);
+				void Handle(int msgID, Controller::ptr controller);
 				void EnableHeartbeat(unsigned long milliseconds);
 				Scheduler& GetScheduler();
 			private:
-				void dispatchMessage(Client::client_ptr, int msgID, const common::shared_buffer data);
+				void dispatchMessage(Session::ptr, int msgID, const common::shared_buffer data);
 				int getCoreCount() const;
 				void onAccept(socket_ptr, const error_code&);
-				void onMessage(const boost::system::error_code& err, long long clientID, int msgID, common::shared_buffer msg);
+				void onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::shared_buffer msg);
 			private:
-				std::map<int, Controller::controller_ptr> controllers_;
+				std::map<int, Controller::ptr> controllers_;
 				boost::asio::io_service ios_;
 				acceptor_ptr acceptor_;
-				common::Parser::parser_ptr parser_;
-				ClientManager::clientMgr_ptr clientMgr_;
+				common::Parser::ptr parser_;
+				SessionsManager::ptr sessionsMgr_;
 				std::vector<std::thread> ioThreads_;
 				Scheduler scheduler_;
 			};
@@ -65,8 +65,8 @@ namespace daxia
 			//////////////////////////////////////////////////////////////////////////
 			inline Router::Router()
 			{
-				clientMgr_ = ClientManager::clientMgr_ptr(new ClientManager(scheduler_));
-				parser_ = common::Parser::parser_ptr(new common::DefaultParser);
+				sessionsMgr_ = SessionsManager::ptr(new SessionsManager(scheduler_));
+				parser_ = common::Parser::ptr(new common::DefaultParser);
 			}
 
 			inline Router::~Router()
@@ -111,7 +111,7 @@ namespace daxia
 
 			}
 
-			inline void Router::SetParser(common::Parser::parser_ptr parser)
+			inline void Router::SetParser(common::Parser::ptr parser)
 			{
 				parser_ = parser;
 			}
@@ -132,14 +132,14 @@ namespace daxia
 				scheduler_.Stop();
 			}
 
-			inline void Router::Handle(int msgID, Controller::controller_ptr controller)
+			inline void Router::Handle(int msgID, Controller::ptr controller)
 			{
 				controllers_[msgID] = controller;
 			}
 
 			inline void Router::EnableHeartbeat(unsigned long milliseconds)
 			{
-				clientMgr_->EnableCheckHeartbeat(milliseconds);
+				sessionsMgr_->EnableCheckHeartbeat(milliseconds);
 			}
 
 			inline Scheduler& Router::GetScheduler()
@@ -147,19 +147,19 @@ namespace daxia
 				return scheduler_;
 			}
 
-			inline void Router::dispatchMessage(Client::client_ptr client, int msgID, const common::shared_buffer data)
+			inline void Router::dispatchMessage(Session::ptr client, int msgID, const common::shared_buffer data)
 			{
 				auto iter = controllers_.find(msgID);
 				if (iter != controllers_.end())
 				{
-					iter->second->Proc(msgID, client, clientMgr_, data);
+					iter->second->Proc(msgID, client, sessionsMgr_, data);
 				}
 				else
 				{
 					auto iter = controllers_.find(common::DefMsgID_UnHandle);
 					if (iter != controllers_.end())
 					{
-						iter->second->Proc(msgID, client, clientMgr_, data);
+						iter->second->Proc(msgID, client, sessionsMgr_, data);
 					}
 				}
 			}
@@ -186,29 +186,29 @@ namespace daxia
 					socket_ptr socketSession(new socket(ios_));
 					acceptor_->async_accept(*socketSession, bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
 
-					auto client = clientMgr_->AddClient(sock, parser_, std::bind(&Router::onMessage,
+					auto session = sessionsMgr_->AddSession(sock, parser_, std::bind(&Router::onMessage,
 						this,
 						std::placeholders::_1,
 						std::placeholders::_2,
 						std::placeholders::_3,
 						std::placeholders::_4));
 
-					scheduler_.PushNetRequest(client, common::DefMsgID_Connect, common::shared_buffer());
+					scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::shared_buffer());
 				}
 			}
 
-			inline void Router::onMessage(const boost::system::error_code& err, long long clientID, int msgID, common::shared_buffer msg)
+			inline void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::shared_buffer msg)
 			{
-				if (err || msgID == common::DefMsgID_DisConnect)
+				if (err || msgId == common::DefMsgID_DisConnect)
 				{
-					scheduler_.PushNetRequest(clientMgr_->GetClient(clientID), common::DefMsgID_DisConnect, common::shared_buffer(), [&, clientID]()
+					scheduler_.PushNetRequest(sessionsMgr_->GetSession(sessionId), common::DefMsgID_DisConnect, common::shared_buffer(), [&, sessionId]()
 					{
-						clientMgr_->DeleteClient(clientID);
+						sessionsMgr_->DeleteSession(sessionId);
 					});
 				}
 				else
 				{
-					scheduler_.PushNetRequest(clientMgr_->GetClient(clientID), msgID, msg);
+					scheduler_.PushNetRequest(sessionsMgr_->GetSession(sessionId), msgId, msg);
 				}
 			}
 

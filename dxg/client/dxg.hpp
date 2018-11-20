@@ -18,7 +18,7 @@
 #include <queue>
 #include <thread>
 #include <boost/asio.hpp>
-#include <daxia/dxg/common/define.hpp>
+#include <daxia/dxg/common/basic_session.hpp>
 #include <daxia/dxg/common/parser.hpp>
 #include <daxia/encode/strconv.hpp>
 
@@ -31,7 +31,7 @@ namespace daxia
 		namespace client
 		{
 			// 客户端类
-			class Client
+			class Client : public common::BasicSession
 			{
 			public:
 				typedef boost::asio::ip::tcp::endpoint endpoint;
@@ -42,14 +42,14 @@ namespace daxia
 			public:
 				Client();
 				~Client();
+			protected:
+				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
+				virtual void onClose() override;
 			public:
-				void SetParser(common::Parser::parser_ptr parser);
-				void Handle(int msgID, handler h);
+				void Handle(int msgId, handler h);
 				void EnableHeartbeat(unsigned long milliseconds);
 				void Connect(const char* ip, short port);
 				void Connect(const wchar_t* ip, short port);
-				void Close();
-				void WriteMessage(const void* date, int len);
 			private:
 				struct LogicMessage
 				{
@@ -69,8 +69,6 @@ namespace daxia
 				};
 			private:
 				void doConnect();
-				void doWriteMessage();
-				void onRead(const boost::system::error_code& err, size_t len);
 				void hearbeat();
 				void startLogicThread();
 				void stopLogicThread();
@@ -79,31 +77,27 @@ namespace daxia
 			private:
 				boost::asio::io_service netIoService_;
 				boost::asio::io_service logicIoService_;
-				socket sock_;
 				common::shared_buffer buffer_;
 				std::thread ioThread_;
 				std::thread logicThread_;
 				std::shared_ptr<common::Parser> parser_;
 				std::map<int, handler> handler_;
-				std::mutex writeLocker_;
-				std::queue<common::shared_buffer> writeBufferCache_;
 				bool isIoWorking_;
 				bool isLogicWorking_;
 				std::queue<LogicMessage> logicMsgs_;
 				std::mutex logicMsgLocker_;
-				timepoint lastWriteTime_;
 				unsigned long hearbeatInterval_;
 				endpoint endpoint_;
 			};
 
 			inline Client::Client()
-				: sock_(netIoService_)
-				, buffer_(1024 * 8)
+				: buffer_(1024 * 8)
 				, isIoWorking_(false)
 				, isLogicWorking_(false)
 				, hearbeatInterval_(0)
 			{
-				parser_ = common::Parser::parser_ptr(new common::DefaultParser);
+				initSocket(BasicSession::socket_ptr(new socket(netIoService_)));
+				parser_ = common::Parser::ptr(new common::DefaultParser);
 				startLogicThread();
 			}
 
@@ -111,16 +105,31 @@ namespace daxia
 			{
 				stopLogicThread();
 				Close();
+
+				// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
+				initSocket(BasicSession::socket_ptr());
 			}
 
-			inline void Client::SetParser(common::Parser::parser_ptr parser)
+			inline void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
 			{
-				parser_ = parser;
+				pushLogciMessage(LogicMessage(error, msgId, buffer));
 			}
 
-			inline void Client::Handle(int msgID, handler h)
+			inline void Client::onClose()
 			{
-				handler_[msgID] = h;
+				isIoWorking_ = false;
+				netIoService_.stop();
+				if (ioThread_.joinable())
+				{
+					ioThread_.join();
+				}
+
+				clearMessage();
+			}
+
+			inline void Client::Handle(int msgId, handler h)
+			{
+				handler_[msgId] = h;
 			}
 
 			inline void Client::EnableHeartbeat(unsigned long milliseconds)
@@ -159,143 +168,17 @@ namespace daxia
 				Connect(ip2.c_str(), port);
 			}
 
-			inline void Client::Close()
-			{
-				isIoWorking_ = false;
-				netIoService_.stop();
-				if (ioThread_.joinable())
-				{
-					ioThread_.join();
-				}
-
-				sock_.close();
-				clearMessage();
-			}
-
-			inline void Client::WriteMessage(const void* date, int len)
-			{
-				lock_guard locker(writeLocker_);
-
-				bool isWriting = !writeBufferCache_.empty();
-
-				common::shared_buffer buffer;
-				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
-				writeBufferCache_.push(buffer);
-
-				if (!isWriting)
-				{
-					doWriteMessage();
-				}
-			}
-
 			inline void Client::doConnect()
 			{
-				sock_.async_connect(endpoint_, [&](const boost::system::error_code& ec)
+				getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
 				{
 					pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::shared_buffer()));
 
 					if (!ec)
 					{
-						sock_.async_read_some(buffer_.asio_buffer(), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
+						postRead();
 					}
 				});
-			}
-
-			inline void Client::doWriteMessage()
-			{
-				boost::asio::async_write(sock_, writeBufferCache_.front().asio_buffer(), [&](const boost::system::error_code& ec, std::size_t size)
-				{
-					using namespace std::chrono;
-
-					lock_guard locker(writeLocker_);
-
-					if (ec)
-					{
-						// clear writeBufferCache_
-						std::queue<common::shared_buffer> empty;
-						swap(empty, writeBufferCache_);
-					}
-					else
-					{
-						lastWriteTime_ = time_point_cast<seconds>(system_clock::now());
-
-						writeBufferCache_.pop();
-
-						if (!writeBufferCache_.empty())
-						{
-							doWriteMessage();
-						}
-					}
-				});
-			}
-
-			inline void Client::onRead(const boost::system::error_code& err, size_t len)
-			{
-				if (!err)
-				{
-					// 读取完整的包头
-					buffer_.resize(buffer_.size() + len);
-					if (buffer_.size() < parser_->GetPacketHeadLen())
-					{
-						sock_.async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
-						return;
-					}
-
-					// 解析包头
-					size_t contentLen = 0;
-					bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), contentLen);
-					if (!ok)
-					{
-						// 包头解析失败，抛弃所有数据重新接收
-						buffer_.clear();
-					}
-					else
-					{
-						// 包头解析成功，继续接收正文
-						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen)
-						{
-							// 读取完整的正文
-							sock_.async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
-							return;
-						}
-
-						// 解析正文
-						int msgID = 0;
-						common::shared_buffer msg(contentLen);
-						bool ok = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg);
-						if (!ok)
-						{
-							// 正文解析失败，抛弃所有数据重新接收
-							buffer_.clear();
-						}
-						else
-						{
-							// 包头解析成功，整理数据后继续接收
-							if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
-							{
-								size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
-								for (size_t i = 0; i < remain; ++i)
-								{
-									*(buffer_.get() + i) = *(buffer_.get() + (parser_->GetPacketHeadLen() + contentLen) + i);
-								}
-
-								buffer_.resize(remain);
-							}
-							else
-							{
-								buffer_.clear();
-							}
-
-							pushLogciMessage(LogicMessage(err, msgID, msg));
-						}
-					}
-
-					sock_.async_read_some(buffer_.asio_buffer(), std::bind(&Client::onRead, this, std::placeholders::_1, std::placeholders::_2));
-				}
-				else
-				{
-					pushLogciMessage(LogicMessage(err, common::DefMsgID_DisConnect, common::shared_buffer()));
-				}
 			}
 
 			inline void Client::hearbeat()
@@ -305,7 +188,7 @@ namespace daxia
 				if (hearbeatInterval_ != 0)
 				{
 					time_point<system_clock, milliseconds> now = time_point_cast<milliseconds>(system_clock::now());
-					if ((now - lastWriteTime_).count() >= hearbeatInterval_)
+					if ((now - GetLastWriteTime()).count() >= hearbeatInterval_)
 					{
 						WriteMessage(nullptr, 0);
 					}

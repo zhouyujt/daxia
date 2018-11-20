@@ -16,8 +16,8 @@
 
 #include <string>
 #include <daxia/dxg/common/define.hpp>
-#include <daxia/dxg/server/client.hpp>
-#include <daxia/dxg/server/client_manager.hpp>
+#include <daxia/dxg/server/session.hpp>
+#include <daxia/dxg/server/sessions_manager.hpp>
 #include <daxia/dxg/server/router.hpp>
 #include <daxia/dxg/server/controller.hpp>
 #include <daxia/dxg/common/parser.hpp>
@@ -43,8 +43,8 @@ namespace daxia
 			public:
 				void Run(short port, common::Protocol protcol = common::Protocol_TCP);
 				void Stop();
-				void SetParser(common::Parser::parser_ptr parser);
-				void Handle(int msgID, Controller::controller_ptr controller);
+				void SetParser(common::Parser::ptr parser);
+				void Handle(int msgId, Controller::ptr controller);
 				void EnableHeartbeat(unsigned long milliseconds);
 				void SetFPS(unsigned long fps);
 				long long ScheduleUpdate(Scheduler::scheduleFunc func);
@@ -85,14 +85,14 @@ namespace daxia
 				router_.Stop();
 			}
 
-			inline void Server::SetParser(common::Parser::parser_ptr parser)
+			inline void Server::SetParser(common::Parser::ptr parser)
 			{
 				router_.SetParser(parser);
 			}
 
-			inline void Server::Handle(int msgID, Controller::controller_ptr controller)
+			inline void Server::Handle(int msgId, Controller::ptr controller)
 			{
-				router_.Handle(msgID, controller);
+				router_.Handle(msgId, controller);
 			}
 
 			inline void Server::EnableHeartbeat(unsigned long milliseconds)

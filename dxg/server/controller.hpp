@@ -13,8 +13,8 @@
 #define __DAXIA_DXG_SERVER_CONTROLLER_HPP
 
 #include <daxia/dxg/common/shared_buffer.hpp>
-#include <daxia/dxg/server/client_manager.hpp>
-#include <daxia/dxg/server/client.hpp>
+#include <daxia/dxg/server/sessions_manager.hpp>
+#include <daxia/dxg/server/session.hpp>
 #include <daxia/dxg/server/scheduler.hpp>
 
 namespace daxia
@@ -29,12 +29,12 @@ namespace daxia
 			class Controller
 			{
 			public:
-				typedef std::shared_ptr<Controller> controller_ptr;
+				typedef std::shared_ptr<Controller> ptr;
 			public:
 				Controller(){}
 				virtual ~Controller(){}
 			public:
-				virtual void Proc(int msgId, Client::client_ptr client, ClientManager::clientMgr_ptr clientMgr, const common::shared_buffer data) = 0;
+				virtual void Proc(int msgId, Session::ptr session, SessionsManager::ptr sessionsMgr, const common::shared_buffer data) = 0;
 			};
 
 		}// namespace server

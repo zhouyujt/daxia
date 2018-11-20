@@ -17,7 +17,7 @@
 #include <mutex>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <daxia/dxg/server/client.hpp>
+#include <daxia/dxg/server/session.hpp>
 #include <daxia/dxg/common/shared_buffer.hpp>
 
 namespace daxia
@@ -31,7 +31,7 @@ namespace daxia
 			{
 			public:
 				typedef std::function<void()> scheduleFunc;
-				typedef std::function<void(Client::client_ptr,int,const common::shared_buffer)> netDispatchFunc;
+				typedef std::function<void(Session::ptr,int,const common::shared_buffer)> netDispatchFunc;
 				typedef std::lock_guard<std::mutex> lock_guard;
 			public:
 				Scheduler();
@@ -40,15 +40,15 @@ namespace daxia
 				// 网络请求
 				struct NetRequest
 				{
-					Client::client_ptr client;
-					int msgID;
+					Session::ptr session;
+					int msgId;
 					common::shared_buffer data;
 					std::function<void()> finishCallback;
 
 					NetRequest(){}
-					NetRequest(Client::client_ptr client, int msgID, const common::shared_buffer data, std::function<void()> finishCallback)
-						: client(client)
-						, msgID(msgID)
+					NetRequest(Session::ptr session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback)
+						: session(session)
+						, msgId(msgId)
 						, data(data)
 						, finishCallback(finishCallback)
 					{
@@ -63,7 +63,7 @@ namespace daxia
 				void Unschedule(long long scheduleID);
 				void UnscheduleAll();
 				void SetNetDispatch(netDispatchFunc func);
-				void PushNetRequest(Client::client_ptr client, int msgID, const common::shared_buffer data, std::function<void()> finishCallback = nullptr);
+				void PushNetRequest(Session::ptr session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback = nullptr);
 				void Run();
 				void Stop();
 			private:
@@ -211,10 +211,10 @@ namespace daxia
 				dispatch_ = func;
 			}
 
-			inline void Scheduler::PushNetRequest(Client::client_ptr client, int msgID, const common::shared_buffer data, std::function<void()> finishCallback)
+			inline void Scheduler::PushNetRequest(Session::ptr session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback)
 			{
 				lock_guard locker(netRequestLocker_);
-				netRequests_.push(NetRequest(client, msgID, data, finishCallback));
+				netRequests_.push(NetRequest(session, msgId, data, finishCallback));
 			}
 
 			inline void Scheduler::Run()
@@ -269,11 +269,11 @@ namespace daxia
 							netRequestLocker_.unlock();
 
 							// 处理网络请求
-							if (r.client != nullptr)
+							if (r.session != nullptr)
 							{
 								if (dispatch_)
 								{
-									dispatch_(r.client, r.msgID, r.data);
+									dispatch_(r.session, r.msgId, r.data);
 								}
 
 								if (r.finishCallback)
