@@ -127,6 +127,7 @@ namespace daxia
 						ioThreads_[i].join();
 					}
 				}
+				ios_.reset();
 
 				// ½áÊøµ÷¶ÈÆ÷
 				scheduler_.Stop();
