@@ -22,12 +22,9 @@ namespace daxia
 		namespace common
 		{
 			// ª∫≥Â«¯¿‡
-			struct shared_buffer
+			class shared_buffer
 			{
-				std::shared_ptr<byte> buff_;
-				size_t size_;
-				size_t capacity_;
-
+			public:
 				shared_buffer()
 					: size_(0)
 					, capacity_(0)
@@ -101,7 +98,7 @@ namespace daxia
 					}
 					else if (size_ < capacity)
 					{
-						if (capacity > capacity)
+						if (capacity > capacity_)
 						{
 							std::shared_ptr<byte> temp(new byte[capacity]);
 							memcpy(temp.get(), buff_.get(), size_);
@@ -109,7 +106,7 @@ namespace daxia
 						}
 					}
 
-					capacity = capacity;
+					capacity_ = capacity;
 				}
 
 				bool empty() const
@@ -126,6 +123,10 @@ namespace daxia
 				{
 					return boost::asio::buffer(buff_.get() + offset, capacity_ - offset);
 				}
+			private:
+				std::shared_ptr<byte> buff_;
+				size_t size_;
+				size_t capacity_;
 			};
 
 		}// namespace common

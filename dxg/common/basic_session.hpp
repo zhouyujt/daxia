@@ -100,7 +100,7 @@ namespace daxia
 			inline BasicSession::BasicSession()
 				: sendPacketCount_(0)
 				, recvPacketCount_(0)
-				, buffer_(1024 * 8)
+				, buffer_(1024 * 32)
 			{
 
 			}
@@ -193,6 +193,7 @@ namespace daxia
 
 				shared_buffer buffer;
 				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
+				buffer.reserve(buffer.size());
 				writeBufferCache_.push(buffer);
 				++sendPacketCount_;
 				if (sendPacketCount_ == 0) ++sendPacketCount_;
@@ -228,94 +229,85 @@ namespace daxia
 			{
 				using namespace std::chrono;
 
-				if (!err)
+				if (err)
 				{
-					// 读取完整的包头
-					buffer_.resize(buffer_.size() + len);
-					if (buffer_.size() < parser_->GetPacketHeadLen())
-					{
-						sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-						return;
-					}
+					lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
+					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
+					buffer_.clear();
+					return;
+				}
 
-					// 解析包头
-					size_t contentLen = 0;
-					bool ok = parser_->UnmarshalHead(this, buffer_.get(), buffer_.size(), contentLen);
-					if (!ok)
+				buffer_.resize(buffer_.size() + len);
+
+				enum DataError
+				{
+					DataError_Uncomplete,			// 包头不完整
+					DataError_ParseFail				// 报文格式不正确
+				};
+
+				try
+				{
+					while (!buffer_.empty())
 					{
-						// 包头解析失败，抛弃所有数据重新接收
-						buffer_.clear();
-					}
-					else
-					{
+						// 读取完整的包头
+						if (buffer_.size() < parser_->GetPacketHeadLen()) throw DataError_Uncomplete;
+
+						// 解析包头
+						size_t contentLen = 0;
+						if(!parser_->UnmarshalHead(this, buffer_.get(), buffer_.size(), contentLen)) throw DataError_ParseFail;
+					
 						// 包头解析成功，继续接收正文
-						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen)
-						{
-							// 读取完整的正文
-							sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-							return;
-						}
-
-						// 心跳包
-						if (contentLen == 0)
-						{
-							lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-							onPacket(err, common::DefMsgID_Heartbeat, common::shared_buffer());
-
-							sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-							++recvPacketCount_;
-							if (recvPacketCount_ == 0) ++recvPacketCount_;
-
-							return;
-						}
+						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
 
 						// 解析正文
 						int msgID = 0;
-						common::shared_buffer msg(contentLen);
-						bool ok = parser_->UnmarshalContent(this, buffer_.get(), buffer_.size(), msgID, msg);
-						if (!ok)
+						common::shared_buffer msg;
+						if (!parser_->UnmarshalContent(this, buffer_.get(), buffer_.size(), msgID, msg)) throw DataError_ParseFail;
+
+						// 包头解析成功
+						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
+						onPacket(err, msgID, msg);
+
+						++recvPacketCount_;
+						if (recvPacketCount_ == 0) ++recvPacketCount_;
+
+						// 整理数据后继续接收
+						if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
 						{
-							// 正文解析失败，抛弃所有数据重新接收
-							buffer_.clear();
+							size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
+							memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
+							buffer_.resize(remain);
 						}
 						else
 						{
-							// 包头解析成功，整理数据后继续接收
-							if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
-							{
-								size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
-								for (size_t i = 0; i < remain; ++i)
-								{
-									*(buffer_.get() + i) = *(buffer_.get() + (parser_->GetPacketHeadLen() + contentLen) + i);
-								}
-
-								buffer_.resize(remain);
-							}
-							else
-							{
-								buffer_.clear();
-							}
-
-							lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-							onPacket(err, msgID, msg);
-
-							++recvPacketCount_;
+							buffer_.clear();
 						}
 					}
 
 					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 				}
-				else
+				catch (DataError stat)
 				{
-					lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
+					switch (stat)
+					{
+					case DataError_Uncomplete:
+						// 继续接收完整的报文
+						sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+						break;
+					case DataError_ParseFail:
+						// 抛弃所有数据重新接收
+						buffer_.clear();
+						sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+						break;
+					default:
+						break;
+					}
 				}
 			}
 
 			inline void BasicSession::doWriteMessage(const common::shared_buffer msg)
 			{
 				using namespace std::chrono;
-
 				boost::asio::async_write(*sock_, msg.asio_buffer(), [&](const boost::system::error_code& ec, std::size_t size)
 				{
 					lock_guard locker(writeLocker_);
