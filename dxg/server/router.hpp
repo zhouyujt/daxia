@@ -153,14 +153,14 @@ namespace daxia
 				auto iter = controllers_.find(msgID);
 				if (iter != controllers_.end())
 				{
-					iter->second->Proc(msgID, client, sessionsMgr_, data);
+					iter->second->Proc(msgID, client.get(), sessionsMgr_.get(), data);
 				}
 				else
 				{
 					auto iter = controllers_.find(common::DefMsgID_UnHandle);
 					if (iter != controllers_.end())
 					{
-						iter->second->Proc(msgID, client, sessionsMgr_, data);
+						iter->second->Proc(msgID, client.get(), sessionsMgr_.get(), data);
 					}
 				}
 			}

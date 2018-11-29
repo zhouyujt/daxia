@@ -121,7 +121,12 @@ namespace daxia
 				netIoService_.stop();
 				if (ioThread_.joinable())
 				{
-					ioThread_.join();
+					try
+					{
+						ioThread_.join();
+					}
+					catch (...)
+					{ }
 				}
 
 				clearMessage();
