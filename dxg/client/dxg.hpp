@@ -72,6 +72,8 @@ namespace daxia
 				void hearbeat();
 				void startLogicThread();
 				void stopLogicThread();
+				void startIoThread();
+				void stopIoThread();
 				void clearMessage();
 				void pushLogciMessage(const LogicMessage& msg);
 			private:
@@ -99,11 +101,13 @@ namespace daxia
 				initSocket(BasicSession::socket_ptr(new socket(netIoService_)));
 				parser_ = common::Parser::ptr(new common::DefaultParser);
 				startLogicThread();
+				startIoThread();
 			}
 
 			inline Client::~Client()
 			{
 				stopLogicThread();
+				stopIoThread();
 				Close();
 
 				// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
@@ -117,18 +121,6 @@ namespace daxia
 
 			inline void Client::onClose()
 			{
-				isIoWorking_ = false;
-				netIoService_.stop();
-				if (ioThread_.joinable())
-				{
-					try
-					{
-						ioThread_.join();
-					}
-					catch (...)
-					{ }
-				}
-
 				clearMessage();
 			}
 
@@ -144,25 +136,7 @@ namespace daxia
 
 			inline void Client::Connect(const char* ip, short port)
 			{
-				if (isIoWorking_) return;
-
-				isIoWorking_ = true;
-				ioThread_ = std::thread([&]()
-				{
-					boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
-					while (isIoWorking_)
-					{
-						// 保持netIoService_.run不退出
-						timer.async_wait([&](const boost::system::error_code& ec)
-						{
-							timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
-						});
-
-						netIoService_.run();
-						netIoService_.reset();
-					}
-				});
-
+				Close();
 				endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
 				doConnect();
 			}
@@ -283,6 +257,46 @@ namespace daxia
 						}
 					}
 				});
+			}
+
+			void Client::startIoThread()
+			{
+				isIoWorking_ = true;
+				ioThread_ = std::thread([&]()
+				{
+					boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
+					while (isIoWorking_)
+					{
+						// 保持netIoService_.run不退出
+						timer.async_wait([&](const boost::system::error_code& ec)
+						{
+							if (!ec)
+							{
+								timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
+							}
+						});
+
+						netIoService_.run();
+						netIoService_.reset();
+					}
+				});
+			}
+
+			void Client::stopIoThread()
+			{
+				isIoWorking_ = false;
+				netIoService_.stop();
+				if (ioThread_.joinable())
+				{
+					try
+					{
+						ioThread_.join();
+					}
+					catch (...)
+					{
+					}
+				}
+				netIoService_.reset();
 			}
 
 		}// namespace client

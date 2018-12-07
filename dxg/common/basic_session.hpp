@@ -207,6 +207,8 @@ namespace daxia
 			inline void BasicSession::Close()
 			{
 				if (sock_) sock_->close();
+				sendPacketCount_ = 0;
+				recvPacketCount_ = 0;
 				onClose();
 			}
 
