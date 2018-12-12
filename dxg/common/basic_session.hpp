@@ -38,18 +38,40 @@ namespace daxia
 			public:
 				virtual ~BasicSession();
 			public:
+				enum UserDataIndex : int
+				{
+					UserDataIndex_0 = 0,
+					UserDataIndex_1,
+					UserDataIndex_2,
+					UserDataIndex_3,
+					UserDataIndex_4,
+					UserDataIndex_5,
+					UserDataIndex_6,
+					UserDataIndex_7,
+					UserDataIndex_8,
+					UserDataIndex_9,
+					UserDataIndex_End
+				};
+			public:
 				// 设置消息解析器
 				void SetParser(Parser::ptr parser);
 
 				// 设置自定义数据
-				void SetUserData(const std::string& key, boost::any data);
+				void SetUserData(const char* key, boost::any data);
+				// 设置自定义数据(高性能)
+				void SetUserData(UserDataIndex index, boost::any data);
 
 				// 获取自定义数据
 				template<class T>
-				bool GetUserData(const std::string& key, T& data);
+				bool GetUserData(const char* key, T& data);
+				// 获取自定义数据(高性能)
+				template<class T>
+				bool GetUserData(UserDataIndex index, T& data);
 
 				// 删除指定的自定义数据
-				void DeleteUserData(const std::string& key);
+				void DeleteUserData(const char* key);
+				// 删除指定的自定义数据(高性能)
+				void DeleteUserData(UserDataIndex index);
 
 				// 删除所有自定义数据
 				void DeleteAllUserData();
@@ -83,12 +105,15 @@ namespace daxia
 			private:
 				void onRead(const boost::system::error_code& err, size_t len);
 				void doWriteMessage(const common::shared_buffer msg);
+				unsigned int hashcode(const char* str) const;
 			private:
 				socket_ptr sock_;
-				std::map<std::string, boost::any> userData_;
+				std::map<unsigned int, boost::any> userData_;
+				boost::any userData2_[UserDataIndex_End];
 				std::mutex userDataLocker_;
 				Parser::ptr parser_;
 				std::mutex writeLocker_;
+				std::mutex closeLocker_;
 				std::queue<shared_buffer> writeBufferCache_;
 				timepoint lastReadTime_;
 				timepoint lastWriteTime_;
@@ -100,7 +125,7 @@ namespace daxia
 			inline BasicSession::BasicSession()
 				: sendPacketCount_(0)
 				, recvPacketCount_(0)
-				, buffer_(1024 * 32)
+				, buffer_(1024 * 16)
 			{
 
 			}
@@ -115,19 +140,26 @@ namespace daxia
 				parser_ = parser;
 			}
 
-			inline void BasicSession::SetUserData(const std::string& key, boost::any data)
+			inline void BasicSession::SetUserData(const char* key, boost::any data)
 			{
 				lock_guard locker(userDataLocker_);
 
-				userData_[key] = data;
+				userData_[hashcode(key)] = data;
+			}
+
+			void BasicSession::SetUserData(UserDataIndex index, boost::any data)
+			{
+				lock_guard locker(userDataLocker_);
+				
+				userData2_[index] = data;
 			}
 
 			template<class T>
-			inline bool BasicSession::GetUserData(const std::string& key, T& data)
+			inline bool BasicSession::GetUserData(const char* key, T& data)
 			{
 				lock_guard locker(userDataLocker_);
 
-				auto iter = userData_.find(key);
+				auto iter = userData_.find(hashcode(key));
 				if (iter != userData_.end())
 				{
 					try
@@ -145,11 +177,35 @@ namespace daxia
 				return  false;
 			}
 
-			inline void BasicSession::DeleteUserData(const std::string& key)
+			template<class T>
+			bool BasicSession::GetUserData(UserDataIndex index, T& data)
 			{
 				lock_guard locker(userDataLocker_);
 
-				userData_.erase(key);
+				try
+				{
+					data = boost::any_cast<T>(userData2_[index]);
+				}
+				catch (...)
+				{
+					return false;
+				}
+
+				return true;
+			}
+
+			inline void BasicSession::DeleteUserData(const char* key)
+			{
+				lock_guard locker(userDataLocker_);
+
+				userData_.erase(hashcode(key));
+			}
+
+			void BasicSession::DeleteUserData(UserDataIndex index)
+			{
+				lock_guard locker(userDataLocker_);
+				
+				userData2_[index] = boost::any();
 			}
 
 			inline void BasicSession::DeleteAllUserData()
@@ -157,6 +213,12 @@ namespace daxia
 				lock_guard locker(userDataLocker_);
 
 				userData_.clear();
+
+				auto any = boost::any();
+				for (int i = 0; i < UserDataIndex_End; ++i)
+				{
+					userData2_[i] = any;
+				}
 			}
 
 			inline std::string BasicSession::GetPeerAddr() const
@@ -187,17 +249,17 @@ namespace daxia
 
 			inline void BasicSession::WriteMessage(const void* date, int len)
 			{
-				lock_guard locker(writeLocker_);
-
-				bool isWriting = !writeBufferCache_.empty();
-
 				shared_buffer buffer;
 				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
 				buffer.reserve(buffer.size());
-				writeBufferCache_.push(buffer);
+				writeLocker_.lock();
 				++sendPacketCount_;
 				if (sendPacketCount_ == 0) ++sendPacketCount_;
+				writeLocker_.unlock();
 
+				lock_guard locker(writeLocker_);
+				bool isWriting = !writeBufferCache_.empty();
+				writeBufferCache_.push(buffer);
 				if (!isWriting)
 				{
 					doWriteMessage(writeBufferCache_.front());
@@ -206,7 +268,13 @@ namespace daxia
 
 			inline void BasicSession::Close()
 			{
-				if (sock_) sock_->close();
+				lock_guard locker(closeLocker_);
+
+				if (sock_->is_open())
+				{
+					sock_->close();
+				}
+
 				sendPacketCount_ = 0;
 				recvPacketCount_ = 0;
 				onClose();
@@ -332,6 +400,18 @@ namespace daxia
 						}
 					}
 				});
+			}
+
+			unsigned int BasicSession::hashcode(const char* str) const
+			{
+				unsigned int seed = 131;
+				unsigned int hash = 0;
+				while (*str)
+				{
+					hash = hash * seed + (*str++);
+				}
+
+				return (hash & 0x7fffffff);
 			}
 
 		}// namespace common

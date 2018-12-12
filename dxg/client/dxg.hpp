@@ -17,6 +17,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <vector>
 #include <boost/asio.hpp>
 #include <daxia/dxg/common/basic_session.hpp>
 #include <daxia/dxg/common/parser.hpp>
@@ -39,6 +40,7 @@ namespace daxia
 				typedef std::function<void(int, const boost::system::error_code&, const void*, int)> handler;
 				typedef std::lock_guard<std::mutex> lock_guard;
 				typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
+				typedef std::function<void()> scheduleFunc;
 			public:
 				Client();
 				~Client();
@@ -50,6 +52,9 @@ namespace daxia
 				void EnableHeartbeat(unsigned long milliseconds);
 				void Connect(const char* ip, short port);
 				void Connect(const wchar_t* ip, short port);
+				long long Schedule(scheduleFunc func, unsigned long duration);
+				long long ScheduleOnce(scheduleFunc func, unsigned long duration);
+				void Unschedule(long long scheduleID);
 			private:
 				struct LogicMessage
 				{
@@ -70,48 +75,192 @@ namespace daxia
 			private:
 				void doConnect();
 				void hearbeat();
-				void startLogicThread();
-				void stopLogicThread();
-				void startIoThread();
-				void stopIoThread();
 				void clearMessage();
 				void pushLogciMessage(const LogicMessage& msg);
 			private:
-				boost::asio::io_service netIoService_;
-				boost::asio::io_service logicIoService_;
-				common::shared_buffer buffer_;
-				std::thread ioThread_;
-				std::thread logicThread_;
+				class initHelper
+				{
+					friend Client;
+				public:
+					initHelper();
+					~initHelper();
+				private:
+					void startLogicThread();
+					void stopLogicThread();
+					void startIoThread();
+					void stopIoThread();
+					int getCoreCount() const;
+				private:
+					boost::asio::io_service netIoService_;
+					boost::asio::io_service logicIoService_;
+					std::vector<std::thread> ioThreads_;
+					std::vector<std::thread> logicThreads_;
+					bool isIoWorking_;
+					bool isLogicWorking_;
+				};
+			private:
+				initHelper* initHelper_;
 				std::shared_ptr<common::Parser> parser_;
 				std::map<int, handler> handler_;
-				bool isIoWorking_;
-				bool isLogicWorking_;
-				std::queue<LogicMessage> logicMsgs_;
-				std::mutex logicMsgLocker_;
 				unsigned long hearbeatInterval_;
 				endpoint endpoint_;
+				std::queue<LogicMessage> logicMsgs_;
+				std::mutex logicMsgLocker_;
+				std::mutex scheduleLocker_;
+				std::map<long long, boost::asio::deadline_timer*> timers_;
+				long long nextTimerId_;
 			};
 
-			inline Client::Client()
-				: buffer_(1024 * 8)
-				, isIoWorking_(false)
+			inline Client::initHelper::initHelper()
+				: isIoWorking_(false)
 				, isLogicWorking_(false)
-				, hearbeatInterval_(0)
 			{
-				initSocket(BasicSession::socket_ptr(new socket(netIoService_)));
-				parser_ = common::Parser::ptr(new common::DefaultParser);
 				startLogicThread();
 				startIoThread();
 			}
 
-			inline Client::~Client()
+			inline Client::initHelper::~initHelper()
 			{
 				stopLogicThread();
 				stopIoThread();
+			}
+
+			inline void Client::initHelper::startLogicThread()
+			{
+				int coreCount = getCoreCount();
+
+				isLogicWorking_ = true;
+
+				//for (int i = 0; i < coreCount * 2; ++i)
+				for (int i = 0; i < 1; ++i)
+				{
+					logicThreads_.push_back(std::thread([&]()
+					{
+						boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::milliseconds(1000));
+						while (isLogicWorking_)
+						{
+							// 保持logicIoService_.run不退出
+							timer.async_wait([&](const boost::system::error_code& ec)
+							{
+								// 心跳
+								//hearbeat();
+								timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(1000));
+							});
+
+							logicIoService_.run();
+							logicIoService_.reset();
+						}
+					}));
+				}
+			}
+
+			inline void Client::initHelper::stopLogicThread()
+			{
+				isLogicWorking_ = false;
+
+				for (size_t i = 0; i < logicThreads_.size(); ++i)
+				{
+					if (logicThreads_[i].joinable())
+					{
+						logicThreads_[i].join();
+					}
+				}
+
+				logicThreads_.clear();
+			
+			}
+
+			inline void Client::initHelper::startIoThread()
+			{
+				int coreCount = getCoreCount();
+
+				isIoWorking_ = true;
+
+				for (int i = 0; i < coreCount * 2; ++i)
+				{
+					ioThreads_.push_back(std::thread([&]()
+					{
+						boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
+						while (isIoWorking_)
+						{
+							// 保持netIoService_.run不退出
+							timer.async_wait([&](const boost::system::error_code& ec)
+							{
+								if (!ec)
+								{
+									timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
+								}
+							});
+
+							netIoService_.run();
+							netIoService_.reset();
+						}
+					}));
+				}
+			}
+
+			inline void Client::initHelper::stopIoThread()
+			{
+				isIoWorking_ = false;
+				netIoService_.stop();
+
+				for (size_t i = 0; i < ioThreads_.size(); ++i)
+				{
+					if (ioThreads_[i].joinable())
+					{
+						try
+						{
+							ioThreads_[i].join();
+						}
+						catch (...)
+						{
+						}
+					}
+				}
+				netIoService_.reset();
+			}
+
+			inline int Client::initHelper::getCoreCount() const
+			{
+				int count = 1; // 至少一个
+
+#if !defined (_WIN32) && !defined (_WIN64) 
+				count = sysconf(_SC_NPROCESSORS_CONF);
+#else
+				SYSTEM_INFO si;
+				GetSystemInfo(&si);
+				count = si.dwNumberOfProcessors;
+#endif  
+
+				return count;
+			}
+
+			inline Client::Client()
+				: hearbeatInterval_(0)
+				, nextTimerId_(0)
+			{
+				// 所有实例共用
+				static initHelper helper;
+				initHelper_ = &helper;
+
+				initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
+				parser_ = common::Parser::ptr(new common::DefaultParser);
+			}
+
+			inline Client::~Client()
+			{
 				Close();
 
 				// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
 				initSocket(BasicSession::socket_ptr());
+
+				lock_guard locker(scheduleLocker_);
+				for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
+				{
+					iter->second->cancel();
+					delete iter->second;
+				}
+				timers_.clear();
 			}
 
 			inline void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
@@ -121,7 +270,7 @@ namespace daxia
 
 			inline void Client::onClose()
 			{
-				clearMessage();
+				//clearMessage();
 			}
 
 			inline void Client::Handle(int msgId, handler h)
@@ -145,6 +294,72 @@ namespace daxia
 			{
 				std::string ip2 = daxia::encode::Unicode2Ansi(ip);
 				Connect(ip2.c_str(), port);
+			}
+
+			inline long long Client::Schedule(scheduleFunc func, unsigned long duration)
+			{
+				lock_guard locker(scheduleLocker_);
+
+				long long id = nextTimerId_;
+
+				timers_[id] = new boost::asio::deadline_timer(initHelper_->logicIoService_, boost::posix_time::milliseconds(duration));
+				timers_[id]->async_wait([&, func, id, duration](const boost::system::error_code& ec)
+				{
+					if (!ec)
+					{
+						func();
+						std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(id);
+						if (iter != timers_.end())
+						{
+							iter->second->expires_at(iter->second->expires_at() + boost::posix_time::milliseconds(duration));
+						}
+					}
+				});
+
+				++nextTimerId_;
+
+				return id;
+			}
+
+			inline long long Client::ScheduleOnce(scheduleFunc func, unsigned long duration)
+			{
+				lock_guard locker(scheduleLocker_);
+
+				long long id = nextTimerId_;
+
+				timers_[id] = new boost::asio::deadline_timer(initHelper_->logicIoService_, boost::posix_time::milliseconds(duration));
+				timers_[id]->async_wait([&, func,id](const boost::system::error_code& ec)
+				{
+					if (!ec)
+					{
+						func();
+					}
+
+					lock_guard locker(scheduleLocker_);
+					std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(id);
+					if (iter != timers_.end())
+					{
+						delete iter->second;
+						timers_.erase(iter);
+					}
+				});
+
+				++nextTimerId_;
+
+				return id;
+			}
+
+			inline void Client::Unschedule(long long scheduleID)
+			{
+				lock_guard locker(scheduleLocker_);
+
+				std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(scheduleID);
+				if (iter != timers_.end())
+				{
+					iter->second->cancel();
+					delete iter->second;
+					timers_.erase(iter);
+				}
 			}
 
 			inline void Client::doConnect()
@@ -174,39 +389,6 @@ namespace daxia
 				}
 			}
 
-			inline void Client::startLogicThread()
-			{
-				isLogicWorking_ = true;
-				logicThread_ = std::thread([&]()
-				{
-					boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::milliseconds(1000));
-					while (isLogicWorking_)
-					{
-						// 保持logicIoService_.run不退出
-						timer.async_wait([&](const boost::system::error_code& ec)
-						{
-							// 心跳
-							hearbeat();
-							timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(1000));
-						});
-
-						logicIoService_.run();
-						logicIoService_.reset();
-					}
-				});
-			}
-
-			inline void Client::stopLogicThread()
-			{
-				clearMessage();
-
-				isLogicWorking_ = false;
-				if (logicThread_.joinable())
-				{
-					logicThread_.join();
-				}
-			}
-
 			inline void Client::clearMessage()
 			{
 				// clear messages_
@@ -221,7 +403,7 @@ namespace daxia
 				lock_guard locker(logicMsgLocker_);
 				logicMsgs_.push(msg);
 
-				logicIoService_.post([&]()
+				initHelper_->logicIoService_.post([&]()
 				{
 					// 分发消息
 					LogicMessage msg;
@@ -258,47 +440,6 @@ namespace daxia
 					}
 				});
 			}
-
-			void Client::startIoThread()
-			{
-				isIoWorking_ = true;
-				ioThread_ = std::thread([&]()
-				{
-					boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
-					while (isIoWorking_)
-					{
-						// 保持netIoService_.run不退出
-						timer.async_wait([&](const boost::system::error_code& ec)
-						{
-							if (!ec)
-							{
-								timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
-							}
-						});
-
-						netIoService_.run();
-						netIoService_.reset();
-					}
-				});
-			}
-
-			void Client::stopIoThread()
-			{
-				isIoWorking_ = false;
-				netIoService_.stop();
-				if (ioThread_.joinable())
-				{
-					try
-					{
-						ioThread_.join();
-					}
-					catch (...)
-					{
-					}
-				}
-				netIoService_.reset();
-			}
-
 		}// namespace client
 	}// namespace dxg
 }// namespace daxia
