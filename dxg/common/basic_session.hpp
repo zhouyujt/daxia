@@ -98,7 +98,6 @@ namespace daxia
 				void Close();
 			protected:
 				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) = 0;
-				virtual void onClose(){}
 				void initSocket(socket_ptr sock);
 				void postRead();
 				socket_ptr getSocket();
@@ -277,7 +276,6 @@ namespace daxia
 
 				sendPacketCount_ = 0;
 				recvPacketCount_ = 0;
-				onClose();
 			}
 
 			inline void BasicSession::initSocket(socket_ptr sock)

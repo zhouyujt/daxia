@@ -46,7 +46,6 @@ namespace daxia
 				~Client();
 			protected:
 				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
-				virtual void onClose() override;
 			public:
 				void Handle(int msgId, handler h);
 				void EnableHeartbeat(unsigned long milliseconds);
@@ -266,11 +265,6 @@ namespace daxia
 			inline void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
 			{
 				pushLogciMessage(LogicMessage(error, msgId, buffer));
-			}
-
-			inline void Client::onClose()
-			{
-				//clearMessage();
 			}
 
 			inline void Client::Handle(int msgId, handler h)

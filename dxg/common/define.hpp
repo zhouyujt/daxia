@@ -32,8 +32,7 @@ namespace daxia
 			{
 				DefMsgID_Connect = -1,
 				DefMsgID_DisConnect = -2,
-				DefMsgID_Heartbeat = -3,
-				DefMsgID_UnHandle = -4
+				DefMsgID_UnHandle = -3
 			};
 		}
 
