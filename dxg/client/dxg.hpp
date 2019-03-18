@@ -54,6 +54,7 @@ namespace daxia
 				long long Schedule(scheduleFunc func, unsigned long duration);
 				long long ScheduleOnce(scheduleFunc func, unsigned long duration);
 				void Unschedule(long long scheduleID);
+				void UnscheduleAll();
 			private:
 				struct LogicMessage
 				{
@@ -356,6 +357,19 @@ namespace daxia
 				}
 			}
 
+			inline void Client::UnscheduleAll()
+			{
+				lock_guard locker(scheduleLocker_);
+				
+				for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
+				{
+					iter->second->cancel();
+					delete iter->second;
+				}
+
+				timers_.clear();
+			}
+
 			inline void Client::doConnect()
 			{
 				getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
@@ -434,6 +448,7 @@ namespace daxia
 					}
 				});
 			}
+
 		}// namespace client
 	}// namespace dxg
 }// namespace daxia
