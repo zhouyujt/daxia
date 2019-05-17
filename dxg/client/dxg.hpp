@@ -95,8 +95,6 @@ namespace daxia
 					boost::asio::io_service logicIoService_;
 					std::vector<std::thread> ioThreads_;
 					std::vector<std::thread> logicThreads_;
-					bool isIoWorking_;
-					bool isLogicWorking_;
 				};
 			private:
 				initHelper* initHelper_;
@@ -112,8 +110,6 @@ namespace daxia
 			};
 
 			inline Client::initHelper::initHelper()
-				: isIoWorking_(false)
-				, isLogicWorking_(false)
 			{
 				startLogicThread();
 				startIoThread();
@@ -129,34 +125,20 @@ namespace daxia
 			{
 				int coreCount = getCoreCount();
 
-				isLogicWorking_ = true;
-
 				//for (int i = 0; i < coreCount * 2; ++i)
 				for (int i = 0; i < 1; ++i)
 				{
 					logicThreads_.push_back(std::thread([&]()
 					{
-						boost::asio::deadline_timer timer(logicIoService_, boost::posix_time::milliseconds(1000));
-						while (isLogicWorking_)
-						{
-							// 保持logicIoService_.run不退出
-							timer.async_wait([&](const boost::system::error_code& ec)
-							{
-								// 心跳
-								//hearbeat();
-								timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(1000));
-							});
-
-							logicIoService_.run();
-							logicIoService_.reset();
-						}
+						boost::asio::io_service::work worker(logicIoService_);
+						logicIoService_.run();
 					}));
 				}
 			}
 
 			inline void Client::initHelper::stopLogicThread()
 			{
-				isLogicWorking_ = false;
+				logicIoService_.stop();
 
 				for (size_t i = 0; i < logicThreads_.size(); ++i)
 				{
@@ -174,34 +156,18 @@ namespace daxia
 			{
 				int coreCount = getCoreCount();
 
-				isIoWorking_ = true;
-
 				for (int i = 0; i < coreCount * 2; ++i)
 				{
 					ioThreads_.push_back(std::thread([&]()
 					{
-						boost::asio::deadline_timer timer(netIoService_, boost::posix_time::milliseconds(100));
-						while (isIoWorking_)
-						{
-							// 保持netIoService_.run不退出
-							timer.async_wait([&](const boost::system::error_code& ec)
-							{
-								if (!ec)
-								{
-									timer.expires_at(timer.expires_at() + boost::posix_time::milliseconds(100));
-								}
-							});
-
-							netIoService_.run();
-							netIoService_.reset();
-						}
+						boost::asio::io_service::work worker(netIoService_);
+						netIoService_.run();
 					}));
 				}
 			}
 
 			inline void Client::initHelper::stopIoThread()
 			{
-				isIoWorking_ = false;
 				netIoService_.stop();
 
 				for (size_t i = 0; i < ioThreads_.size(); ++i)
