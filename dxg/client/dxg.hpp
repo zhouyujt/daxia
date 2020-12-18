@@ -51,7 +51,7 @@ namespace daxia
 				void EnableHeartbeat(unsigned long milliseconds);
 				void Connect(const char* ip, short port);
 				void Connect(const wchar_t* ip, short port);
-				long long Schedule(scheduleFunc func, unsigned long duration);
+				long long Schedule(scheduleFunc func, unsigned long firstDuration, unsigned long loopDuration);
 				long long ScheduleOnce(scheduleFunc func, unsigned long duration);
 				void Unschedule(long long scheduleID);
 				void UnscheduleAll();
@@ -77,6 +77,7 @@ namespace daxia
 				void hearbeat();
 				void clearMessage();
 				void pushLogciMessage(const LogicMessage& msg);
+				void asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec);
 			private:
 				class initHelper
 				{
@@ -257,25 +258,14 @@ namespace daxia
 				Connect(ip2.c_str(), port);
 			}
 
-			inline long long Client::Schedule(scheduleFunc func, unsigned long duration)
+			inline long long Client::Schedule(scheduleFunc func,unsigned long firstDuration, unsigned long loopDuration)
 			{
 				lock_guard locker(scheduleLocker_);
 
 				long long id = nextTimerId_;
 
-				timers_[id] = new boost::asio::deadline_timer(initHelper_->logicIoService_, boost::posix_time::milliseconds(duration));
-				timers_[id]->async_wait([&, func, id, duration](const boost::system::error_code& ec)
-				{
-					if (!ec)
-					{
-						func();
-						std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(id);
-						if (iter != timers_.end())
-						{
-							iter->second->expires_at(iter->second->expires_at() + boost::posix_time::milliseconds(duration));
-						}
-					}
-				});
+				timers_[id] = new boost::asio::deadline_timer(initHelper_->logicIoService_, boost::posix_time::milliseconds(firstDuration));
+				timers_[id]->async_wait(std::bind(&Client::asyncWaitCB, this, func, id, loopDuration, std::placeholders::_1));
 
 				++nextTimerId_;
 
@@ -413,6 +403,21 @@ namespace daxia
 						}
 					}
 				});
+			}
+
+			void Client::asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec)
+			{
+				if (!ec)
+				{
+					func();
+
+					std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(id);
+					if (iter != timers_.end())
+					{
+						iter->second->expires_at(iter->second->expires_at() + boost::posix_time::milliseconds(duration));
+						iter->second->async_wait(std::bind(&Client::asyncWaitCB, this, func, id, duration, std::placeholders::_1));
+					}
+				}
 			}
 
 		}// namespace client
