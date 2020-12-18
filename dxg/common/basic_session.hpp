@@ -249,8 +249,17 @@ namespace daxia
 			inline void BasicSession::WriteMessage(const void* date, int len)
 			{
 				shared_buffer buffer;
-				parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
-				buffer.reserve(buffer.size());
+				if (parser_)
+				{
+					parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
+					buffer.reserve(buffer.size());
+				}
+				else
+				{
+					buffer.reserve(len);
+					memcpy(buffer.get(), date, len);
+				}
+				
 				writeLocker_.lock();
 				++sendPacketCount_;
 				if (sendPacketCount_ == 0) ++sendPacketCount_;
@@ -317,34 +326,42 @@ namespace daxia
 				{
 					while (!buffer_.empty())
 					{
-						// 读取完整的包头
-						if (buffer_.size() < parser_->GetPacketHeadLen()) throw DataError_Uncomplete;
-
-						// 解析包头
-						size_t contentLen = 0;
-						if(!parser_->UnmarshalHead(this, buffer_.get(), buffer_.size(), contentLen)) throw DataError_ParseFail;
-					
-						// 包头解析成功，继续接收正文
-						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
-
-						// 解析正文
-						int msgID = 0;
-						common::shared_buffer msg;
-						if (!parser_->UnmarshalContent(this, buffer_.get(), buffer_.size(), msgID, msg)) throw DataError_ParseFail;
-
-						// 包头解析成功
-						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-						onPacket(err, msgID, msg);
-
-						++recvPacketCount_;
-						if (recvPacketCount_ == 0) ++recvPacketCount_;
-
-						// 整理数据后继续接收
-						if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
+						if (parser_)
 						{
-							size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
-							memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
-							buffer_.resize(remain);
+
+							// 读取完整的包头
+							if (buffer_.size() < parser_->GetPacketHeadLen()) throw DataError_Uncomplete;
+
+							// 解析包头
+							size_t contentLen = 0;
+							if (!parser_->UnmarshalHead(this, buffer_.get(), buffer_.size(), contentLen)) throw DataError_ParseFail;
+
+							// 包头解析成功，继续接收正文
+							if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
+
+							// 解析正文
+							int msgID = 0;
+							common::shared_buffer msg;
+							if (!parser_->UnmarshalContent(this, buffer_.get(), buffer_.size(), msgID, msg)) throw DataError_ParseFail;
+
+							// 包头解析成功
+							lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
+							onPacket(err, msgID, msg);
+
+							++recvPacketCount_;
+							if (recvPacketCount_ == 0) ++recvPacketCount_;
+
+							// 整理数据后继续接收
+							if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
+							{
+								size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
+								memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
+								buffer_.resize(remain);
+							}
+							else
+							{
+								buffer_.clear();
+							}
 						}
 						else
 						{
