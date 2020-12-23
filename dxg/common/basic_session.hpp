@@ -278,7 +278,7 @@ namespace daxia
 			{
 				lock_guard locker(closeLocker_);
 
-				if (sock_->is_open())
+				if (sock_ && sock_->is_open())
 				{
 					sock_->close();
 				}
