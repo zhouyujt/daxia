@@ -23,7 +23,7 @@ namespace daxia
 {
 	namespace encode
 	{
-		inline std::string Unicode2Ansi(LPCWSTR pString)
+                inline std::string Unicode2Ansi(const wchar_t* pString)
 		{
 			std::string strRet;
 
@@ -38,7 +38,7 @@ namespace daxia
 			return strRet;
 		}
 
-		inline std::wstring Ansi2Unicode(LPCSTR pString)
+                inline std::wstring Ansi2Unicode(const char* pString)
 		{
 			std::wstring strRet;
 
@@ -53,7 +53,7 @@ namespace daxia
 			return strRet;
 		}
 
-		inline std::wstring Utf82Unicode(LPCSTR pString)
+                inline std::wstring Utf82Unicode(const char* pString)
 		{
 			std::wstring strRet;
 
@@ -68,7 +68,7 @@ namespace daxia
 			return strRet;
 		}
 
-		inline std::string Utf82Ansi(LPCSTR pString)
+                inline std::string Utf82Ansi(const char* pString)
 		{
 			std::string strRet;
 
@@ -81,7 +81,7 @@ namespace daxia
 			return strRet;
 		}
 
-		inline std::string Unicode2Utf8(LPCWSTR pString)
+                inline std::string Unicode2Utf8(const wchar_t* pString)
 		{
 			std::string strRet;
 
@@ -96,7 +96,7 @@ namespace daxia
 			return strRet;
 		}
 
-		inline std::string Ansi2Utf8(LPCSTR pString)
+                inline std::string Ansi2Utf8(const char* pString)
 		{
 			std::string strRet;
 
