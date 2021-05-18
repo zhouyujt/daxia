@@ -75,7 +75,7 @@ namespace daxia
 
 			const type_info& Type() const { return typeInfo_; }
 
-			std::string Tag(const std::string prefix) const
+			std::string Tag(const std::string& prefix) const
 			{
 				std::string tag;
 
