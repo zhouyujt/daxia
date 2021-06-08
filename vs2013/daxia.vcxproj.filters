@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="头文件\dxg">
+      <UniqueIdentifier>{bbcc232b-4d30-415a-ab28-4d61a5fa214f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\encode">
+      <UniqueIdentifier>{ce08dc9b-7525-4a90-87d8-5a64ea37aa63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\reflect">
+      <UniqueIdentifier>{6249f15b-d227-43cd-b762-49c06c30cb66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\dxg\common">
+      <UniqueIdentifier>{d0234f7b-ca0c-42e7-9b50-098830734b5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\dxg">
+      <UniqueIdentifier>{6a710afc-7fba-4566-8631-fb31aa65ee96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\dxg\common">
+      <UniqueIdentifier>{287e3a30-2b77-4ba2-9a64-b47b082ee740}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\encode">
+      <UniqueIdentifier>{914598b6-4555-4430-9baf-f97ba07a65ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\reflect">
+      <UniqueIdentifier>{4f03ffd5-f1db-48d7-a928-b4cdcba5ee6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include">
+      <UniqueIdentifier>{957b7a82-c044-4a70-8ee0-147255769d7c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dxg\common\basic_session.hpp">
+      <Filter>头文件\dxg\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dxg\common\define.hpp">
+      <Filter>头文件\dxg\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dxg\common\parser.hpp">
+      <Filter>头文件\dxg\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dxg\common\shared_buffer.hpp">
+      <Filter>头文件\dxg\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\defer.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\singleton.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encode\strconv.h">
+      <Filter>头文件\encode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encode\json.h">
+      <Filter>头文件\encode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reflect\reflect_base.h">
+      <Filter>头文件\reflect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\reflect\reflect.hpp">
+      <Filter>头文件\reflect</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dxg\client.h">
+      <Filter>头文件\dxg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\daxia.h">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dxg.h">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\encode.h">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\reflect.h">
+      <Filter>头文件\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\encode\strconv.cpp">
+      <Filter>源文件\encode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\reflect\reflect_base.cpp">
+      <Filter>源文件\reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encode\json.cpp">
+      <Filter>源文件\encode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dxg\client.cpp">
+      <Filter>源文件\dxg</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

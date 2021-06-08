@@ -16,7 +16,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <daxia/dxg/common/shared_buffer.hpp>
+#include <github.com/zhouyujt/daxia/dxg/common/shared_buffer.hpp>
 
 namespace daxia
 {

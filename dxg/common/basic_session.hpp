@@ -16,8 +16,8 @@
 #include <memory>
 #include <queue>
 #include <boost/any.hpp>
-#include <daxia/dxg/common/define.hpp>
-#include <daxia/dxg/common/parser.hpp>
+#include <github.com/zhouyujt/daxia/dxg/common/define.hpp>
+#include <github.com/zhouyujt/daxia/dxg/common/parser.hpp>
 
 namespace daxia
 {

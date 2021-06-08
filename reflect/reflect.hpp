@@ -17,7 +17,7 @@
 
 #include <string>
 #include <vector>
-#include <daxia/reflect/reflect_base.hpp>
+#include "reflect_base.h" 
 
 #define HASH "hash"
 #define OFFSET "offset"
@@ -28,26 +28,26 @@ namespace daxia
 	namespace reflect
 	{
 		template<class ValueType>
-		class reflect : public reflect_base
+		class Reflect : public Reflect_base
 		{
 		public:
-			reflect()
-				: reflect_base(sizeof(*this), typeid(ValueType))
+			Reflect()
+				: Reflect_base(sizeof(*this), typeid(ValueType))
 			{
 				init();
 			}
 
-			reflect(const std::string& tags)
-				: reflect_base(sizeof(*this), typeid(ValueType), tags)
+			Reflect(const std::string& tags)
+				: Reflect_base(sizeof(*this), typeid(ValueType), tags)
 			{
 				init();
 			}
 
-			~reflect(){}
+			~Reflect(){}
 		public:
-			reflect_base& Swap(reflect_base& r)
+			Reflect_base& Swap(Reflect_base& r)
 			{
-				reflect<ValueType>* instance = dynamic_cast<reflect<ValueType>*>(&r);
+				Reflect<ValueType>* instance = dynamic_cast<Reflect<ValueType>*>(&r);
 				if (instance != nullptr)
 				{
 					std::swap(v_, instance->v_);
@@ -57,20 +57,20 @@ namespace daxia
 				return *this;
 			};
 
-			reflect& operator=(const reflect& r)
+			Reflect& operator=(const Reflect& r)
 			{
-				reflect(r).Swap(*this);
+				Reflect(r).Swap(*this);
 				return *this;
 			}
 
-			reflect& operator=(reflect&& r)
+			Reflect& operator=(Reflect&& r)
 			{
 				r.Swap(*this);
 				return *this;
 			}
 
 			template<class ValueType>
-			reflect& operator=(ValueType&& v)
+			Reflect& operator=(ValueType&& v)
 			{
 				v_ = v;
 
@@ -104,9 +104,7 @@ namespace daxia
 				// buildLayout
 				if (std::is_class<ValueType>::value && !std::is_same<ValueType, std::string>::value)
 				{
-#ifdef DAXIA_REFLECT_THREAD_SAFE
 					layoutLocker_.lock();
-#endif // DAXIA_REFLECT_THREAD_SAFE
 
 					if (layout_.empty())
 					{
@@ -115,9 +113,7 @@ namespace daxia
 						buildLayout(start, start, end, layout_, nullptr);
 					}
 
-#ifdef DAXIA_REFLECT_THREAD_SAFE
 					layoutLocker_.unlock();
-#endif // DAXIA_REFLECT_THREAD_SAFE
 				}
 			}
 
@@ -131,9 +127,9 @@ namespace daxia
 				{
 					for (; start < end; ++start)
 					{
-						const reflect_base* reflectBase = nullptr;
+						const Reflect_base* reflectBase = nullptr;
 
-						try{ reflectBase = dynamic_cast<const reflect_base*>(reinterpret_cast<const reflect_helper*>(start)); }
+						try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
 						catch (const std::exception&){}
 
 						if (reflectBase == nullptr) continue;
@@ -159,33 +155,33 @@ namespace daxia
 		};// class reflect
 
 		template<class ValueType>
-		boost::property_tree::ptree reflect<ValueType>::layout_;
+		boost::property_tree::ptree Reflect<ValueType>::layout_;
 		template<class ValueType>
-		std::mutex reflect<ValueType>::layoutLocker_;
+		std::mutex Reflect<ValueType>::layoutLocker_;
 
 		//////////////////////////////////////////////////////////////////////////
 		// 针对std::vector<ValueType>进行特化
 		template<class ValueType>
-		class reflect<std::vector<ValueType>> : public reflect_base
+		class Reflect<std::vector<ValueType>> : public Reflect_base
 		{
 		public:
-			reflect()
-				: reflect_base(sizeof(*this), typeid(std::vector<ValueType>))
+			Reflect()
+				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>))
 			{
 				init();
 			}
 
-			reflect(const std::string& tags)
-				: reflect_base(sizeof(*this), typeid(std::vector<ValueType>), tags)
+			Reflect(const std::string& tags)
+				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>), tags)
 			{
 				init();
 			}
 
-			~reflect(){}
+			~Reflect(){}
 		public:
-			reflect_base& Swap(reflect_base& r)
+			Reflect_base& Swap(Reflect_base& r)
 			{
-				reflect<ValueType>* instance = dynamic_cast<reflect<ValueType>*>(&r);
+				Reflect<ValueType>* instance = dynamic_cast<Reflect<ValueType>*>(&r);
 				if (instance != nullptr)
 				{
 					std::swap(v_, instance->v_);
@@ -195,20 +191,20 @@ namespace daxia
 				return *this;
 			};
 
-			reflect& operator=(const reflect& r)
+			Reflect& operator=(const Reflect& r)
 			{
-				reflect(r).Swap(*this);
+				Reflect(r).Swap(*this);
 				return *this;
 			}
 
-			reflect& operator=(reflect&& r)
+			Reflect& operator=(Reflect&& r)
 			{
 				r.Swap(*this);
 				return *this;
 			}
 
 			template<class ValueType>
-			reflect& operator=(std::vector<ValueType>&& v)
+			Reflect& operator=(std::vector<ValueType>&& v)
 			{
 				v_ = v;
 
@@ -247,18 +243,18 @@ namespace daxia
 				// buildLayout
 				if (std::is_class<ValueType>::value && !std::is_same<ValueType, std::string>::value)
 				{
-					if (threadSafe_) layoutLocker_.lock();
+					layoutLocker_.lock();
 
 					if (layout_.empty())
 					{
 						// vector类型仅仅保存元素的布局
-						layout_ = reflect<ValueType>().Layout();
+						layout_ = Reflect<ValueType>().Layout();
 
 						// 每个元素的大小
 						if (!layout_.empty()) layout_.put(SIZE, sizeof(ValueType));
 					}
 
-					if (threadSafe_) layoutLocker_.unlock();
+					layoutLocker_.unlock();
 				}
 			}
 
@@ -269,9 +265,9 @@ namespace daxia
 		};
 
 		template<class ValueType>
-		boost::property_tree::ptree reflect<std::vector<ValueType>>::layout_;
+		boost::property_tree::ptree Reflect<std::vector<ValueType>>::layout_;
 		template<class ValueType>
-		std::mutex reflect<std::vector<ValueType>>::layoutLocker_;
+		std::mutex Reflect<std::vector<ValueType>>::layoutLocker_;
 
 	}// namespace reflect
 }// namespace daxia

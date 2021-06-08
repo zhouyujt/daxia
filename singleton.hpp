@@ -17,14 +17,14 @@
 namespace daxia
 {
 	template<class T>
-	class singleton
+	class Singleton
 	{
 	protected:
-		singleton() = delete;
-		singleton(const singleton&) = delete;
-		singleton& operator=(const singleton&) = delete;
+		Singleton() = delete;
+		Singleton(const Singleton&) = delete;
+		Singleton& operator=(const Singleton&) = delete;
 	public:
-		~singleton(){}
+		~Singleton(){}
 	public:
 		static T& Instance()
 		{

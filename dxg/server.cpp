@@ -12,7 +12,7 @@
  */
 
 #ifndef __DAXIA_DXG_SERVER_DXG_HPP
-#define __DAXIA_DXG_SERVER_DXG_HPP
+#define __DAXIA_DXG_SERVER_H
 
 #include <string>
 #include <daxia/dxg/common/define.hpp>

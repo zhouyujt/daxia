@@ -1,27 +1,10 @@
-/*!
- * Licensed under the MIT License.See License for details.
- * Copyright (c) 2018 漓江里的大虾.
- * All rights reserved.
- *
- * \file dxg.hpp
- * \author 漓江里的大虾
- * \date 十月 2018
- *
- */
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 
-#ifndef __DAXIA_DXG_CLIENT_DXG_HPP
-#define __DAXIA_DXG_CLIENT_DXG_HPP
-
-#include <functional>
-#include <map>
-#include <mutex>
-#include <queue>
-#include <thread>
-#include <vector>
-#include <boost/asio.hpp>
-#include <daxia/dxg/common/basic_session.hpp>
-#include <daxia/dxg/common/parser.hpp>
-#include <daxia/encode/strconv.hpp>
+#ifdef _MSC_VER
+#include <sdkddkver.h>
+#endif
+#include "client.h"
+#include "../encode/strconv.h"
 
 #define DXG_CLIENT_HANDLER(id,error,date,len) [&](int id, const boost::system::error_code& error, const void* date, int len)
 
@@ -29,100 +12,47 @@ namespace daxia
 {
 	namespace dxg
 	{
-		namespace client
+		Client::Client()
+			: hearbeatInterval_(0)
+			, nextTimerId_(0)
 		{
-			// 客户端类
-			class Client : public common::BasicSession
+			// 所有实例共用
+			static initHelper helper;
+			initHelper_ = &helper;
+
+			initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
+			parser_ = common::Parser::ptr(new common::DefaultParser);
+		}
+
+		Client::~Client()
+		{
+			Close();
+
+			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
+			initSocket(BasicSession::socket_ptr());
+
+			lock_guard locker(scheduleLocker_);
+			for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
 			{
-			public:
-				typedef boost::asio::ip::tcp::endpoint endpoint;
-				typedef boost::asio::ip::tcp::socket socket;
-				typedef std::function<void(int, const boost::system::error_code&, const void*, int)> handler;
-				typedef std::lock_guard<std::mutex> lock_guard;
-				typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
-				typedef std::function<void()> scheduleFunc;
-			public:
-				Client();
-				~Client();
-			protected:
-				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
-			public:
-				void Handle(int msgId, handler h);
-				void EnableHeartbeat(unsigned long milliseconds);
-				void Connect(const char* ip, short port);
-				void Connect(const wchar_t* ip, short port);
-				long long Schedule(scheduleFunc func, unsigned long firstDuration, unsigned long loopDuration);
-				long long ScheduleOnce(scheduleFunc func, unsigned long duration);
-				void Unschedule(long long scheduleID);
-				void UnscheduleAll();
-			private:
-				struct LogicMessage
-				{
-					boost::system::error_code error;
-					int msgID;
-					common::shared_buffer buffer;
+				iter->second->cancel();
+				delete iter->second;
+			}
+			timers_.clear();
+		}
 
-					LogicMessage(){}
-
-					LogicMessage(const boost::system::error_code& error, int msgID, const common::shared_buffer& buffer)
-						: error(error)
-						, msgID(msgID)
-						, buffer(buffer)
-					{
-
-					}
-				};
-			private:
-				void doConnect();
-				void hearbeat();
-				void clearMessage();
-				void pushLogciMessage(const LogicMessage& msg);
-				void asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec);
-			private:
-				class initHelper
-				{
-					friend Client;
-				public:
-					initHelper();
-					~initHelper();
-				private:
-					void startLogicThread();
-					void stopLogicThread();
-					void startIoThread();
-					void stopIoThread();
-					int getCoreCount() const;
-				private:
-					boost::asio::io_service netIoService_;
-					boost::asio::io_service logicIoService_;
-					std::vector<std::thread> ioThreads_;
-					std::vector<std::thread> logicThreads_;
-				};
-			private:
-				initHelper* initHelper_;
-				std::shared_ptr<common::Parser> parser_;
-				std::map<int, handler> handler_;
-				unsigned long hearbeatInterval_;
-				endpoint endpoint_;
-				std::queue<LogicMessage> logicMsgs_;
-				std::mutex logicMsgLocker_;
-				std::mutex scheduleLocker_;
-				std::map<long long, boost::asio::deadline_timer*> timers_;
-				long long nextTimerId_;
-			};
-
-			inline Client::initHelper::initHelper()
+			Client::initHelper::initHelper()
 			{
 				startLogicThread();
 				startIoThread();
 			}
 
-			inline Client::initHelper::~initHelper()
+			Client::initHelper::~initHelper()
 			{
 				stopLogicThread();
 				stopIoThread();
 			}
 
-			inline void Client::initHelper::startLogicThread()
+			void Client::initHelper::startLogicThread()
 			{
 				int coreCount = getCoreCount();
 
@@ -137,7 +67,7 @@ namespace daxia
 				}
 			}
 
-			inline void Client::initHelper::stopLogicThread()
+			void Client::initHelper::stopLogicThread()
 			{
 				logicIoService_.stop();
 
@@ -153,7 +83,7 @@ namespace daxia
 			
 			}
 
-			inline void Client::initHelper::startIoThread()
+			void Client::initHelper::startIoThread()
 			{
 				int coreCount = getCoreCount();
 
@@ -167,7 +97,7 @@ namespace daxia
 				}
 			}
 
-			inline void Client::initHelper::stopIoThread()
+			void Client::initHelper::stopIoThread()
 			{
 				netIoService_.stop();
 
@@ -187,7 +117,7 @@ namespace daxia
 				netIoService_.reset();
 			}
 
-			inline int Client::initHelper::getCoreCount() const
+			int Client::initHelper::getCoreCount() const
 			{
 				int count = 1; // 至少一个
 
@@ -202,63 +132,35 @@ namespace daxia
 				return count;
 			}
 
-			inline Client::Client()
-				: hearbeatInterval_(0)
-				, nextTimerId_(0)
-			{
-				// 所有实例共用
-				static initHelper helper;
-				initHelper_ = &helper;
-
-				initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
-				parser_ = common::Parser::ptr(new common::DefaultParser);
-			}
-
-			inline Client::~Client()
-			{
-				Close();
-
-				// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
-				initSocket(BasicSession::socket_ptr());
-
-				lock_guard locker(scheduleLocker_);
-				for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
-				{
-					iter->second->cancel();
-					delete iter->second;
-				}
-				timers_.clear();
-			}
-
-			inline void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
+			void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
 			{
 				pushLogciMessage(LogicMessage(error, msgId, buffer));
 			}
 
-			inline void Client::Handle(int msgId, handler h)
+			void Client::Handle(int msgId, handler h)
 			{
 				handler_[msgId] = h;
 			}
 
-			inline void Client::EnableHeartbeat(unsigned long milliseconds)
+			void Client::EnableHeartbeat(unsigned long milliseconds)
 			{
 				hearbeatInterval_ = milliseconds;
 			}
 
-			inline void Client::Connect(const char* ip, short port)
+			void Client::Connect(const char* ip, short port)
 			{
 				Close();
 				endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
 				doConnect();
 			}
 
-			inline void Client::Connect(const wchar_t* ip, short port)
+			void Client::Connect(const wchar_t* ip, short port)
 			{
-				std::string ip2 = daxia::encode::Unicode2Ansi(ip);
+				std::string ip2 = daxia::encode::Strconv::Unicode2Ansi(ip);
 				Connect(ip2.c_str(), port);
 			}
 
-			inline long long Client::Schedule(scheduleFunc func,unsigned long firstDuration, unsigned long loopDuration)
+			long long Client::Schedule(scheduleFunc func,unsigned long firstDuration, unsigned long loopDuration)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -272,7 +174,7 @@ namespace daxia
 				return id;
 			}
 
-			inline long long Client::ScheduleOnce(scheduleFunc func, unsigned long duration)
+			long long Client::ScheduleOnce(scheduleFunc func, unsigned long duration)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -300,7 +202,7 @@ namespace daxia
 				return id;
 			}
 
-			inline void Client::Unschedule(long long scheduleID)
+			void Client::Unschedule(long long scheduleID)
 			{
 				lock_guard locker(scheduleLocker_);
 
@@ -313,7 +215,7 @@ namespace daxia
 				}
 			}
 
-			inline void Client::UnscheduleAll()
+			void Client::UnscheduleAll()
 			{
 				lock_guard locker(scheduleLocker_);
 				
@@ -326,7 +228,7 @@ namespace daxia
 				timers_.clear();
 			}
 
-			inline void Client::doConnect()
+			void Client::doConnect()
 			{
 				getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
 				{
@@ -339,7 +241,7 @@ namespace daxia
 				});
 			}
 
-			inline void Client::hearbeat()
+			void Client::hearbeat()
 			{
 				using namespace std::chrono;
 
@@ -353,7 +255,7 @@ namespace daxia
 				}
 			}
 
-			inline void Client::clearMessage()
+			void Client::clearMessage()
 			{
 				// clear messages_
 				logicMsgLocker_.lock();
@@ -362,7 +264,7 @@ namespace daxia
 				logicMsgLocker_.unlock();
 			}
 
-			inline void Client::pushLogciMessage(const LogicMessage& msg)
+			void Client::pushLogciMessage(const LogicMessage& msg)
 			{
 				lock_guard locker(logicMsgLocker_);
 				logicMsgs_.push(msg);
@@ -419,9 +321,5 @@ namespace daxia
 					}
 				}
 			}
-
-		}// namespace client
 	}// namespace dxg
 }// namespace daxia
-
-#endif // !__DAXIA_DXG_CLIENT_DXG_HPP
