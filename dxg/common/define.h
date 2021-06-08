@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef __DAXIA_DXG_COMMON_DEFINE_HPP
-#define __DAXIA_DXG_COMMON_DEFINE_HPP
+#ifndef __DAXIA_DXG_COMMON_DEFINE_H
+#define __DAXIA_DXG_COMMON_DEFINE_H
 
 namespace daxia
 {
@@ -40,4 +40,4 @@ namespace daxia
 }
 
 
-#endif // !__DAXIA_DXG_COMMON_DEFINE_HPP
+#endif // !__DAXIA_DXG_COMMON_DEFINE_H

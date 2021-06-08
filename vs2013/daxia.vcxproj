@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AEAA9AE6-F4FF-4692-B6AF-34CE8B3D20A3}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>daxia</RootNamespace>
+    <ProjectName>daxia_lib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>../../../../../third-party;../../../../../third-party/boost_1_74_0/boost_1_74_0;$(IncludePath)</IncludePath>
+    <OutDir>../libs/</OutDir>
+    <TargetName>daxia_$(PlatformTarget)_$(PlatformName)_$(PlatformToolset)_mdd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>../../../../../third-party;../../../../../third-party/boost_1_74_0/boost_1_74_0;$(IncludePath)</IncludePath>
+    <OutDir>../libs/</OutDir>
+    <TargetName>daxia_$(PlatformTarget)_$(PlatformName)_$(PlatformToolset)_md</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\defer.hpp" />
+    <ClInclude Include="..\dxg\client.h" />
+    <ClInclude Include="..\dxg\common\basic_session.h" />
+    <ClInclude Include="..\dxg\common\define.h" />
+    <ClInclude Include="..\dxg\common\parser.h" />
+    <ClInclude Include="..\dxg\common\shared_buffer.h" />
+    <ClInclude Include="..\dxg\controller.h" />
+    <ClInclude Include="..\dxg\router.h" />
+    <ClInclude Include="..\dxg\scheduler.h" />
+    <ClInclude Include="..\dxg\server.h" />
+    <ClInclude Include="..\dxg\session.h" />
+    <ClInclude Include="..\dxg\sessions_manager.h" />
+    <ClInclude Include="..\encode\json.h" />
+    <ClInclude Include="..\encode\strconv.h" />
+    <ClInclude Include="..\include\daxia.h" />
+    <ClInclude Include="..\include\dxg.h" />
+    <ClInclude Include="..\include\encode.h" />
+    <ClInclude Include="..\include\reflect.h" />
+    <ClInclude Include="..\reflect\reflect.hpp" />
+    <ClInclude Include="..\reflect\reflect_base.h" />
+    <ClInclude Include="..\singleton.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dxg\client.cpp" />
+    <ClCompile Include="..\dxg\common\basic_session.cpp" />
+    <ClCompile Include="..\dxg\common\parser.cpp" />
+    <ClCompile Include="..\dxg\common\shared_buffer.cpp" />
+    <ClCompile Include="..\dxg\router.cpp" />
+    <ClCompile Include="..\dxg\scheduler.cpp" />
+    <ClCompile Include="..\dxg\server.cpp" />
+    <ClCompile Include="..\dxg\session.cpp" />
+    <ClCompile Include="..\dxg\sessions_manager.cpp" />
+    <ClCompile Include="..\encode\json.cpp" />
+    <ClCompile Include="..\encode\strconv.cpp" />
+    <ClCompile Include="..\reflect\reflect_base.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
