@@ -1,5 +1,4 @@
 #define BOOST_SPIRIT_THREADSAFE
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 
 #include <string>
 #include <functional>
