@@ -50,7 +50,7 @@ namespace daxia
 			return created;
 		}
 
-		std::wstring Path::GetSpecialPath(int csidl/*e.g. CSIDL_APPDATA*/, bool create /*= false*/)
+		std::wstring Path::GetSpecialPath(int csidl/*АэИзЈє CSIDL_APPDATA*/, bool create /*= false*/)
 		{
 			wchar_t path[MAX_PATH] = {};
 			::SHGetSpecialFolderPath(NULL, path, csidl, create ? TRUE : FALSE);

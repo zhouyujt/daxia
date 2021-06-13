@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <memory>
 #include "access_token.h"
 #include "../encode/strconv.h"
 namespace daxia
@@ -66,6 +67,34 @@ namespace daxia
 			if (!::AdjustTokenPrivileges(token_, FALSE, &tp, 0, NULL, NULL)) return false;
 
 			return true;
+		}
+
+		std::wstring AccessToken::GetUser() const
+		{
+			std::wstring user;
+
+			// 获取缓冲区大小
+			DWORD copied = 0;
+			::GetTokenInformation(token_, TokenUser, NULL, 0, &copied);
+			std::shared_ptr<TOKEN_USER> buf(reinterpret_cast<TOKEN_USER*>(new char[copied]));
+
+			// 获取信息
+			if (::GetTokenInformation(token_, TokenUser, buf.get(), copied, &copied))
+			{
+				wchar_t userName[128] = {};
+				wchar_t domainName[128] = {};
+				DWORD userNameSize = _countof(userName);
+				DWORD domainNameSize = _countof(domainName);
+				SID_NAME_USE use = SidTypeUser;
+				if (::LookupAccountSidW(NULL, buf->User.Sid, userName, &userNameSize, domainName, &domainNameSize, &use))
+				{
+					user += domainName;
+					user += L"\\\\";
+					user += userName;
+				}
+			}
+
+			return user;
 		}
 
 		bool AccessToken::Impersonate() const

@@ -32,7 +32,7 @@ namespace daxia
 			static bool CreateDirectory(const wchar_t* dir);
 
 			// 根据csidl(https://docs.microsoft.com/en-us/windows/win32/shell/csidl)获得指定的路径
-			static std::wstring GetSpecialPath(int csidl/*e.g. CSIDL_APPDATA*/,bool create = false);
+			static std::wstring GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/,bool create = false);
 
 			// 查找文件名
 			static std::wstring FindFileName(const wchar_t* dir);

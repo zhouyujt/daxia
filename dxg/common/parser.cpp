@@ -1,7 +1,6 @@
 #ifdef _MSC_VER
 #include <sdkddkver.h>
 #endif
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "parser.h"

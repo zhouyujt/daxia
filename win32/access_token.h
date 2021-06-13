@@ -12,6 +12,7 @@
 */
 #ifndef _DAXIA_WIN32_ACCESSTOKEN_H
 #define _DAXIA_WIN32_ACCESSTOKEN_H
+#include <string>
 
 namespace daxia
 {
@@ -32,6 +33,9 @@ namespace daxia
 			// 开启/禁用(不会增加或删除)指定的权限
 			bool EnablePrivilege(const char* privilege, bool enable) const;
 			bool EnablePrivilege(const wchar_t* privilege, bool enable) const;
+
+			// 获取所属域及用户名。例如： hello-world\\Administrator
+			std::wstring GetUser() const;
 
 			// 当前线程token模拟为该token
 			bool Impersonate() const;
