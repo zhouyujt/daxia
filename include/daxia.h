@@ -12,6 +12,10 @@
 // reflect
 #include "../reflect/reflect.hpp"
 
+// win32
+#include "../win32/processes_manager.h"
+#include "../win32/path.h"
+
 #ifdef _MSC_VER
 //MSC    1.0   _MSC_VER == 100
 //MSC    2.0   _MSC_VER == 200

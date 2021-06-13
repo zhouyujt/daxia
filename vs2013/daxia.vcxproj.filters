@@ -40,6 +40,12 @@
     <Filter Include="头文件\include">
       <UniqueIdentifier>{957b7a82-c044-4a70-8ee0-147255769d7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\win32">
+      <UniqueIdentifier>{2df347b8-95d3-4b60-83bc-aeff783f0f90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\win32">
+      <UniqueIdentifier>{3b101e6b-b1f8-42f0-8e65-6b6ae2c7bedb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -108,6 +114,18 @@
     <ClInclude Include="..\dxg\common\shared_buffer.h">
       <Filter>头文件\dxg\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\win32\process.h">
+      <Filter>头文件\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\access_token.h">
+      <Filter>头文件\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\processes_manager.h">
+      <Filter>头文件\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32\path.h">
+      <Filter>头文件\win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\encode\strconv.cpp">
@@ -145,6 +163,18 @@
     </ClCompile>
     <ClCompile Include="..\dxg\common\shared_buffer.cpp">
       <Filter>源文件\dxg\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\process.cpp">
+      <Filter>源文件\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\access_token.cpp">
+      <Filter>源文件\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\processes_manager.cpp">
+      <Filter>源文件\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\path.cpp">
+      <Filter>源文件\win32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

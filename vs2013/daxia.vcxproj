@@ -107,6 +107,10 @@
     <ClInclude Include="..\reflect\reflect.hpp" />
     <ClInclude Include="..\reflect\reflect_base.h" />
     <ClInclude Include="..\singleton.hpp" />
+    <ClInclude Include="..\win32\access_token.h" />
+    <ClInclude Include="..\win32\path.h" />
+    <ClInclude Include="..\win32\process.h" />
+    <ClInclude Include="..\win32\processes_manager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dxg\client.cpp" />
@@ -121,6 +125,10 @@
     <ClCompile Include="..\encode\json.cpp" />
     <ClCompile Include="..\encode\strconv.cpp" />
     <ClCompile Include="..\reflect\reflect_base.cpp" />
+    <ClCompile Include="..\win32\access_token.cpp" />
+    <ClCompile Include="..\win32\path.cpp" />
+    <ClCompile Include="..\win32\process.cpp" />
+    <ClCompile Include="..\win32\processes_manager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
