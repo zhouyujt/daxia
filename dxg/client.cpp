@@ -1,5 +1,3 @@
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-
 #ifdef _MSC_VER
 #include <sdkddkver.h>
 #endif
