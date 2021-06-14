@@ -1,9 +1,8 @@
-#include <string>
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif // _MSC_VER
-
+#include <string>
+#include <algorithm>
 #include "strconv.h"
 
 namespace daxia
@@ -25,6 +24,11 @@ namespace daxia
 			return r;
 		}
 
+		std::string Strconv::Unicode2Ansi(const std::wstring& str)
+		{
+			return Unicode2Ansi(str.c_str());
+		}
+
 		std::wstring Strconv::Ansi2Unicode(const char* str)
 		{
 			std::wstring r;
@@ -38,6 +42,11 @@ namespace daxia
 #endif // _MSC_VER
 
 			return r;
+		}
+
+		std::wstring Strconv::Ansi2Unicode(const std::string& str)
+		{
+			return Ansi2Unicode(str.c_str());
 		}
 
 		std::wstring Strconv::Utf82Unicode(const char* str)
@@ -55,6 +64,11 @@ namespace daxia
 			return r;
 		}
 
+		std::wstring Strconv::Utf82Unicode(const std::string& str)
+		{
+			return Utf82Unicode(str.c_str());
+		}
+
 		std::string Strconv::Utf82Ansi(const char* str)
 		{
 			std::string r;
@@ -66,6 +80,11 @@ namespace daxia
 #endif // _MSC_VER
 
 			return r;
+		}
+
+		std::string Strconv::Utf82Ansi(const std::string& str)
+		{
+			return Utf82Ansi(str.c_str());
 		}
 
 		std::string Strconv::Unicode2Utf8(const wchar_t* str)
@@ -83,6 +102,11 @@ namespace daxia
 			return r;
 		}
 
+		std::string Strconv::Unicode2Utf8(const std::wstring& str)
+		{
+			return Unicode2Utf8(str.c_str());
+		}
+
 		std::string Strconv::Ansi2Utf8(const char* str)
 		{
 			std::string r;
@@ -94,6 +118,63 @@ namespace daxia
 #endif // _MSC_VER
 
 			return r;
+		}
+
+		std::string Strconv::Ansi2Utf8(const std::string& str)
+		{
+			return Ansi2Utf8(str.c_str());
+		}
+
+		std::string Strconv::MakeLower(const char* str)
+		{
+			std::string s(str);
+			std::transform(s.begin(), s.end(), s.begin(), tolower);
+
+			return s;
+		}
+
+		std::string Strconv::MakeLower(const std::string& str)
+		{
+			return MakeLower(str.c_str());
+		}
+
+		std::wstring Strconv::MakeLower(const wchar_t* str)
+		{
+			std::wstring s(str);
+			std::transform(s.begin(), s.end(), s.begin(), tolower);
+
+			return s;
+		}
+
+		std::wstring Strconv::MakeLower(const std::wstring& str)
+		{
+			return MakeLower(str.c_str());
+		}
+
+		std::string Strconv::MakeUpper(const char* str)
+		{
+			std::string s(str);
+			std::transform(s.begin(), s.end(), s.begin(), toupper);
+
+			return s;
+		}
+
+		std::string Strconv::MakeUpper(const std::string& str)
+		{
+			return MakeUpper(str.c_str());
+		}
+
+		std::wstring Strconv::MakeUpper(const wchar_t* str)
+		{
+			std::wstring s(str);
+			std::transform(s.begin(), s.end(), s.begin(), toupper);
+
+			return s;
+		}
+
+		std::wstring Strconv::MakeUpper(const std::wstring& str)
+		{
+			return MakeUpper(str.c_str());
 		}
 
 	}// namespace encode
