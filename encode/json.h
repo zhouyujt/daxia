@@ -157,13 +157,13 @@ namespace daxia
 						if (typeid(T) == typeid(std::string))
 						{
 							std::string str = "\"";
-							str += reinterpret_cast<const std::string&>(r());
+							str += reinterpret_cast<const std::string&>(*r);
 							str += "\"";
 							ptree.put(tag, str);
 						}
 						else
 						{
-							ptree.put(tag, r());
+							ptree.put(tag, *r);
 						}
 					}
 				}

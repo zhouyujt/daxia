@@ -77,12 +77,12 @@ namespace daxia
 				return *this;
 			}
 
-			const ValueType& operator()() const
+			const ValueType& operator*() const
 			{
 				return v_;
 			}
 
-			ValueType& operator()()
+			ValueType& operator*()
 			{
 				return v_;
 			}
