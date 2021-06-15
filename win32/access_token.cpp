@@ -69,6 +69,11 @@ namespace daxia
 			return true;
 		}
 
+		void* AccessToken::GetHandle() const
+		{
+			return token_;
+		}
+
 		std::wstring AccessToken::GetUser() const
 		{
 			std::wstring user;

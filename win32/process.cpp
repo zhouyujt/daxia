@@ -1,4 +1,6 @@
 #include <Windows.h>
+#include <Psapi.h>
+#include <tlhelp32.h>
 #include "process.h"
 #include "path.h"
 
@@ -59,8 +61,19 @@ namespace daxia
 
 		std::wstring Process::GetName() const
 		{
-			std::wstring name = GetPath();
-			name = Path::FindFileName(name.c_str());
+			std::wstring name;
+
+			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
+			if (hSnapshot == INVALID_HANDLE_VALUE) return name;
+
+			MODULEENTRY32 me;
+			me.dwSize = sizeof(me);
+			if (::Module32FirstW(hSnapshot, &me))
+			{
+				name = me.szModule;
+			}
+
+			::CloseHandle(hSnapshot);
 
 			return name;
 		}
@@ -68,9 +81,18 @@ namespace daxia
 		std::wstring Process::GetPath() const
 		{
 			std::wstring path;
-			path.resize(MAX_PATH);
-			auto copied = ::GetModuleFileNameW(FALSE, const_cast<wchar_t*>(path.c_str()), MAX_PATH);
-			path.resize(copied);
+
+			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
+			if (hSnapshot == INVALID_HANDLE_VALUE) return path;
+
+			MODULEENTRY32 me;
+			me.dwSize = sizeof(me);
+			if (::Module32FirstW(hSnapshot, &me))
+			{
+				path = me.szExePath;
+			}
+
+			::CloseHandle(hSnapshot);
 
 			return path;
 		}

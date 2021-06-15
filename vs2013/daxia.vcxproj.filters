@@ -126,6 +126,9 @@
     <ClInclude Include="..\win32\path.h">
       <Filter>头文件\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\encode\base64.h">
+      <Filter>头文件\encode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\encode\strconv.cpp">
@@ -175,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="..\win32\path.cpp">
       <Filter>源文件\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encode\base64.cpp">
+      <Filter>源文件\encode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

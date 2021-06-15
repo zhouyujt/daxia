@@ -1,8 +1,9 @@
+#include <algorithm>
 #include <windows.h>
 #include <tlhelp32.h>
 #include "processes_manager.h"
 #include "process.h"
-
+#include "../encode/strconv.h"
 
 namespace daxia
 {
@@ -38,6 +39,40 @@ namespace daxia
 			default:
 				break;
 			}
+		}
+
+		bool ProcessesManager::HasProcess(const char* name)
+		{
+			std::wstring wname = daxia::encode::Strconv::Ansi2Unicode(name);
+			return HasProcess(wname.c_str());
+		}
+
+		bool ProcessesManager::HasProcess(const wchar_t* name)
+		{
+			bool has = false;
+			std::wstring nameTemp = daxia::encode::Strconv::MakeLower(name);
+
+			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+			if (hSnapshot == INVALID_HANDLE_VALUE) return has;
+
+			PROCESSENTRY32 pe;
+			pe.dwSize = sizeof(PROCESSENTRY32);
+			BOOL bRet = ::Process32FirstW(hSnapshot, &pe);
+			while (bRet)
+			{
+				std::wstring ext = daxia::encode::Strconv::MakeLower(pe.szExeFile);
+				if (nameTemp == ext)
+				{
+					has = true;
+					break;
+				}
+
+				bRet = ::Process32NextW(hSnapshot, &pe);
+			}
+
+			::CloseHandle(hSnapshot);
+
+			return has;
 		}
 
 		void ProcessesManager::enumByCreateToolhelp32Snapsho(std::function<bool(std::shared_ptr<Process>)> fun)

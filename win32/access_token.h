@@ -34,6 +34,8 @@ namespace daxia
 			bool EnablePrivilege(const char* privilege, bool enable) const;
 			bool EnablePrivilege(const wchar_t* privilege, bool enable) const;
 
+			void* GetHandle() const;
+
 			// 获取所属域及用户名。例如： hello-world\\Administrator
 			std::wstring GetUser() const;
 
