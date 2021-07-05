@@ -44,11 +44,20 @@ namespace daxia
 			std::wstring GetDirectory() const;
 			// 获取AccessToken
 			std::shared_ptr<AccessToken> GetAccessToken();
+			// 从内存中加载Dll
+			char* LoadMemLibrary(const char* data, unsigned long len);
 		public:
 			// 恢复为自身的token
 			static bool RevertToSelf();
 		public:
 			operator bool() const{ return handle_ != nullptr; }
+		private:
+			unsigned long getImageSize(const char* imageData) const;
+			void mapImage(const char* imageData, unsigned long len, char* address, unsigned long size) const;
+			void adjustRelocation(char* address);
+			void adjustImport(char* address);
+			void setImageBase(char* address);
+			void callDllMain(char* address);
 		private:
 			void* handle_;
 			std::shared_ptr<AccessToken> token_;
