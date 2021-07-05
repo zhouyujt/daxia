@@ -28,7 +28,7 @@ namespace daxia
 			static std::string Encode(const char* str, unsigned int size);
 			static std::string Decode(const char* str, unsigned int size);
 		private:
-			static std::string _base64_table;
+			static const std::string _base64_table;
 			static const char base64_pad;
 		};// class Base64
 	}// namespace encode

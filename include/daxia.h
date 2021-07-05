@@ -8,6 +8,7 @@
 // encode
 #include "../encode/json.h"
 #include "../encode/strconv.h"
+#include "../encode/base64.h"
 
 // reflect
 #include "../reflect/reflect.hpp"

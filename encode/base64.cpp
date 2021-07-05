@@ -9,15 +9,15 @@ namespace daxia
 {
 	namespace encode
 	{
-		std::string Base64::_base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-		static const char base64_pad = '-';
+		const std::string Base64::_base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+		const char Base64::base64_pad = '-';
 
 		std::string Base64::Encode(const char* str, unsigned int size)
 		{
 			int num = 0, bin = 0;
 			std::string _encode_result;
-			const char * current;
-			current = str;
+			const unsigned char* current;
+			current = reinterpret_cast<const unsigned char*>(str);
 			while (size > 2) {
 				_encode_result += _base64_table[current[0] >> 2];
 				_encode_result += _base64_table[((current[0] & 0x03) << 4) + (current[1] >> 4)];
