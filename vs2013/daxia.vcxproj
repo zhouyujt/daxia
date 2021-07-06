@@ -75,6 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>daxia_$(PlatformTarget)_$(PlatformName)_$(PlatformToolset)_mdd</TargetName>
     <IncludePath>../../../../../third-party/boost_1_76_0;$(IncludePath)</IncludePath>
+    <OutDir>../libs/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>../../../../../third-party/boost_1_76_0;$(IncludePath)</IncludePath>
@@ -84,6 +85,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>daxia_$(PlatformTarget)_$(PlatformName)_$(PlatformToolset)_md</TargetName>
     <IncludePath>../../../../../third-party/boost_1_76_0;$(IncludePath)</IncludePath>
+    <OutDir>../libs/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
