@@ -17,6 +17,18 @@
 #include "../win32/processes_manager.h"
 #include "../win32/path.h"
 
+#define dxSTRCAT_HELP(s1,s2) s1 ## s2
+#define dxSTRCAT(s1,s2) dxSTRCAT_HELP(s1,s2)
+#define dxSTRCAT3(s1,s2,s3) dxSTRCAT(dxSTRCAT(s1,s2),s3)
+#define dxSTRCAT4(s1,s2,s3,s4) dxSTRCAT(dxSTRCAT3(s1,s2,s3),s4)
+#define dxSTRCAT5(s1,s2,s3,s4,s5) dxSTRCAT(dxSTRCAT4(s1,s2,s3,s4),s5)
+#define dxSTRCAT6(s1,s2,s3,s4,s5,s6) dxSTRCAT(dxSTRCAT5(s1,s2,s3,s4,s5),s6)
+#define dxSTRCAT7(s1,s2,s3,s4,s5,s6,s7) dxSTRCAT(dxSTRCAT6(s1,s2,s3,s4,s5,s6),s7)
+#define dxSTRCAT8(s1,s2,s3,s4,s5,s6,s7,s8) dxSTRCAT(dxSTRCAT7(s1,s2,s3,s4,s5,s6,s7),s8)
+#define dxSTRCAT9(s1,s2,s3,s4,s5,s6,s7,s8,s9) dxSTRCAT(dxSTRCAT8(s1,s2,s3,s4,s5,s6,s7,s8),s9)
+#define dxSTR_HELP(s) #s
+#define dxSTR(s) dxSTR_HELP(s)
+
 #ifdef _MSC_VER
 //MSC    1.0   _MSC_VER == 100
 //MSC    2.0   _MSC_VER == 200
@@ -50,206 +62,65 @@
 //MSVC++ 14.21 _MSC_VER == 1921 (Visual Studio 2019 Version 16.1)
 //MSVC++ 14.22 _MSC_VER == 1922 (Visual Studio 2019 Version 16.2)
 #if _MSC_VER == 1600
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v100_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v100_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v100_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v100_mt.lib")
-#		endif
-#	endif
+#define VER v100
 #elif _MSC_VER == 1700
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v110_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v110_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v110_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v110_mt.lib")
-#		endif
-#	endif
+#define VER v110
 #elif _MSC_VER == 1800
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v120_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v120_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v120_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v120_mt.lib")
-#		endif
-#	endif
+#define VER v120
 #elif _MSC_VER == 1900
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v140_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v140_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v140_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v140_mt.lib")
-#		endif
-#	endif
+#define VER v140
 #elif _MSC_VER == 1910
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v150_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v150_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v150_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v150_mt.lib")
-#		endif
-#	endif
+#define VER v150
 #elif _MSC_VER == 1911
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v153_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v153_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v153_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v153_mt.lib")
-#		endif
-#	endif
+#define VER v153
 #elif _MSC_VER == 1912
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v155_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v155_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v155_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v155_mt.lib")
-#		endif
-#	endif
+#define VER v155
 #elif _MSC_VER == 1913
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v156_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v156_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v156_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v156_mt.lib")
-#		endif
-#	endif
+#define VER v156
 #elif _MSC_VER == 1914
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v157_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v157_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v157_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v157_mt.lib")
-#		endif
-#	endif
+#define VER v157
 #elif _MSC_VER == 1915
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v158_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v158_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v158_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v158_mt.lib")
-#		endif
-#	endif
+#define VER v158
 #elif _MSC_VER == 1916
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v159_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v159_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v159_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v159_mt.lib")
-#		endif
-#	endif
+#define VER v159
 #elif _MSC_VER == 1920
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v160_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v160_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v160_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v160_mt.lib")
-#		endif
-#	endif
+#define VER v160
 #elif _MSC_VER == 1921
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v161_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v161_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v161_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v161_mt.lib")
-#		endif
-#	endif
+#define VER v161
 #elif _MSC_VER == 1922
-#	ifdef _DEBUG
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v162_mdd.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v162_mtd.lib")
-#		endif
-#	else
-#		ifdef _DLL
-#			pragma comment(lib,"daxia_x86_Win32_v162_md.lib")
-#		else
-#			pragma comment(lib,"daxia_x86_Win32_v162_mt.lib")
-#		endif
-#	endif
+#define VER v162
 #else
 #	pragma message("daxia库当前版本暂不支持当前的编译器！")
 #	pragma message("请前往 https://github.com/zhouyujt/daxia 下载最新版本")
 #	pragma message("如有任何疑问，请联系作者")
 #	pragma message("QQ:50347187")
 #endif
+
+#ifdef _DEBUG
+#	ifdef _DLL
+#		define MDMT mdd
+#	else
+#		define MDMT mtd
+#	endif
+#else
+#	ifdef _DLL
+#		define MDMT md
+#	else
+#		define MDMT mt
+#	endif
+#endif // _DEBUG
+
+#ifdef _WIN64
+#	define PRENAME daxia_x64_x64_
+#else
+#	define PRENAME daxia_x86_Win32_
+#endif // _WIN64
+
+#pragma comment(lib,dxSTR(dxSTRCAT5(PRENAME,VER,_,MDMT,.lib)))
+
+#undef VER
+#undef MDMT
+#undef PRENAME
+
 #endif // !_MSC_VER
 #endif // !__DAXIA_INCLUDE_DAXIA_H

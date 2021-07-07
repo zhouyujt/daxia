@@ -286,7 +286,7 @@ namespace daxia
 				if (NULL == module)
 				{
 					//加载Dll模块获取模块句柄
-					module = LoadLibraryA(name);
+					module = ::LoadLibraryA(name);
 					//加载失败
 					if (NULL == module)
 					{
