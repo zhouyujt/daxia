@@ -19,7 +19,7 @@
 
 #define deferinit() daxia::DeferStack deferStack;
 
-#define defer deferStack<<
+#define defer deferStack<<[&]()
 
 #define return(...)  while (true)\
 	{\
