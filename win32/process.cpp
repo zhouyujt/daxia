@@ -121,7 +121,7 @@ namespace daxia
 			return token_;
 		}
 
-		char* Process::LoadMemLibrary(const char* data, unsigned long len)
+		void* Process::LoadMemLibrary(const char* data, unsigned long len)
 		{
 			unsigned long size = getImageSize(data);
 
@@ -146,6 +146,70 @@ namespace daxia
 			callDllMain(address);
 		
 			return address;
+		}
+
+		FARPROC Process::GetMemProcAddress(void* address, const char* name)
+		{
+			// 获取Dos头
+			PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)address;
+			// 获取NT头
+			PIMAGE_NT_HEADERS ntHeader = (PIMAGE_NT_HEADERS)((const char*)dosHeader + dosHeader->e_lfanew);
+
+			if (ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0 ||
+				ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size == 0)
+				return NULL;
+
+			DWORD offsetStart = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+			DWORD size = ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+
+			PIMAGE_EXPORT_DIRECTORY exportDirectory = (PIMAGE_EXPORT_DIRECTORY)((const char*)address + ntHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress);
+
+			int base = exportDirectory->Base;
+			int numberOfFunctions = exportDirectory->NumberOfFunctions;
+			int numberOfNames = exportDirectory->NumberOfNames; //<= iNumberOfFunctions
+
+			LPDWORD addressOfFunctions = (LPDWORD)((const char*)address + exportDirectory->AddressOfFunctions);
+			LPWORD addressofOrdinals = (LPWORD)((const char*)address + exportDirectory->AddressOfNameOrdinals);
+			LPDWORD addressofNames = (LPDWORD)((const char*)address + exportDirectory->AddressOfNames);
+
+			int ordinal = -1;
+			if (((DWORD)name & 0xFFFF0000) == 0) //IT IS A ORDINAL!
+			{
+				ordinal = (DWORD)name & 0x0000FFFF - base;
+			}
+			else //use name
+			{
+				int found = -1;
+				for (int i = 0; i < numberOfNames; i++)
+				{
+					const char* pName = (const char*)address + addressofNames[i];
+					if (strcmp(pName, name) == 0)
+					{
+						found = i; break;
+					}
+				}
+
+				if (found >= 0)
+				{
+					ordinal = (int)(addressofOrdinals[found]);
+				}
+			}
+
+			if (ordinal < 0 || ordinal >= numberOfFunctions) return NULL;
+			else
+			{
+				DWORD functionOffset = addressOfFunctions[ordinal];
+				if (functionOffset > offsetStart && functionOffset < (offsetStart + size))//maybe Export Forwarding
+					return NULL;
+				else return (FARPROC)((const char*)address + functionOffset);
+
+			}
+
+		}
+
+		FARPROC Process::GetMemProcAddress(void* address, int order)
+		{
+			return GetMemProcAddress(address, (const char*)MAKELONG(order, 0));
 		}
 
 		bool Process::RevertToSelf()

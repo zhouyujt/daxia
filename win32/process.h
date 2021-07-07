@@ -45,7 +45,9 @@ namespace daxia
 			// 获取AccessToken
 			std::shared_ptr<AccessToken> GetAccessToken();
 			// 从内存中加载Dll
-			char* LoadMemLibrary(const char* data, unsigned long len);
+			void* LoadMemLibrary(const char* data, unsigned long len);
+			FARPROC GetMemProcAddress(void* address, const char* name);
+			FARPROC GetMemProcAddress(void* address, int order);
 		public:
 			// 恢复为自身的token
 			static bool RevertToSelf();
