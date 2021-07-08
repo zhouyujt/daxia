@@ -14,15 +14,13 @@
 
 #include <memory>
 #include "common/shared_buffer.h"
+#include "session.h"
+#include "sessions_manager.h"
 
 namespace daxia
 {
 	namespace dxg
 	{
-		class Controller;
-		class Session;
-		class SessionsManager;
-
 		// 逻辑控制器接口类
 		class Controller
 		{
