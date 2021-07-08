@@ -41,6 +41,7 @@ namespace daxia
 		public:
 			Client();
 			~Client();
+			Client(const Client&) = delete;
 		protected:
 			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
 		public:
