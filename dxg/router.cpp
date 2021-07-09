@@ -116,7 +116,7 @@ namespace daxia
 		{
 			int count = 1; // 至少一个
 
-#if !defined (_WIN32) && !defined (_WIN64) 
+#if !defined (_MSC_VER)
 			count = sysconf(_SC_NPROCESSORS_CONF);
 #else
 			SYSTEM_INFO si;
@@ -140,6 +140,7 @@ namespace daxia
 					std::placeholders::_2,
 					std::placeholders::_3,
 					std::placeholders::_4));
+				session->UpdateConnectTime();
 
 				scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::shared_buffer());
 			}

@@ -1,6 +1,3 @@
-#ifdef _MSC_VER
-#include <sdkddkver.h>
-#endif
 #include "sessions_manager.h"
 
 namespace daxia
@@ -75,12 +72,14 @@ namespace daxia
 
 		void SessionsManager::EnableCheckHeartbeat(unsigned long interval)
 		{
-			if (interval == 0 && heartbeatSchedulerId_ != -1)
+			if (heartbeatSchedulerId_ != -1)
 			{
 				// ¹Ø±ÕÐÄÌø¼ì²â
 				scheduler_.Unschedule(heartbeatSchedulerId_);
+				heartbeatSchedulerId_ = -1;
 			}
-			else
+
+			if (interval != 0)
 			{
 				// Æô¶¯ÐÄÌø¼ì²â
 				heartbeatSchedulerId_ = scheduler_.Schedule([&, interval]()
@@ -93,10 +92,21 @@ namespace daxia
 
 					for (auto iter = sessions_.begin(); iter != sessions_.end(); ++iter)
 					{
-						if ((now - iter->second->GetLastReadTime()).count() >= interval)
+						if (iter->second->GetLastReadTime().time_since_epoch().count() == 0)
 						{
-							iter->second->Close();
+							if ((now - iter->second->GetConnectTime()).count() >= interval)
+							{
+								iter->second->Close();
+							}
 						}
+						else
+						{
+							if ((now - iter->second->GetLastReadTime()).count() >= interval)
+							{
+								iter->second->Close();
+							}
+						}
+
 					}
 				}, 2000);
 			}

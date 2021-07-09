@@ -17,7 +17,6 @@ namespace daxia
 				, recvPacketCount_(0)
 				, buffer_(1024 * 16)
 			{
-
 			}
 
 			BasicSession::~BasicSession()
@@ -77,6 +76,19 @@ namespace daxia
 				return (boost::format("%s:%d") % ep.address().to_string() % ep.port()).str();
 			}
 
+			const daxia::dxg::common::BasicSession::timepoint& BasicSession::GetConnectTime() const
+			{
+				return connectTime_;
+			}
+
+			const daxia::dxg::common::BasicSession::timepoint& BasicSession::UpdateConnectTime()
+			{
+				using namespace std::chrono;
+				connectTime_ = time_point_cast<milliseconds>(system_clock::now());
+
+				return connectTime_;
+			}
+
 			const BasicSession::timepoint& BasicSession::GetLastReadTime() const
 			{
 				return lastReadTime_;
@@ -111,12 +123,9 @@ namespace daxia
 					memcpy(buffer.get(), date, len);
 				}
 
-				writeLocker_.lock();
+				lock_guard locker(writeLocker_);
 				++sendPacketCount_;
 				if (sendPacketCount_ == 0) ++sendPacketCount_;
-				writeLocker_.unlock();
-
-				lock_guard locker(writeLocker_);
 				bool isWriting = !writeBufferCache_.empty();
 				writeBufferCache_.push(buffer);
 				if (!isWriting)
@@ -185,7 +194,7 @@ namespace daxia
 
 							// 解析包头
 							size_t contentLen = 0;
-							if (!parser_->UnmarshalHead(this, buffer_.get(), buffer_.size(), contentLen)) throw DataError_ParseFail;
+							if (!parser_->UnmarshalHead(this, buffer_.get(), static_cast<int>(buffer_.size()), contentLen)) throw DataError_ParseFail;
 
 							// 包头解析成功，继续接收正文
 							if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
@@ -193,7 +202,7 @@ namespace daxia
 							// 解析正文
 							int msgID = 0;
 							common::shared_buffer msg;
-							if (!parser_->UnmarshalContent(this, buffer_.get(), buffer_.size(), msgID, msg)) throw DataError_ParseFail;
+							if (!parser_->UnmarshalContent(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg)) throw DataError_ParseFail;
 
 							// 包头解析成功
 							lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());

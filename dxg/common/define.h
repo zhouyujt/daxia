@@ -28,11 +28,12 @@ namespace daxia
 				Protocol_HTTP
 			};
 
-			enum DefMsgID
+			enum DefMsgID : int
 			{
 				DefMsgID_Connect = -1,
 				DefMsgID_DisConnect = -2,
-				DefMsgID_UnHandle = -3
+				DefMsgID_Heartbeat = -3,
+				DefMsgID_UnHandle = -4
 			};
 		}
 

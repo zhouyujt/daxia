@@ -15,6 +15,9 @@
 #include <mutex>
 #include <memory>
 #include <queue>
+#ifdef _MSC_VER
+#include <sdkddkver.h>
+#endif
 #include <boost/asio.hpp>
 #include <boost/any.hpp>
 #include "shared_buffer.h"
@@ -81,6 +84,12 @@ namespace daxia
 				// 获取远端地址
 				std::string GetPeerAddr() const;
 
+				// 连接时间
+				const timepoint& GetConnectTime() const;
+
+				// 更新连接时间
+				const timepoint& UpdateConnectTime();
+
 				// 最近读的时间戳
 				const timepoint& GetLastReadTime() const;
 
@@ -116,6 +125,7 @@ namespace daxia
 				std::mutex writeLocker_;
 				std::mutex closeLocker_;
 				std::queue<shared_buffer> writeBufferCache_;
+				timepoint connectTime_;
 				timepoint lastReadTime_;
 				timepoint lastWriteTime_;
 				unsigned long long sendPacketCount_;

@@ -13,6 +13,7 @@ namespace daxia
 	{
 		Client::Client()
 			: hearbeatInterval_(0)
+			, heartbeatSchedulerId_(-1)
 			, nextTimerId_(0)
 		{
 			// 所有实例共用
@@ -120,7 +121,7 @@ namespace daxia
 		{
 			int count = 1; // 至少一个
 
-#if !defined (_WIN32) && !defined (_WIN64) 
+#if !defined (_MSC_VER) 
 			count = sysconf(_SC_NPROCESSORS_CONF);
 #else
 			SYSTEM_INFO si;
@@ -144,6 +145,39 @@ namespace daxia
 		void Client::EnableHeartbeat(unsigned long milliseconds)
 		{
 			hearbeatInterval_ = milliseconds;
+
+			if (heartbeatSchedulerId_ != -1)
+			{
+				// 关闭心跳
+				Unschedule(heartbeatSchedulerId_);
+				heartbeatSchedulerId_ = -1;
+			}
+
+			if (milliseconds != 0)
+			{
+				// 启动心跳
+				heartbeatSchedulerId_ = Schedule([&, milliseconds]()
+				{
+					hearbeat();
+
+					using namespace std::chrono;
+					time_point<system_clock, std::chrono::milliseconds> now = time_point_cast<std::chrono::milliseconds>(system_clock::now());
+					if (GetLastReadTime().time_since_epoch().count() == 0)
+					{
+						if ((now - GetConnectTime()).count() >= milliseconds * 2)
+						{
+							Close();
+						}
+					}
+					else
+					{
+						if ((now - GetLastReadTime()).count() >= milliseconds * 2)
+						{
+							Close();
+						}
+					}
+				}, 100, 2000);
+			}
 		}
 
 		void Client::Connect(const char* ip, short port)
@@ -235,6 +269,7 @@ namespace daxia
 
 				if (!ec)
 				{
+					UpdateConnectTime();
 					postRead();
 				}
 			});
@@ -292,14 +327,14 @@ namespace daxia
 					auto iter = handler_.find(msg.msgID);
 					if (iter != handler_.end())
 					{
-						iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+						iter->second(msg.msgID, msg.error, msg.buffer.get(), static_cast<int>(msg.buffer.size()));
 					}
 					else
 					{
 						auto iter = handler_.find(common::DefMsgID_UnHandle);
 						if (iter != handler_.end())
 						{
-							iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+							iter->second(msg.msgID, msg.error, msg.buffer.get(), static_cast<int>(msg.buffer.size()));
 						}
 					}
 				}
