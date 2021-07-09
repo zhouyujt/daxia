@@ -75,22 +75,29 @@ namespace daxia
 
 				// Êý¾Ý²»×ã
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				if (head->len + sizeof(PacketHead) != len)
+				if (head->len + sizeof(PacketHead) > len)
 				{
 					return false;
 				}
 
-				boost::property_tree::ptree root;
-				std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead)));
-				boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
+				if (!head->hearbeat)
+				{
+					try
+					{
+						boost::property_tree::ptree root;
+						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead)));
+						boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
 
-				try
-				{
-					msgID = root.get<int>("msgId");
+						msgID = root.get<int>("msgId");
+					}
+					catch (...)
+					{
+						return false;
+					}
 				}
-				catch (...)
+				else
 				{
-					return false;
+					msgID = DefMsgID_Heartbeat;
 				}
 
 				buffer.resize(len - sizeof(PacketHead));

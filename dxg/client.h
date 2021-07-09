@@ -100,6 +100,7 @@ namespace daxia
 			std::shared_ptr<common::Parser> parser_;
 			std::map<int, handler> handler_;
 			unsigned long hearbeatInterval_;
+			long long heartbeatSchedulerId_;
 			endpoint endpoint_;
 			std::queue<LogicMessage> logicMsgs_;
 			std::mutex logicMsgLocker_;

@@ -285,7 +285,7 @@ namespace daxia
 					boost::property_tree::ptree child;
 
 					size_t hashcode = iter->second.get<size_t>(HASH, 0);
-					unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0) + size * i;
+					unsigned long offset = static_cast<unsigned long>(iter->second.get<unsigned long>(OFFSET, 0) + size * i);
 
 					child.put(HASH, hashcode);
 					child.put(OFFSET, offset);
