@@ -22,7 +22,7 @@
 #include "common/basic_session.h"
 #include "common/shared_buffer.h"
 
-#define DXG_CLIENT_HANDLER(id,error,date,len) [&](int id, const boost::system::error_code& error, const void* date, int len)
+#define DXG_CLIENT_HANDLER(id,error,data,len) [&](int id, const boost::system::error_code& error, const void* data, int len)
 
 namespace daxia
 {

@@ -29,7 +29,7 @@ namespace daxia
 
 				memcpy(buffer.get(), &head, sizeof(head));
 
-				if (head.hearbeat != 0)
+				if (head.hearbeat == 0)
 				{
 					memcpy(buffer.get() + sizeof(head), data, len);
 				}
@@ -85,12 +85,12 @@ namespace daxia
 					try
 					{
 						boost::property_tree::ptree root;
-						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead)));
+						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead) - 1));
 						boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
 
 						msgID = root.get<int>("msgId");
 					}
-					catch (...)
+					catch (boost::property_tree::json_parser_error)
 					{
 						return false;
 					}
