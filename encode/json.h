@@ -96,7 +96,7 @@ namespace daxia
 			template<class ValueType>
 			static bool Unmarshal(const std::string& jsonStr, ValueType& v)
 			{
-				std::wstring str = Ansi2Unicode(jsonStr.c_str());
+				std::wstring str = daxia::encode::Strconv::Ansi2Unicode(jsonStr.c_str());
 				return Unmarshal(str, v);
 			}
 
@@ -262,14 +262,14 @@ namespace daxia
 
 				try
 				{
-					if ((*array)().empty())
+					if ((**array).empty())
 					{
 						boost::property_tree::ptree tr;
 						child.push_back(make_pair("", tr));
 					}
 					else
 					{
-						for (auto iter = (*array)().begin(); iter != (*array)().end(); ++iter)
+						for (auto iter = (**array).begin(); iter != (**array).end(); ++iter)
 						{
 							boost::property_tree::ptree tr;
 
@@ -325,7 +325,7 @@ namespace daxia
 
 				for (auto iter = root.begin(); iter != root.end(); ++iter)
 				{
-					(*array)().push_back(boost::lexical_cast<T>(iter->second.data()));
+					(**array).push_back(boost::lexical_cast<T>(iter->second.data()));
 				}
 
 				return true;

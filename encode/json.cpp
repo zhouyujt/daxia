@@ -234,7 +234,7 @@ namespace daxia
 
 			ArrayInfo ai;
 			boost::property_tree::ptree child;
-			const char* baseaddr = (*array)().begin()._Ptr;
+			const char* baseaddr = (**array).begin()._Ptr;
 			marshal(baseaddr, layout, child, &ai);
 
 			// 保存解析完毕的元素
@@ -261,7 +261,7 @@ namespace daxia
 			ArrayInfo ai;
 			ai.ptree = root;
 
-			ummarshal((*array)().begin()._Ptr, layout, root, &ai);
+			ummarshal((**array).begin()._Ptr, layout, root, &ai);
 		}
 
 		void Json::extendArrayLayout(const daxia::reflect::Reflect_base* reflectBase, boost::property_tree::ptree& layout)
@@ -272,7 +272,7 @@ namespace daxia
 			// 计算元素个数
 			size_t size = layout.get<size_t>(SIZE);
 			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
-			size_t count = (*array)().size() / size;
+			size_t count = (**array).size() / size;
 
 			// 为所有元素扩展布局
 			layout.erase(SIZE);

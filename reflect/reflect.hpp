@@ -211,12 +211,12 @@ namespace daxia
 				return *this;
 			}
 
-			const std::vector<ValueType>& operator()() const
+			const std::vector<ValueType>& operator*() const
 			{
 				return v_;
 			}
 
-			std::vector<ValueType>& operator()()
+			std::vector<ValueType>& operator*()
 			{
 				return v_;
 			}
