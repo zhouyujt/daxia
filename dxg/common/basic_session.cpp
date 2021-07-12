@@ -109,18 +109,18 @@ namespace daxia
 				return recvPacketCount_;
 			}
 
-			void BasicSession::WriteMessage(const void* date, int len)
+			void BasicSession::WriteMessage(const void* data, int len)
 			{
 				shared_buffer buffer;
 				if (parser_)
 				{
-					parser_->Marshal(this, static_cast<const unsigned char*>(date), len, buffer);
+					parser_->Marshal(this, static_cast<const unsigned char*>(data), len, buffer);
 					buffer.reserve(buffer.size());
 				}
 				else
 				{
 					buffer.reserve(len);
-					memcpy(buffer.get(), date, len);
+					memcpy(buffer.get(), data, len);
 				}
 
 				lock_guard locker(writeLocker_);
@@ -132,6 +132,11 @@ namespace daxia
 				{
 					doWriteMessage(writeBufferCache_.front());
 				}
+			}
+
+			void BasicSession::WriteMessage(const std::string& data)
+			{
+				WriteMessage(data.c_str(), data.size());
 			}
 
 			void BasicSession::Close()

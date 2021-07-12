@@ -85,7 +85,7 @@ namespace daxia
 					try
 					{
 						boost::property_tree::ptree root;
-						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead) - 1));
+						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead)));
 						boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
 
 						msgID = root.get<int>("msgId");
