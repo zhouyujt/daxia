@@ -121,7 +121,7 @@ namespace daxia
 			return token_;
 		}
 
-		void* Process::LoadMemLibrary(const char* data, unsigned long len)
+		void* Process::LoadMemLibrary(const char* data, unsigned long len) const
 		{
 			unsigned long size = getImageSize(data);
 
@@ -143,12 +143,12 @@ namespace daxia
 			setImageBase(address);
 
 			// 调用DLL的入口函数DllMain,函数地址即为PE文件的入口点AddressOfEntryPoint
-			callDllMain(address);
+			callDllMain(address,DLL_PROCESS_ATTACH);
 		
 			return address;
 		}
 
-		FARPROC Process::GetMemProcAddress(void* address, const char* name)
+		FARPROC Process::GetMemProcAddress(void* address, const char* name) const
 		{
 			// 获取Dos头
 			PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)address;
@@ -207,9 +207,15 @@ namespace daxia
 
 		}
 
-		FARPROC Process::GetMemProcAddress(void* address, int order)
+		FARPROC Process::GetMemProcAddress(void* address, int order) const
 		{
 			return GetMemProcAddress(address, (const char*)MAKELONG(order, 0));
+		}
+
+		void Process::FreeMemLibrary(void* address) const
+		{
+			callDllMain((char*)address, DLL_PROCESS_DETACH);
+			::VirtualFreeEx(handle_, address, 0, MEM_RELEASE);
 		}
 
 		bool Process::RevertToSelf()
@@ -280,7 +286,7 @@ namespace daxia
 			}
 		}
 
-		void Process::adjustRelocation(char* address)
+		void Process::adjustRelocation(char* address) const
 		{
 			// 获取Dos头
 			PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)address;
@@ -329,7 +335,7 @@ namespace daxia
 			}
 		}
 
-		void Process::adjustImport(char* address)
+		void Process::adjustImport(char* address) const
 		{
 			// 获取Dos头
 			PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)address;
@@ -391,7 +397,7 @@ namespace daxia
 			}
 		}
 
-		void Process::setImageBase(char* address)
+		void Process::setImageBase(char* address) const
 		{
 			// 获取Dos头
 			PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)address;
@@ -401,7 +407,7 @@ namespace daxia
 			pNtHeader->OptionalHeader.ImageBase = (decltype(pNtHeader->OptionalHeader.ImageBase))address;
 		}
 
-		void Process::callDllMain(char* address)
+		void Process::callDllMain(char* address, int reason) const
 		{
 			typedef BOOL(APIENTRY *DllMain)(HMODULE, DWORD, LPVOID);
 
@@ -412,8 +418,8 @@ namespace daxia
 
 
 			DllMain main = (DllMain)((const char*)dosHeader + ntHeader->OptionalHeader.AddressOfEntryPoint);
-			// 调用入口函数，附加进程DLL_PROCESS_ATTACH
-			main((HINSTANCE)address, DLL_PROCESS_ATTACH, NULL);
+
+			main((HINSTANCE)address, reason, NULL);
 		}
 
 	}

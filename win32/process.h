@@ -45,9 +45,10 @@ namespace daxia
 			// 获取AccessToken
 			std::shared_ptr<AccessToken> GetAccessToken();
 			// 从内存中加载Dll
-			void* LoadMemLibrary(const char* data, unsigned long len);
-			FARPROC GetMemProcAddress(void* address, const char* name);
-			FARPROC GetMemProcAddress(void* address, int order);
+			void* LoadMemLibrary(const char* data, unsigned long len) const;
+			FARPROC GetMemProcAddress(void* address, const char* name) const;
+			FARPROC GetMemProcAddress(void* address, int order) const;
+			void FreeMemLibrary(void* address) const;
 		public:
 			// 恢复为自身的token
 			static bool RevertToSelf();
@@ -56,10 +57,10 @@ namespace daxia
 		private:
 			unsigned long getImageSize(const char* imageData) const;
 			void mapImage(const char* imageData, unsigned long len, char* address, unsigned long size) const;
-			void adjustRelocation(char* address);
-			void adjustImport(char* address);
-			void setImageBase(char* address);
-			void callDllMain(char* address);
+			void adjustRelocation(char* address) const;
+			void adjustImport(char* address) const;
+			void setImageBase(char* address) const;
+			void callDllMain(char* address,int reason) const;
 		private:
 			void* handle_;
 			std::shared_ptr<AccessToken> token_;
