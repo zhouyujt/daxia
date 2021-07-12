@@ -24,42 +24,41 @@ namespace daxia
 		{
 		public:
 			typedef std::lock_guard<std::mutex> lock_guard;
+			typedef std::shared_ptr<SessionsManager> ptr;
 		public:
-			SessionsManager(Scheduler& scheduler);
+			SessionsManager();
 			~SessionsManager(){}
 		public:
 			// 增加一个客户端
-			std::shared_ptr<Session> AddSession(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, Session::handler onMessage);
-
+			void AddSession(Session::ptr session);
 			// 删除一个客户端
 			void DeleteSession(long long id);
-
+			// 删除所有客户端
+			void DeleteAllSession();
 			// 获取客户端
 			Session::ptr GetSession(long long id);
-
 			// 根据自定义数据获取客户端
 			template<class T>
 			Session::ptr GetSession(const std::string& key, const T& data);
-
-			// 广播一条消息
-			void Broadcast();
-
+			// 向一个客户端组广播一条消息
+			void Broadcast(const std::string& name,const std::string& msg);
 			// 创建一个客户端组
-			void CreateGroup(const std::string& key);
-
+			SessionsManager::ptr CreateGroup(const std::string& name);
+			// 删除一个客户端组
+			void DeleteGroup(const std::string& name);
+			// 删除所有客户端组
+			void DeleteAllGroup();
 			// 获取客户端组
-			std::shared_ptr<SessionsManager> GetGroup(const std::string& key);
-
-			// 开启/关闭心跳检测
-			void EnableCheckHeartbeat(unsigned long interval);
+			SessionsManager::ptr GetGroup(const std::string& name);
+			// 枚举客户端
+			void EnumSession(std::function<bool(Session::ptr)> func);
+			// 枚举客户端组
+			void EnumGroup(std::function<bool(SessionsManager::ptr)> func);
 		private:
 			std::map<long long, Session::ptr> sessions_;
-			std::map<std::string, std::shared_ptr<SessionsManager>> group_;
+			std::map<std::string, SessionsManager::ptr> group_;
 			std::mutex sessionsLocker_;
 			std::mutex groupLocker_;
-			Scheduler& scheduler_;
-			long long heartbeatSchedulerId_;
-			long long nextSessionId_;
 		};
 
 		template<class T>

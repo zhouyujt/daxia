@@ -4,22 +4,15 @@ namespace daxia
 {
 	namespace dxg
 	{
-		SessionsManager::SessionsManager(Scheduler& scheduler)
-			: scheduler_(scheduler)
-			, heartbeatSchedulerId_(-1)
-			, nextSessionId_(0)
+		SessionsManager::SessionsManager()
 		{
 		}
 
-		Session::ptr SessionsManager::AddSession(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, Session::handler onMessage)
+		void SessionsManager::AddSession(Session::ptr session)
 		{
 			lock_guard locker(sessionsLocker_);
 
-			Session::ptr  session(new Session(sock, parser, onMessage, nextSessionId_++));
-
 			sessions_[session->GetSessionID()] = session;
-
-			return session;
 		}
 
 		void SessionsManager::DeleteSession(long long id)
@@ -27,6 +20,13 @@ namespace daxia
 			lock_guard locker(sessionsLocker_);
 
 			sessions_.erase(id);
+		}
+
+		void SessionsManager::DeleteAllSession()
+		{
+			lock_guard locker(sessionsLocker_);
+
+			sessions_.clear();
 		}
 
 		Session::ptr SessionsManager::GetSession(long long id)
@@ -44,24 +44,54 @@ namespace daxia
 			return session;
 		}
 
-		void SessionsManager::CreateGroup(const std::string& key)
+		void SessionsManager::Broadcast(const std::string& name, const std::string& msg)
 		{
-			lock_guard locker(groupLocker_);
-
-			auto iter = group_.find(key);
-			if (iter == group_.end())
+			auto group = GetGroup(name);
+			if (group)
 			{
-				group_[key] = std::shared_ptr<SessionsManager>(new SessionsManager(scheduler_));
+				group->EnumSession([&](Session::ptr session)
+				{
+					session->WriteMessage(msg);
+					return true;
+				});
 			}
 		}
 
-		std::shared_ptr<SessionsManager> SessionsManager::GetGroup(const std::string& key)
+		SessionsManager::ptr SessionsManager::CreateGroup(const std::string& name)
+		{
+			lock_guard locker(groupLocker_);
+
+			auto iter = group_.find(name);
+			if (iter == group_.end())
+			{
+				group_[name] = std::shared_ptr<SessionsManager>(new SessionsManager);
+			}
+
+			return GetGroup(name);
+		}
+
+		void SessionsManager::DeleteGroup(const std::string& name)
+		{
+			lock_guard locker(groupLocker_);
+
+			group_.erase(name);
+
+		}
+
+		void SessionsManager::DeleteAllGroup()
+		{
+			lock_guard locker(groupLocker_);
+
+			group_.clear();
+		}
+
+		SessionsManager::ptr SessionsManager::GetGroup(const std::string& name)
 		{
 			lock_guard locker(groupLocker_);
 
 			std::shared_ptr<SessionsManager> mgr;
 
-			auto iter = group_.find(key);
+			auto iter = group_.find(name);
 			if (iter != group_.end())
 			{
 				mgr = iter->second;
@@ -70,45 +100,29 @@ namespace daxia
 			return mgr;
 		}
 
-		void SessionsManager::EnableCheckHeartbeat(unsigned long interval)
+		void SessionsManager::EnumSession(std::function<bool(Session::ptr)> func)
 		{
-			if (heartbeatSchedulerId_ != -1)
-			{
-				// ¹Ø±ÕÐÄÌø¼ì²â
-				scheduler_.Unschedule(heartbeatSchedulerId_);
-				heartbeatSchedulerId_ = -1;
-			}
+			lock_guard locker(sessionsLocker_);
 
-			if (interval != 0)
+			for each (const std::pair<long long, Session::ptr>& session in sessions_)
 			{
-				// Æô¶¯ÐÄÌø¼ì²â
-				heartbeatSchedulerId_ = scheduler_.Schedule([&, interval]()
+				if (!func(session.second))
 				{
-					using namespace std::chrono;
+					break;
+				}
+			}
+		}
 
-					time_point<system_clock, milliseconds> now = time_point_cast<milliseconds>(system_clock::now());
+		void SessionsManager::EnumGroup(std::function<bool(SessionsManager::ptr)> func)
+		{
+			lock_guard locker(groupLocker_);
 
-					lock_guard locker(sessionsLocker_);
-
-					for (auto iter = sessions_.begin(); iter != sessions_.end(); ++iter)
-					{
-						if (iter->second->GetLastReadTime().time_since_epoch().count() == 0)
-						{
-							if ((now - iter->second->GetConnectTime()).count() >= interval)
-							{
-								iter->second->Close();
-							}
-						}
-						else
-						{
-							if ((now - iter->second->GetLastReadTime()).count() >= interval)
-							{
-								iter->second->Close();
-							}
-						}
-
-					}
-				}, 2000);
+			for each (const std::pair<std::string, SessionsManager::ptr>& group in group_)
+			{
+				if (!func(group.second))
+				{
+					break;
+				}
 			}
 		}
 	}// namespace dxg

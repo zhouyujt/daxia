@@ -11,8 +11,9 @@ namespace daxia
 	namespace dxg
 	{
 		Router::Router()
+			: heartbeatSchedulerId_(-1)
+			, nextSessionId_(0)
 		{
-			sessionsMgr_ = std::shared_ptr<SessionsManager>(new SessionsManager(scheduler_));
 			parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
 		}
 
@@ -85,9 +86,45 @@ namespace daxia
 			controllers_[msgID] = controller;
 		}
 
-		void Router::EnableHeartbeat(unsigned long milliseconds)
+		void Router::EnableCheckHeartbeat(unsigned long interval)
 		{
-			sessionsMgr_->EnableCheckHeartbeat(milliseconds);
+			if (heartbeatSchedulerId_ != -1)
+			{
+				// ¹Ø±ÕÐÄÌø¼ì²â
+				scheduler_.Unschedule(heartbeatSchedulerId_);
+				heartbeatSchedulerId_ = -1;
+			}
+
+			if (interval != 0)
+			{
+				// Æô¶¯ÐÄÌø¼ì²â
+				heartbeatSchedulerId_ = scheduler_.Schedule([&, interval]()
+				{
+					using namespace std::chrono;
+
+					time_point<system_clock, milliseconds> now = time_point_cast<milliseconds>(system_clock::now());
+
+					EnumSession([&](Session::ptr session)
+					{
+						if (session->GetLastReadTime().time_since_epoch().count() == 0)
+						{
+							if ((now - session->GetConnectTime()).count() >= interval)
+							{
+								session->Close();
+							}
+						}
+						else
+						{
+							if ((now - session->GetLastReadTime()).count() >= interval)
+							{
+								session->Close();
+							}
+						}
+
+						return true;
+					});
+				}, 2000);
+			}
 		}
 
 		Scheduler& Router::GetScheduler()
@@ -100,14 +137,14 @@ namespace daxia
 			auto iter = controllers_.find(msgID);
 			if (iter != controllers_.end())
 			{
-				iter->second->Proc(msgID, client.get(), sessionsMgr_.get(), data);
+				iter->second->Proc(msgID, client.get(), this, data);
 			}
 			else
 			{
 				auto iter = controllers_.find(common::DefMsgID_UnHandle);
 				if (iter != controllers_.end())
 				{
-					iter->second->Proc(msgID, client.get(), sessionsMgr_.get(), data);
+					iter->second->Proc(msgID, client.get(), this, data);
 				}
 			}
 		}
@@ -134,13 +171,17 @@ namespace daxia
 				socket_ptr socketSession(new socket(ios_));
 				acceptor_->async_accept(*socketSession, bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
 
-				auto session = sessionsMgr_->AddSession(sock, parser_, std::bind(&Router::onMessage,
+				sessionIdLocker_.lock();
+				Session::ptr  session(new Session(sock, parser_, std::bind(&Router::onMessage,
 					this,
 					std::placeholders::_1,
 					std::placeholders::_2,
 					std::placeholders::_3,
-					std::placeholders::_4));
+					std::placeholders::_4), nextSessionId_++));
+				sessionIdLocker_.unlock();
+
 				session->UpdateConnectTime();
+				AddSession(session);
 
 				scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::shared_buffer());
 			}
@@ -150,14 +191,14 @@ namespace daxia
 		{
 			if (err || msgId == common::DefMsgID_DisConnect)
 			{
-				scheduler_.PushNetRequest(sessionsMgr_->GetSession(sessionId), common::DefMsgID_DisConnect, common::shared_buffer(), [&, sessionId]()
+				scheduler_.PushNetRequest(GetSession(sessionId), common::DefMsgID_DisConnect, common::shared_buffer(), [&, sessionId]()
 				{
-					sessionsMgr_->DeleteSession(sessionId);
+					DeleteSession(sessionId);
 				});
 			}
 			else
 			{
-				scheduler_.PushNetRequest(sessionsMgr_->GetSession(sessionId), msgId, msg);
+				scheduler_.PushNetRequest(GetSession(sessionId), msgId, msg);
 			}
 		}
 	}// namespace dxg

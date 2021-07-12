@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <boost/asio.hpp>
+#include "sessions_manager.h"
 #include "common/parser.h"
 #include "scheduler.h"
 
@@ -23,10 +24,9 @@ namespace daxia
 	{
 		class Controller;
 		class Session;
-		class SessionsManager;
 
 		// 消息路由类
-		class Router
+		class Router : public SessionsManager
 		{
 		public:
 			typedef boost::asio::ip::tcp::endpoint endpoint;
@@ -46,7 +46,7 @@ namespace daxia
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Stop();
 			void Handle(int msgID, std::shared_ptr<Controller> controller);
-			void EnableHeartbeat(unsigned long milliseconds);
+			void EnableCheckHeartbeat(unsigned long milliseconds);
 			Scheduler& GetScheduler();
 		private:
 			void dispatchMessage(std::shared_ptr<Session>, int msgID, const common::shared_buffer data);
@@ -58,9 +58,11 @@ namespace daxia
 			boost::asio::io_service ios_;
 			acceptor_ptr acceptor_;
 			std::shared_ptr<common::Parser> parser_;
-			std::shared_ptr<SessionsManager> sessionsMgr_;
 			std::vector<std::thread> ioThreads_;
 			Scheduler scheduler_;
+			long long heartbeatSchedulerId_;
+			long long nextSessionId_;
+			std::mutex sessionIdLocker_;
 		};
 	}// namespace dxg
 }// namespace daxia

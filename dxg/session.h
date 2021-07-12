@@ -18,12 +18,12 @@ namespace daxia
 {
 	namespace dxg
 	{
-		class SessionsManager;
+		class Router;
 
 		// ª·ª∞¿‡
 		class Session : public common::BasicSession
 		{
-			friend SessionsManager;
+			friend Router;
 		public:
 			typedef std::shared_ptr<Session> ptr;
 			typedef std::function<void(const boost::system::error_code&, long long, int, common::shared_buffer)> handler;

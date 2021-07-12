@@ -35,7 +35,7 @@ namespace daxia
 			void Stop();
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Handle(int msgId, std::shared_ptr<Controller> controller);
-			void EnableHeartbeat(unsigned long milliseconds);
+			void EnableCheckHeartbeat(unsigned long milliseconds);
 			void SetFPS(unsigned long fps);
 			long long ScheduleUpdate(Scheduler::scheduleFunc func);
 			long long Schedule(Scheduler::scheduleFunc func, unsigned long duration);
@@ -43,6 +43,7 @@ namespace daxia
 			void UnscheduleUpdate(long long scheduleID);
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
+			const SessionsManager& GetSessionManager() const;
 		private:
 			std::string websocketPath_;
 			Router router_;
