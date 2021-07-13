@@ -92,7 +92,7 @@ namespace daxia
 			router_.GetScheduler().UnscheduleAll();
 		}
 
-		const daxia::dxg::SessionsManager& Server::GetSessionManager() const
+		daxia::dxg::SessionsManager& Server::GetSessionManager()
 		{
 			return router_;
 		}

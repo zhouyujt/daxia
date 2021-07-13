@@ -43,7 +43,7 @@ namespace daxia
 			void UnscheduleUpdate(long long scheduleID);
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
-			const SessionsManager& GetSessionManager() const;
+			SessionsManager& GetSessionManager();
 		private:
 			std::string websocketPath_;
 			Router router_;

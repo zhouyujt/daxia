@@ -105,6 +105,7 @@ namespace daxia
 			std::queue<LogicMessage> logicMsgs_;
 			std::mutex logicMsgLocker_;
 			std::mutex scheduleLocker_;
+			std::mutex handlerLocker_;
 			std::map<long long, boost::asio::deadline_timer*> timers_;
 			long long nextTimerId_;
 		};

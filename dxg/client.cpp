@@ -26,6 +26,10 @@ namespace daxia
 
 		Client::~Client()
 		{
+			handlerLocker_.lock();
+			handler_.clear();
+			handlerLocker_.unlock();
+
 			Close();
 
 			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
@@ -35,6 +39,7 @@ namespace daxia
 			for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
 			{
 				iter->second->cancel();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				delete iter->second;
 			}
 			timers_.clear();
@@ -42,6 +47,13 @@ namespace daxia
 
 		Client::initHelper::initHelper()
 		{
+			// 解决stopLogicThread时,join卡住的问题
+			// https://stackoverflow.com/questions/10915233/stdthreadjoin-hangs-if-called-after-main-exits-when-using-vs2012-rc
+#ifdef _MSC_VER 
+#if _MSC_VER < 1900
+			_Cnd_do_broadcast_at_thread_exit();
+#endif
+#endif
 			startLogicThread();
 			startIoThread();
 		}
@@ -139,6 +151,8 @@ namespace daxia
 
 		void Client::Handle(int msgId, handler h)
 		{
+			lock_guard locker(handlerLocker_);
+
 			handler_[msgId] = h;
 		}
 
@@ -324,6 +338,7 @@ namespace daxia
 						Close();
 					}
 
+					handlerLocker_.lock();
 					auto iter = handler_.find(msg.msgID);
 					if (iter != handler_.end())
 					{
@@ -337,6 +352,7 @@ namespace daxia
 							iter->second(msg.msgID, msg.error, msg.buffer.get(), static_cast<int>(msg.buffer.size()));
 						}
 					}
+					handlerLocker_.unlock();
 				}
 			});
 		}
