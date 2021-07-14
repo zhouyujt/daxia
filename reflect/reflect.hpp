@@ -51,7 +51,7 @@ namespace daxia
 				if (instance != nullptr)
 				{
 					std::swap(v_, instance->v_);
-					this->reflect_base::Swap(r);
+					this->Reflect_base::Swap(r);
 				}
 
 				return *this;
@@ -77,12 +77,17 @@ namespace daxia
 				return *this;
 			}
 
-			const ValueType& operator*() const
+			operator ValueType()
 			{
 				return v_;
 			}
 
-			ValueType& operator*()
+			operator ValueType&()
+			{
+				return v_;
+			}
+
+			operator const ValueType&() const
 			{
 				return v_;
 			}
@@ -91,6 +96,8 @@ namespace daxia
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual bool IsArray() const override { return false; }
 			virtual void ResizeArray(size_t count) override {/*do nothing*/ }
+			ValueType& Value(){ return v_; }
+			const ValueType& Value() const { return v_; }
 		private:
 			// 数组信息
 			struct ArrayInfo
@@ -211,12 +218,17 @@ namespace daxia
 				return *this;
 			}
 
-			const std::vector<ValueType>& operator*() const
+			operator std::vector<ValueType>()
 			{
 				return v_;
 			}
 
-			std::vector<ValueType>& operator*()
+			operator std::vector<ValueType>&()
+			{
+				return v_;
+			}
+
+			operator const std::vector<ValueType>&() const
 			{
 				return v_;
 			}
@@ -230,6 +242,8 @@ namespace daxia
 				std::vector<ValueType> temp(count, tempValue);
 				std::swap(temp, v_);
 			}
+			std::vector<ValueType>& Value(){ return v_; }
+			const std::vector<ValueType>& Value() const { return v_; }
 		private:
 			// 数组信息
 			struct ArrayInfo
@@ -269,6 +283,27 @@ namespace daxia
 		template<class ValueType>
 		std::mutex Reflect<std::vector<ValueType>>::layoutLocker_;
 
+		typedef Reflect<bool> Bool;
+		typedef Reflect<char> Char;
+		typedef Reflect<unsigned char> UChar;
+		typedef Reflect<short> Short;
+		typedef Reflect<unsigned short> UShort;
+		typedef Reflect<int> Int;
+		typedef Reflect<unsigned int> UInt;
+		typedef Reflect<long> Long;
+		typedef Reflect<unsigned long> ULong;
+		typedef Reflect<long long> LLong;
+		typedef Reflect<unsigned long long> ULLong;
+		typedef Reflect<std::string> String;
+		template <typename T> class Vector : public Reflect<std::vector<T>>
+		{
+		public:
+			Vector(const std::string& tags)
+			: Reflect<std::vector<T>>(tags)
+			{
+
+			}
+		};
 	}// namespace reflect
 }// namespace daxia
 

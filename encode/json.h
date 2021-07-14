@@ -157,13 +157,13 @@ namespace daxia
 						if (typeid(T) == typeid(std::string))
 						{
 							std::string str = "\"";
-							str += reinterpret_cast<const std::string&>(*r);
+							str += reinterpret_cast<const std::string&>(r.Value());
 							str += "\"";
 							ptree.put(tag, str);
 						}
 						else
 						{
-							ptree.put(tag, *r);
+							ptree.put(tag, r.Value());
 						}
 					}
 				}
@@ -262,14 +262,14 @@ namespace daxia
 
 				try
 				{
-					if ((**array).empty())
+					if (array->Value().empty())
 					{
 						boost::property_tree::ptree tr;
 						child.push_back(make_pair("", tr));
 					}
 					else
 					{
-						for (auto iter = (**array).begin(); iter != (**array).end(); ++iter)
+						for (auto iter = array->Value().begin(); iter != array->Value().end(); ++iter)
 						{
 							boost::property_tree::ptree tr;
 
@@ -325,7 +325,7 @@ namespace daxia
 
 				for (auto iter = root.begin(); iter != root.end(); ++iter)
 				{
-					(**array).push_back(boost::lexical_cast<T>(iter->second.data()));
+					array->Value().push_back(boost::lexical_cast<T>(iter->second.data()));
 				}
 
 				return true;
