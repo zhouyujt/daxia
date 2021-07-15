@@ -85,8 +85,9 @@ namespace daxia
 
 					ummarshal(reinterpret_cast<char*>(&v), layout, root2, nullptr);
 				}
-				catch (const boost::property_tree::ptree_error&)
+				catch (const boost::property_tree::ptree_error& err)
 				{
+					std::string s = err.what();
 					return false;
 				}
 
@@ -104,7 +105,12 @@ namespace daxia
 			struct ArrayInfo
 			{
 				std::string firstTag;
+				int elementCount;
 				boost::property_tree::ptree ptree;
+				ArrayInfo()
+				{
+					elementCount = 0;
+				}
 			};
 		private:
 			template<class T>

@@ -89,7 +89,9 @@ namespace daxia
 					{
 						ptree child;
 						marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), reflectBase->Layout(), child, nullptr);
-						root.put_child(tag, child);
+
+						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
+						ptree.put_child(tag, child);
 					}
 				}
 			}
@@ -111,7 +113,8 @@ namespace daxia
 			using daxia::reflect::Reflect_helper;
 			using daxia::reflect::Reflect_base;
 
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			int index = 0;
+			for (auto iter = layout.begin(); iter != layout.end(); ++iter,++index)
 			{
 				//std::stringstream ss2;
 				//std::string s2;
@@ -147,9 +150,34 @@ namespace daxia
 				string tag = reflectBase->Tag(JSON);
 				if (!tag.empty())
 				{
+					int nLayoutSize = layout.size();
+					for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+					{
+						std::string str = iter->first;
+						std::string str2 = iter->first;
+					}
+
+					int nRootSize = root.size();
+					for (auto iter = root.begin(); iter != root.end(); ++iter)
+					{
+						std::string str = iter->first;
+						std::string str2 = iter->first;
+					}
+
+					if (parentArray)
+					{
+						int nRootSize = parentArray->ptree.size();
+						for (auto iter = parentArray->ptree.begin(); iter != parentArray->ptree.end(); ++iter)
+						{
+							std::string str = iter->first;
+							std::string str2 = iter->first;
+						}
+					}
+
 					if (reflectBase->IsArray())	// array
 					{
 						const boost::property_tree::ptree& child = root.get_child(tag);
+
 						if (reflectBase->Layout().empty())
 						{
 							// array's element
@@ -173,7 +201,20 @@ namespace daxia
 					}
 					else // object
 					{
-						ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), root.get_child(tag), nullptr);
+						if (parentArray == nullptr)
+						{
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), root.get_child(tag), nullptr);
+						}
+						else
+						{
+							auto elemetIter = parentArray->ptree.begin();
+							for (int i = 0; i < index / parentArray->elementCount; ++i)
+							{
+								++elemetIter;
+							}
+
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), elemetIter->second, nullptr);
+						}
 					}
 				}
 
@@ -229,10 +270,11 @@ namespace daxia
 			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 
 			// 获取数组布局
+			ArrayInfo ai;
 			boost::property_tree::ptree layout = reflectBase->Layout();
+			ai.elementCount = layout.size();
 			extendArrayLayout(reflectBase, layout);
 
-			ArrayInfo ai;
 			boost::property_tree::ptree child;
 			const char* baseaddr = array->Value().begin()._Ptr;
 			marshal(baseaddr, layout, child, &ai);
@@ -255,10 +297,10 @@ namespace daxia
 			reflectBase->ResizeArray(root.size());
 
 			// 获取数组布局
-			boost::property_tree::ptree layout = reflectBase->Layout();
-			extendArrayLayout(reflectBase, layout);
-
 			ArrayInfo ai;
+			boost::property_tree::ptree layout = reflectBase->Layout();
+			ai.elementCount = layout.size();
+			extendArrayLayout(reflectBase, layout);
 			ai.ptree = root;
 
 			ummarshal(array->Value().begin()._Ptr, layout, root, &ai);
