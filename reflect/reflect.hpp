@@ -82,11 +82,6 @@ namespace daxia
 				return v_;
 			}
 
-			operator ValueType&()
-			{
-				return v_;
-			}
-
 			operator const ValueType&() const
 			{
 				return v_;
@@ -188,11 +183,11 @@ namespace daxia
 		public:
 			Reflect_base& Swap(Reflect_base& r)
 			{
-				Reflect<ValueType>* instance = dynamic_cast<Reflect<ValueType>*>(&r);
+				Reflect<std::vector<ValueType>>* instance = dynamic_cast<Reflect<std::vector<ValueType>>*>(&r);
 				if (instance != nullptr)
 				{
 					std::swap(v_, instance->v_);
-					this->reflect_base::Swap(r);
+					this->Reflect_base::Swap(r);
 				}
 
 				return *this;

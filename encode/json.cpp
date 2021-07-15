@@ -89,7 +89,9 @@ namespace daxia
 					{
 						ptree child;
 						marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), reflectBase->Layout(), child, nullptr);
-						root.put_child(tag, child);
+
+						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
+						ptree.put_child(tag, child);
 					}
 				}
 			}
@@ -149,7 +151,18 @@ namespace daxia
 				{
 					if (reflectBase->IsArray())	// array
 					{
-						const boost::property_tree::ptree& child = root.get_child(tag);
+						const boost::property_tree::ptree* ptree = nullptr;
+						if (parentArray == nullptr)
+						{
+							ptree = &root.get_child(tag);
+						}
+						else
+						{
+							auto elemetIter = parentArray->ptree.begin();
+							ptree = &elemetIter->second.get_child(tag);
+						}
+
+						const boost::property_tree::ptree& child = *ptree;
 						if (reflectBase->Layout().empty())
 						{
 							// array's element
@@ -173,7 +186,15 @@ namespace daxia
 					}
 					else // object
 					{
-						ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), root.get_child(tag), nullptr);
+						if (parentArray == nullptr)
+						{
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), root.get_child(tag), nullptr);
+						}
+						else
+						{
+							auto elemetIter = parentArray->ptree.begin();
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), elemetIter->second.get_child(tag), nullptr);
+						}
 					}
 				}
 

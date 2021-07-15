@@ -103,7 +103,7 @@ namespace daxia
 			// 数组信息
 			struct ArrayInfo
 			{
-				std::string firstTag;
+				std::string firstTag;	// 数组元素第一个变量名称，用于判断一个元素填充完毕
 				boost::property_tree::ptree ptree;
 			};
 		private:

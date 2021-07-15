@@ -4,6 +4,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "parser.h"
+#include "../../encode/strconv.h"
 
 namespace daxia
 {
@@ -82,17 +83,43 @@ namespace daxia
 
 				if (!head->hearbeat)
 				{
+					bool ansi = false;
+					std::string json((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead));
 					try
 					{
 						boost::property_tree::ptree root;
-						std::stringstream s(std::string((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead)));
+						std::stringstream s(json);
 						boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
 
 						msgID = root.get<int>("msgId");
+						ansi = true;
 					}
-					catch (boost::property_tree::json_parser_error)
+					catch (const boost::property_tree::json_parser_error&)
 					{
-						return false;
+					}
+					catch (...)
+					{
+					}
+
+					if (!ansi)
+					{
+						try
+						{
+							std::wstring wjson = daxia::encode::Strconv::Ansi2Unicode(json);
+							boost::property_tree::wptree root;
+							std::wstringstream s(wjson);
+							boost::property_tree::read_json<boost::property_tree::wptree>(s, root);
+
+							msgID = root.get<int>(L"msgId");
+						}
+						catch (const boost::property_tree::json_parser_error&)
+						{
+							return false;
+						}
+						catch (...)
+						{
+							return false;
+						}
 					}
 				}
 				else
