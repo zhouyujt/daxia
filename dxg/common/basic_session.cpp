@@ -184,79 +184,93 @@ namespace daxia
 				enum DataError
 				{
 					DataError_Uncomplete,			// 包头不完整
-					DataError_ParseFail				// 报文格式不正确
+					DataError_ParseFail,			// 报文格式不正确
+					DataError_None
 				};
 
-				try
+				DataError error = DataError_None;
+				while (!buffer_.empty())
 				{
-					while (!buffer_.empty())
+					if (parser_)
 					{
-						if (parser_)
+
+						// 读取完整的包头
+						if (buffer_.size() < parser_->GetPacketHeadLen())
 						{
+							error = DataError_Uncomplete;
+							break;
+						}
 
-							// 读取完整的包头
-							if (buffer_.size() < parser_->GetPacketHeadLen()) throw DataError_Uncomplete;
+						// 解析包头
+						size_t contentLen = 0;
+						if (!parser_->UnmarshalHead(this, buffer_.get(), static_cast<int>(buffer_.size()), contentLen))
+						{
+							error = DataError_ParseFail;
+							break;
+						}
 
-							// 解析包头
-							size_t contentLen = 0;
-							if (!parser_->UnmarshalHead(this, buffer_.get(), static_cast<int>(buffer_.size()), contentLen)) throw DataError_ParseFail;
+						if (parser_->GetPacketHeadLen() + contentLen > buffer_.capacity())
+						{
+							buffer_.reserve(parser_->GetPacketHeadLen() + contentLen);
+						}
 
-							if (parser_->GetPacketHeadLen() + contentLen > buffer_.capacity())
-							{
-								buffer_.reserve(parser_->GetPacketHeadLen() + contentLen);
-							}
+						// 包头解析成功，继续接收正文
+						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen)
+						{
+							error = DataError_Uncomplete;
+							break;
+						}
 
-							// 包头解析成功，继续接收正文
-							if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
+						// 解析正文
+						int msgID = 0;
+						common::shared_buffer msg;
+						if (!parser_->UnmarshalContent(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg))
+						{
+							error = DataError_ParseFail;
+							break;
+						}
 
-							// 解析正文
-							int msgID = 0;
-							common::shared_buffer msg;
-							if (!parser_->UnmarshalContent(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg)) throw DataError_ParseFail;
+						// 包头解析成功
+						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
+						onPacket(err, msgID, msg);
 
-							// 包头解析成功
-							lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-							onPacket(err, msgID, msg);
+						++recvPacketCount_;
+						if (recvPacketCount_ == 0) ++recvPacketCount_;
 
-							++recvPacketCount_;
-							if (recvPacketCount_ == 0) ++recvPacketCount_;
-
-							// 整理数据后继续接收
-							if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
-							{
-								size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
-								memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
-								buffer_.resize(remain);
-							}
-							else
-							{
-								buffer_.clear();
-							}
+						// 整理数据后继续接收
+						if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
+						{
+							size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
+							memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
+							buffer_.resize(remain);
 						}
 						else
 						{
 							buffer_.clear();
 						}
 					}
-
-					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-				}
-				catch (DataError stat)
-				{
-					switch (stat)
+					else
 					{
-					case DataError_Uncomplete:
-						// 继续接收完整的报文
-						sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-						break;
-					case DataError_ParseFail:
-						// 抛弃所有数据重新接收
 						buffer_.clear();
-						sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
-						break;
-					default:
-						break;
 					}
+				}
+
+				switch (error)
+				{
+				case DataError_Uncomplete:
+					// 继续接收完整的报文
+					sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					break;
+				case DataError_ParseFail:
+					// 抛弃所有数据重新接收
+					buffer_.clear();
+					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					break;
+				case DataError_None:
+					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					break;
+				default:
+					break;
 				}
 			}
 
