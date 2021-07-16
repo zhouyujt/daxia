@@ -256,7 +256,10 @@ namespace daxia
 			ArrayInfo ai;
 			boost::property_tree::ptree child;
 			const char* baseaddr = array->Value().begin()._Ptr;
-			marshal(baseaddr, layout, child, &ai);
+			if (baseaddr != nullptr)
+			{
+				marshal(baseaddr, layout, child, &ai);
+			}
 
 			// 保存解析完毕的元素
 			child.push_back(std::make_pair("", ai.ptree));
