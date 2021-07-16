@@ -30,7 +30,10 @@ namespace daxia
 			handler_.clear();
 			handlerLocker_.unlock();
 
+			// 由于逻辑线程是全局的（程序结束才结束）
+			// Close后给予逻辑线程调用本类的pushLogicMessage方法
 			Close();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
 			initSocket(BasicSession::socket_ptr());
