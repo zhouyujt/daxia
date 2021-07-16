@@ -201,6 +201,11 @@ namespace daxia
 							size_t contentLen = 0;
 							if (!parser_->UnmarshalHead(this, buffer_.get(), static_cast<int>(buffer_.size()), contentLen)) throw DataError_ParseFail;
 
+							if (parser_->GetPacketHeadLen() + contentLen > buffer_.capacity())
+							{
+								buffer_.reserve(parser_->GetPacketHeadLen() + contentLen);
+							}
+
 							// 包头解析成功，继续接收正文
 							if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen) throw DataError_Uncomplete;
 
