@@ -177,6 +177,7 @@
     <ClInclude Include="..\reflect\reflect.hpp" />
     <ClInclude Include="..\reflect\reflect_base.h" />
     <ClInclude Include="..\singleton.hpp" />
+    <ClInclude Include="..\string.hpp" />
     <ClInclude Include="..\win32\access_token.h" />
     <ClInclude Include="..\win32\path.h" />
     <ClInclude Include="..\win32\process.h" />

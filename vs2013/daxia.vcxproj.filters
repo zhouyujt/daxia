@@ -129,6 +129,9 @@
     <ClInclude Include="..\encode\base64.h">
       <Filter>头文件\encode</Filter>
     </ClInclude>
+    <ClInclude Include="..\string.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\encode\strconv.cpp">
