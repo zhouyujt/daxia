@@ -12,6 +12,10 @@
 #ifndef __DAXIA_DXG_COMMON_SHARED_BUFFER_H
 #define __DAXIA_DXG_COMMON_SHARED_BUFFER_H
 
+#ifdef _MSC_VER
+#include <sdkddkver.h>
+#endif
+
 #include <memory>
 #include <boost/asio.hpp>
 #include "define.h"

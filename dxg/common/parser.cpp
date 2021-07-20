@@ -1,10 +1,8 @@
-#ifdef _MSC_VER
-#include <sdkddkver.h>
-#endif
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "parser.h"
 #include "../../encode/strconv.h"
+#include "../../string.hpp"
 
 namespace daxia
 {
@@ -76,50 +74,32 @@ namespace daxia
 
 				// 数据不足
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				if (head->len + sizeof(PacketHead) > len)
+				if (head->len + sizeof(PacketHead) > static_cast<unsigned int>(len))
 				{
 					return false;
 				}
 
 				if (!head->hearbeat)
 				{
-					bool ansi = false;
-					std::string json((const char*)data + sizeof(PacketHead), len - sizeof(PacketHead));
-					try
+					// 为了提高效率不使用read_json，自己解析msgId
+					daxia::StringA test(reinterpret_cast<const char*>(data), 32 > len ? len : 32);
+					const char* field = "msgId\":";
+					int start = test.Find(field);
+					if (start != -1)
 					{
-						boost::property_tree::ptree root;
-						std::stringstream s(json);
-						boost::property_tree::read_json<boost::property_tree::ptree>(s, root);
-
-						msgID = root.get<int>("msgId");
-						ansi = true;
-					}
-					catch (const boost::property_tree::json_parser_error&)
-					{
-					}
-					catch (...)
-					{
-					}
-
-					if (!ansi)
-					{
-						try
+						daxia::StringA value = test.Mid(start + strlen(field), 16);
+						if (!value.IsEmpty())
 						{
-							std::wstring wjson = daxia::encode::Strconv::Ansi2Unicode(json);
-							boost::property_tree::wptree root;
-							std::wstringstream s(wjson);
-							boost::property_tree::read_json<boost::property_tree::wptree>(s, root);
-
-							msgID = root.get<int>(L"msgId");
+							msgID = atoi(value);
 						}
-						catch (const boost::property_tree::json_parser_error&)
+						else
 						{
 							return false;
 						}
-						catch (...)
-						{
-							return false;
-						}
+					}
+					else
+					{
+						return false;
 					}
 				}
 				else
@@ -127,8 +107,8 @@ namespace daxia
 					msgID = DefMsgID_Heartbeat;
 				}
 
-				buffer.resize(len - sizeof(PacketHead));
-				memcpy(buffer.get(), data + sizeof(PacketHead), len - sizeof(PacketHead));
+				buffer.resize(head->len);
+				memcpy(buffer.get(), data + sizeof(PacketHead), head->len);
 
 				return true;
 			}

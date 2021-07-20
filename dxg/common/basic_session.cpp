@@ -15,7 +15,7 @@ namespace daxia
 			BasicSession::BasicSession()
 				: sendPacketCount_(0)
 				, recvPacketCount_(0)
-				, buffer_(1024 * 16)
+				, buffer_(MaxBufferSize)
 			{
 			}
 
@@ -193,7 +193,6 @@ namespace daxia
 				{
 					if (parser_)
 					{
-
 						// 读取完整的包头
 						if (buffer_.size() < parser_->GetPacketHeadLen())
 						{
@@ -207,11 +206,6 @@ namespace daxia
 						{
 							error = DataError_ParseFail;
 							break;
-						}
-
-						if (parser_->GetPacketHeadLen() + contentLen > buffer_.capacity())
-						{
-							buffer_.reserve(parser_->GetPacketHeadLen() + contentLen);
 						}
 
 						// 包头解析成功，继续接收正文
@@ -255,6 +249,12 @@ namespace daxia
 					}
 				}
 
+				// 不允许超过限定的缓冲区最大值，服务器不缓存过多数据，交由通讯双方自行拆包处理
+				if (buffer_.size() >= MaxBufferSize)
+				{
+					error = DataError_ParseFail;
+				}
+
 				switch (error)
 				{
 				case DataError_Uncomplete:
@@ -262,9 +262,10 @@ namespace daxia
 					sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 					break;
 				case DataError_ParseFail:
-					// 抛弃所有数据重新接收
+					// 断开连接
 					buffer_.clear();
-					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					Close();
+					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
 					break;
 				case DataError_None:
 					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
@@ -316,4 +317,3 @@ namespace daxia
 		}// namespace common
 	}// namespace dxg
 }// namespace daxia
-

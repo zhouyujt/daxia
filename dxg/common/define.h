@@ -35,6 +35,11 @@ namespace daxia
 				DefMsgID_Heartbeat = -3,
 				DefMsgID_UnHandle = -4
 			};
+
+			enum BuffSize : int
+			{
+				MaxBufferSize = 1024 * 32
+			};
 		}
 
 	}
