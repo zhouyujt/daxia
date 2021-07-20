@@ -106,6 +106,11 @@ namespace daxia
 			return Compare(str) == 0;
 		}
 
+		bool operator!=(const Elem* str) const
+		{
+			return Compare(str) != 0;
+		}
+
 		operator const Elem*() const
 		{
 			return v_.c_str();
