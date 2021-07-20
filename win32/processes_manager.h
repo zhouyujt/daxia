@@ -13,6 +13,7 @@
 #ifndef _DAXIA_WIN32_PROCESSESMANAGER_H
 #define _DAXIA_WIN32_PROCESSESMANAGER_H
 #include <functional>
+#include "../string.hpp"
 #include "process.h"
 
 namespace daxia
@@ -35,8 +36,7 @@ namespace daxia
 			};
 		public:
 			static void Enum(std::function<bool(std::shared_ptr<Process>)> fun, EnumType type = EnumType_CreateToolhelp32Snapshot);
-			static bool HasProcess(const char* name);
-			static bool HasProcess(const wchar_t* name);
+			static bool HasProcess(const daxia::String& name);
 		private:
 			static void enumByCreateToolhelp32Snapsho(std::function<bool(std::shared_ptr<Process>)> fun);
 			static void enumByEnumProcesses(std::function<bool(std::shared_ptr<Process>)> fun);

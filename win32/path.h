@@ -15,6 +15,7 @@
 
 #include <string>
 #include <ShlObj.h>
+#include "../string.hpp"
 
 namespace daxia
 {
@@ -28,16 +29,15 @@ namespace daxia
 			~Path();
 		public:
 			// 创建多级目录
-			static bool CreateDirectory(const char* dir);
-			static bool CreateDirectory(const wchar_t* dir);
+			static bool CreateDirectory(const daxia::String& dir);
 
 			// 根据csidl(https://docs.microsoft.com/en-us/windows/win32/shell/csidl)获得指定的路径
-			static std::wstring GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/,bool create = false);
+			static daxia::String GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/,bool create = false);
 
 			// 查找文件名
-			static std::wstring FindFileName(const wchar_t* dir);
+			static daxia::String FindFileName(const daxia::String& dir);
 			// 查找扩展名	
-			static std::wstring FindExtension(const wchar_t* dir);
+			static daxia::String FindExtension(const daxia::String& dir);
 		};
 	}
 }

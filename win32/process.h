@@ -14,7 +14,7 @@
 #define _DAXIA_WIN32_PROCESS_H
 
 #include <memory>
-#include <string>
+#include "../string.hpp"
 #include "access_token.h"
 
 namespace daxia
@@ -37,11 +37,11 @@ namespace daxia
 			// 获取进程句柄
 			void* GetHandle() const;
 			// 获取进程名
-			std::wstring GetName() const;
+			daxia::String GetName() const;
 			// 获取进程执行文件路径
-			std::wstring GetPath() const;
+			daxia::String GetPath() const;
 			// 获取进程当前环境目录
-			std::wstring GetDirectory() const;
+			daxia::String GetDirectory() const;
 			// 获取AccessToken
 			std::shared_ptr<AccessToken> GetAccessToken();
 			// 从内存中加载Dll

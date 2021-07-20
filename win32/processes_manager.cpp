@@ -41,33 +41,25 @@ namespace daxia
 			}
 		}
 
-		bool ProcessesManager::HasProcess(const char* name)
-		{
-			std::wstring wname = daxia::encode::Strconv::Ansi2Unicode(name);
-			return HasProcess(wname.c_str());
-		}
-
-		bool ProcessesManager::HasProcess(const wchar_t* name)
+		bool ProcessesManager::HasProcess(const daxia::String& name)
 		{
 			bool has = false;
-			std::wstring nameTemp = daxia::encode::Strconv::MakeLower(name);
 
 			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 			if (hSnapshot == INVALID_HANDLE_VALUE) return has;
 
 			PROCESSENTRY32 pe;
 			pe.dwSize = sizeof(PROCESSENTRY32);
-			BOOL bRet = ::Process32FirstW(hSnapshot, &pe);
+			BOOL bRet = ::Process32First(hSnapshot, &pe);
 			while (bRet)
 			{
-				std::wstring ext = daxia::encode::Strconv::MakeLower(pe.szExeFile);
-				if (nameTemp == ext)
+				if (name.CompareNoCase(pe.szExeFile) == 0)
 				{
 					has = true;
 					break;
 				}
 
-				bRet = ::Process32NextW(hSnapshot, &pe);
+				bRet = ::Process32Next(hSnapshot, &pe);
 			}
 
 			::CloseHandle(hSnapshot);
