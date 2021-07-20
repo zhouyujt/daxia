@@ -22,6 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include "../reflect/reflect.hpp"
 #include "../encode/strconv.h"
+#include "../string.hpp"
 
 #define JSON "json"
 #define HASH "hash"
@@ -156,8 +157,12 @@ namespace daxia
 
 						if (typeid(T) == typeid(std::string))
 						{
+							daxia::StringA temp(reinterpret_cast<const std::string&>(r.Value()));
+							temp.Replace("\\", "\\\\");
+							temp.Replace("\"", "\\\"");
+
 							std::string str = "\"";
-							str += reinterpret_cast<const std::string&>(r.Value());
+							str += temp.GetString();
 							str += "\"";
 							ptree.put(tag, str);
 						}
