@@ -101,6 +101,14 @@ namespace daxia
 			return *this;
 		}
 
+		String_base operator+(const Elem* str) const
+		{
+			String_base s(*this);
+			s += str;
+
+			return s;
+		}
+
 		bool operator==(const Elem* str) const
 		{
 			return Compare(str) == 0;
