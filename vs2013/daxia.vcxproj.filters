@@ -132,6 +132,9 @@
     <ClInclude Include="..\string.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\dxg\common\http_parser.h">
+      <Filter>头文件\dxg\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\encode\strconv.cpp">
@@ -184,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="..\encode\base64.cpp">
       <Filter>源文件\encode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dxg\common\http_parser.cpp">
+      <Filter>源文件\dxg\common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

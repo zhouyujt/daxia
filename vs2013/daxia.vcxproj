@@ -159,6 +159,7 @@
     <ClInclude Include="..\dxg\client.h" />
     <ClInclude Include="..\dxg\common\basic_session.h" />
     <ClInclude Include="..\dxg\common\define.h" />
+    <ClInclude Include="..\dxg\common\http_parser.h" />
     <ClInclude Include="..\dxg\common\parser.h" />
     <ClInclude Include="..\dxg\common\shared_buffer.h" />
     <ClInclude Include="..\dxg\controller.h" />
@@ -186,6 +187,7 @@
   <ItemGroup>
     <ClCompile Include="..\dxg\client.cpp" />
     <ClCompile Include="..\dxg\common\basic_session.cpp" />
+    <ClCompile Include="..\dxg\common\http_parser.cpp" />
     <ClCompile Include="..\dxg\common\parser.cpp" />
     <ClCompile Include="..\dxg\common\shared_buffer.cpp" />
     <ClCompile Include="..\dxg\router.cpp" />
