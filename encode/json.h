@@ -463,10 +463,9 @@ namespace daxia
 					else if (*b == Ch('\n')) result += Ch('\\'), result += Ch('n');
 					else if (*b == Ch('\r')) result += Ch('\\'), result += Ch('r');
 					else if (*b == Ch('\t')) result += Ch('\\'), result += Ch('t');
-					else if (*b == Ch('/')) result += Ch('\\'), result += Ch('/');
-					//else if (*b == Ch('"'))  result += Ch('\\'), result += Ch('"');
-					else if (*b == Ch('"'))  result += Ch('"');
-					else if (*b == Ch('\\')) result += Ch('\\'), result += Ch('\\');
+					else if (*b == Ch('/'))/* result += Ch('\\'), */result += Ch('/');
+					else if (*b == Ch('"')) /* result += Ch('\\'), */result += Ch('"');
+					else if (*b == Ch('\\'))/* result += Ch('\\'),*/ result += Ch('\\');
 					else
 					{
 						const char *hexdigits = "0123456789ABCDEF";
