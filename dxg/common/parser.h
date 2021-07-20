@@ -32,11 +32,28 @@ namespace daxia
 				Parser(){}
 				~Parser(){}
 			public:
-				virtual size_t GetPacketHeadLen() const = 0;
+				enum Result : int
+				{
+					Result_Success = 0,		// 解析成功
+					Result_Fail,			// 格式错误，解析失败
+					Result_Uncomplete		// 需要更多数据
+				};
+			public:
+				// 封装消息
+				virtual bool Marshal(daxia::dxg::common::BasicSession* session,	// 会话指针
+					const daxia::dxg::common::byte* data,							// 需封装的数据
+					int len,														// data大小，单位字节
+					daxia::dxg::common::shared_buffer& buffer						// 封装后的数据
+					) const = 0;
 
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const = 0;
-				virtual bool UnmarshalHead(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const = 0;
-				virtual bool UnmarshalContent(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const = 0;
+				// 解析消息
+				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,	// 会话指针 
+					const daxia::dxg::common::byte* data,								// 解封的数据
+					int len,															// data大小，单位字节
+					int& msgID,															// 解析出的消息ID
+					daxia::dxg::common::shared_buffer& buffer,							// 解析后的数据			
+					int& packetLen														// 封包长度，单位字节
+					) const = 0;
 			};
 
 			class DefaultParser : public Parser
@@ -56,11 +73,19 @@ namespace daxia
 				};
 #pragma pack()
 			public:
-				virtual size_t GetPacketHeadLen() const override;
+				virtual bool Marshal(daxia::dxg::common::BasicSession* session, 
+					const daxia::dxg::common::byte* data, 
+					int len, 
+					daxia::dxg::common::shared_buffer& buffer
+					) const override;
 
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const override;
-				virtual bool UnmarshalHead(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const override;
-				virtual bool UnmarshalContent(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const override;
+				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session, 
+					const daxia::dxg::common::byte* data, 
+					int len, 
+					int& msgID,
+					daxia::dxg::common::shared_buffer& buffer, 
+					int& packetLen
+					) const override;
 			};
 		}// namespace common
 	}// namespace dxg

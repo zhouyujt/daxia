@@ -10,11 +10,6 @@ namespace daxia
 	{
 		namespace common
 		{
-			size_t DefaultParser::GetPacketHeadLen() const
-			{
-				return sizeof(PacketHead);
-			}
-
 			bool DefaultParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
@@ -36,49 +31,21 @@ namespace daxia
 				return true;
 			}
 
-			bool DefaultParser::UnmarshalHead(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, size_t& contentLen) const
-			{
-				// 数据不足
-				if (len < sizeof(PacketHead))
-				{
-					return false;
-				}
-
-				// 非法数据
-				if (data[0] != 88)
-				{
-					return false;
-				}
-
-				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				contentLen = head->len;
-
-				return true;
-			}
-
-			bool DefaultParser::UnmarshalContent(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer) const
+			Parser::Result DefaultParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer, int& packetLen) const
 			{
 				buffer.clear();
 
 				// 数据不足
-				if (len < sizeof(PacketHead))
-				{
-					return false;
-				}
+				if (len < sizeof(PacketHead)) return Parser::Result::Result_Uncomplete;
 
 				// 非法数据
-				if (data[0] != 88)
-				{
-					return false;
-				}
+				if (data[0] != 88) return Parser::Result::Result_Fail;
 
 				// 数据不足
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				if (head->len + sizeof(PacketHead) > static_cast<unsigned int>(len))
-				{
-					return false;
-				}
-
+				int contentLen = head->len;
+				if (head->len + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
+			
 				if (!head->hearbeat)
 				{
 					// 为了提高效率不使用read_json，自己解析msgId
@@ -87,19 +54,19 @@ namespace daxia
 					int start = test.Find(field);
 					if (start != -1)
 					{
-						daxia::StringA value = test.Mid(start + strlen(field), 16);
+						daxia::StringA value = test.Mid(start + static_cast<int>(strlen(field)), 16);
 						if (!value.IsEmpty())
 						{
 							msgID = atoi(value);
 						}
 						else
 						{
-							return false;
+							return Parser::Result::Result_Fail;
 						}
 					}
 					else
 					{
-						return false;
+						return Parser::Result::Result_Fail;
 					}
 				}
 				else
@@ -110,9 +77,10 @@ namespace daxia
 				buffer.resize(head->len);
 				memcpy(buffer.get(), data + sizeof(PacketHead), head->len);
 
-				return true;
-			}
+				packetLen = sizeof(PacketHead) + head->len;
 
+				return Parser::Result::Result_Success;
+			}
 		}// namespace common
 	}// namespace dxg
 }// namespace daxia

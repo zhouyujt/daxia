@@ -181,46 +181,18 @@ namespace daxia
 
 				buffer_.resize(buffer_.size() + len);
 
-				enum DataError
-				{
-					DataError_Uncomplete,			// 包头不完整
-					DataError_ParseFail,			// 报文格式不正确
-					DataError_None
-				};
-
-				DataError error = DataError_None;
+				Parser::Result result = Parser::Result::Result_Success;
 				while (!buffer_.empty())
 				{
 					if (parser_)
 					{
-						// 读取完整的包头
-						if (buffer_.size() < parser_->GetPacketHeadLen())
-						{
-							error = DataError_Uncomplete;
-							break;
-						}
-
-						// 解析包头
-						size_t contentLen = 0;
-						if (!parser_->UnmarshalHead(this, buffer_.get(), static_cast<int>(buffer_.size()), contentLen))
-						{
-							error = DataError_ParseFail;
-							break;
-						}
-
-						// 包头解析成功，继续接收正文
-						if (buffer_.size() < parser_->GetPacketHeadLen() + contentLen)
-						{
-							error = DataError_Uncomplete;
-							break;
-						}
-
-						// 解析正文
 						int msgID = 0;
+						int packetLen = 0;
 						common::shared_buffer msg;
-						if (!parser_->UnmarshalContent(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg))
+						Parser::Result result = parser_->Unmarshal(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg, packetLen);
+
+						if (result != Parser::Result::Result_Success)
 						{
-							error = DataError_ParseFail;
 							break;
 						}
 
@@ -232,10 +204,10 @@ namespace daxia
 						if (recvPacketCount_ == 0) ++recvPacketCount_;
 
 						// 整理数据后继续接收
-						if (buffer_.size() > parser_->GetPacketHeadLen() + contentLen)
+						if (buffer_.size() > packetLen)
 						{
-							size_t remain = buffer_.size() - (parser_->GetPacketHeadLen() + contentLen);
-							memmove(buffer_.get(), buffer_.get() + parser_->GetPacketHeadLen() + contentLen, remain);
+							size_t remain = buffer_.size() - packetLen;
+							memmove(buffer_.get(), buffer_.get() + packetLen, remain);
 							buffer_.resize(remain);
 						}
 						else
@@ -252,23 +224,23 @@ namespace daxia
 				// 不允许超过限定的缓冲区最大值，服务器不缓存过多数据，交由通讯双方自行拆包处理
 				if (buffer_.size() >= MaxBufferSize)
 				{
-					error = DataError_ParseFail;
+					result = Parser::Result::Result_Fail;
 				}
 
-				switch (error)
+				switch (result)
 				{
-				case DataError_Uncomplete:
-					// 继续接收完整的报文
-					sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+				case Parser::Result::Result_Success:
+					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 					break;
-				case DataError_ParseFail:
+				case Parser::Result::Result_Fail:
 					// 断开连接
 					buffer_.clear();
 					Close();
 					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
 					break;
-				case DataError_None:
-					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+				case Parser::Result::Result_Uncomplete:
+					// 继续接收完整的报文
+					sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 					break;
 				default:
 					break;
