@@ -56,10 +56,10 @@ namespace daxia
 				if (tryPutValue<unsigned long>(baseaddr, reflectBase, root, parentArray)) continue;
 				if (tryPutValue<long long>(baseaddr, reflectBase, root, parentArray)) continue;
 				if (tryPutValue<unsigned long long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<string>(baseaddr, reflectBase, root, parentArray)) continue;
+				if (tryPutValue<std::string>(baseaddr, reflectBase, root, parentArray)) continue;
 
 				// object or array
-				string tag = reflectBase->Tag(JSON);
+				std::string tag = reflectBase->Tag(JSON);
 				if (!tag.empty())
 				{
 					if (reflectBase->IsArray())	// array
@@ -78,7 +78,7 @@ namespace daxia
 							if (tryPutElement<unsigned long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
 							if (tryPutElement<long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
 							if (tryPutElement<unsigned long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<string>(baseaddr, reflectBase, tag, root, parentArray)) continue;
+							if (tryPutElement<std::string>(baseaddr, reflectBase, tag, root, parentArray)) continue;
 						}
 						else
 						{
@@ -109,7 +109,6 @@ namespace daxia
 			//s1 = ss1.str();
 			//std::cout << s1;
 
-			using namespace std;
 			using daxia::reflect::Reflect_helper;
 			using daxia::reflect::Reflect_base;
 
@@ -143,10 +142,10 @@ namespace daxia
 				if (tryGetValue<unsigned long>(reflectBase, root, parentArray)) continue;
 				if (tryGetValue<long long>(reflectBase, root, parentArray)) continue;
 				if (tryGetValue<unsigned long long>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<string>(reflectBase, root, parentArray)) continue;
+				if (tryGetValue<std::string>(reflectBase, root, parentArray)) continue;
 
 				// object or array
-				string tag = reflectBase->Tag(JSON);
+				std::string tag = reflectBase->Tag(JSON);
 				if (!tag.empty())
 				{
 					if (reflectBase->IsArray())	// array
@@ -177,7 +176,7 @@ namespace daxia
 							if (tryGetElement<unsigned long>(reflectBase, child)) continue;
 							if (tryGetElement<long long>(reflectBase, child)) continue;
 							if (tryGetElement<unsigned long long>(reflectBase, child)) continue;
-							if (tryGetElement<string>(reflectBase, child)) continue;
+							if (tryGetElement<std::string>(reflectBase, child)) continue;
 						}
 						else
 						{
@@ -203,15 +202,13 @@ namespace daxia
 
 		void Json::wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree)
 		{
-			using namespace std;
-
 			for (auto iter = wptree.begin(); iter != wptree.end(); ++iter)
 			{
-				string first = Strconv::Unicode2Ansi(iter->first.c_str());
+				std::string first = Strconv::Unicode2Ansi(iter->first.c_str());
 				if (iter->second.empty()) // value
 				{
-					const wstring& val = iter->second.get_value<wstring>();
-					string val2 = Strconv::Unicode2Ansi(val.c_str());
+					const std::wstring& val = iter->second.get_value<std::wstring>();
+					std::string val2 = Strconv::Unicode2Ansi(val.c_str());
 					if (first.empty())
 					{
 						boost::property_tree::ptree child;

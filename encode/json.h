@@ -157,7 +157,7 @@ namespace daxia
 
 						if (typeid(T) == typeid(std::string))
 						{
-							daxia::StringA temp(reinterpret_cast<const std::string&>(r.Value()));
+							daxia::string temp(reinterpret_cast<const std::string&>(r.Value()));
 							temp.Replace("\\", "\\\\");
 							temp.Replace("\"", "\\\"");
 

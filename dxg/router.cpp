@@ -196,14 +196,14 @@ namespace daxia
 				iter->second->requestHeader_ = header;
 
 				static const common::HttpParser::Methods methodsHelp;
-				static const daxia::StringA methodGetHelp = daxia::StringA(methodsHelp.Get.Tag("http")).MakeLower();
-				static const daxia::StringA methodPostHelp = daxia::StringA(methodsHelp.Post.Tag("http")).MakeLower();
-				static const daxia::StringA methodPutHelp = daxia::StringA(methodsHelp.Put.Tag("http")).MakeLower();
-				static const daxia::StringA methodHeadHelp = daxia::StringA(methodsHelp.Head.Tag("http")).MakeLower();
-				static const daxia::StringA methodDeleteHelp = daxia::StringA(methodsHelp.Delete.Tag("http")).MakeLower();
-				static const daxia::StringA methodOptionsHelp = daxia::StringA(methodsHelp.Options.Tag("http")).MakeLower();
-				static const daxia::StringA methodTraceHelp = daxia::StringA(methodsHelp.Trace.Tag("http")).MakeLower();
-				static const daxia::StringA methodConnectHelp = daxia::StringA(methodsHelp.Connect.Tag("http")).MakeLower();
+				static const daxia::string methodGetHelp = daxia::string(methodsHelp.Get.Tag("http")).MakeLower();
+				static const daxia::string methodPostHelp = daxia::string(methodsHelp.Post.Tag("http")).MakeLower();
+				static const daxia::string methodPutHelp = daxia::string(methodsHelp.Put.Tag("http")).MakeLower();
+				static const daxia::string methodHeadHelp = daxia::string(methodsHelp.Head.Tag("http")).MakeLower();
+				static const daxia::string methodDeleteHelp = daxia::string(methodsHelp.Delete.Tag("http")).MakeLower();
+				static const daxia::string methodOptionsHelp = daxia::string(methodsHelp.Options.Tag("http")).MakeLower();
+				static const daxia::string methodTraceHelp = daxia::string(methodsHelp.Trace.Tag("http")).MakeLower();
+				static const daxia::string methodConnectHelp = daxia::string(methodsHelp.Connect.Tag("http")).MakeLower();
 
 				if (msgID == methodGetHelp.Hash()) iter->second->Get(client.get(), this, data);
 				else if (msgID == methodPostHelp.Hash()) iter->second->Post(client.get(), this, data);

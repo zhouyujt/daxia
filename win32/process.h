@@ -37,11 +37,11 @@ namespace daxia
 			// 获取进程句柄
 			void* GetHandle() const;
 			// 获取进程名
-			daxia::String GetName() const;
+			daxia::tstring GetName() const;
 			// 获取进程执行文件路径
-			daxia::String GetPath() const;
+			daxia::tstring GetPath() const;
 			// 获取进程当前环境目录
-			daxia::String GetDirectory() const;
+			daxia::tstring GetDirectory() const;
 			// 获取AccessToken
 			std::shared_ptr<AccessToken> GetAccessToken();
 			// 从内存中加载Dll

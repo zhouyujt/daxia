@@ -59,9 +59,9 @@ namespace daxia
 			return handle_;
 		}
 
-		daxia::String Process::GetName() const
+		daxia::tstring Process::GetName() const
 		{
-			daxia::String name;
+			daxia::tstring name;
 
 			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
 			if (hSnapshot == INVALID_HANDLE_VALUE) return name;
@@ -78,9 +78,9 @@ namespace daxia
 			return name;
 		}
 
-		daxia::String Process::GetPath() const
+		daxia::tstring Process::GetPath() const
 		{
-			daxia::String path;
+			daxia::tstring path;
 
 			HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
 			if (hSnapshot == INVALID_HANDLE_VALUE) return path;
@@ -97,9 +97,9 @@ namespace daxia
 			return path;
 		}
 
-		daxia::String Process::GetDirectory() const
+		daxia::tstring Process::GetDirectory() const
 		{
-			daxia::String dir;
+			daxia::tstring dir;
 			::GetCurrentDirectoryW(MAX_PATH, dir.GetBuffer(MAX_PATH));
 			dir.ReleaseBuffer();
 

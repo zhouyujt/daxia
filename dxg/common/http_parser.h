@@ -23,7 +23,7 @@
 
 using  daxia::reflect::Reflect;
 
-#define MAKE_INDEX(field) index_[daxia::StringA(field.Tag("http")).MakeLower()] = &field;
+#define MAKE_INDEX(field) index_[daxia::string(field.Tag("http")).MakeLower()] = &field;
 
 namespace daxia
 {
@@ -84,7 +84,7 @@ namespace daxia
 
 					bool IsValidMethod(const char* method)
 					{
-						daxia::StringA temp(method);
+						daxia::string temp(method);
 						if (temp.CompareNoCase(Get.Tag("http").c_str()) == 0) return true;
 						if (temp.CompareNoCase(Post.Tag("http").c_str()) == 0) return true;
 						if (temp.CompareNoCase(Put.Tag("http").c_str()) == 0) return true;
@@ -102,7 +102,7 @@ namespace daxia
 				struct GeneralHeader
 				{
 					// 起始行
-					std::vector<daxia::StringA> StartLine;
+					std::vector<daxia::string> StartLine;
 
 					/* 
 					首部字段名			说明									备注
@@ -126,7 +126,7 @@ namespace daxia
 					reflect::String Via = "http:Via";
 					reflect::String Warning = "http:Warning";
 				public:
-					reflect::String* Find(const daxia::StringA& key) const;
+					reflect::String* Find(const daxia::string& key) const;
 				protected:
 					int InitFromData(const void* data, int len, bool isRequest);
 					void makeIndex()
@@ -143,7 +143,7 @@ namespace daxia
 					}
 				protected:
 					// 加快查找的索引
-					std::map<daxia::StringA, reflect::String*> index_;
+					std::map<daxia::string, reflect::String*> index_;
 				};
 
 				class HeaderHelp;
