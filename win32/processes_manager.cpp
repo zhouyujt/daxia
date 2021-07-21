@@ -41,7 +41,7 @@ namespace daxia
 			}
 		}
 
-		bool ProcessesManager::HasProcess(const daxia::String& name)
+		bool ProcessesManager::HasProcess(const daxia::tstring& name)
 		{
 			bool has = false;
 

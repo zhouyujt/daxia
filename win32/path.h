@@ -29,15 +29,15 @@ namespace daxia
 			~Path();
 		public:
 			// 创建多级目录
-			static bool CreateDirectory(const daxia::String& dir);
+			static bool CreateDirectory(const daxia::tstring& dir);
 
 			// 根据csidl(https://docs.microsoft.com/en-us/windows/win32/shell/csidl)获得指定的路径
-			static daxia::String GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/,bool create = false);
+			static daxia::tstring GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/, bool create = false);
 
 			// 查找文件名
-			static daxia::String FindFileName(const daxia::String& dir);
+			static daxia::tstring FindFileName(const daxia::tstring& dir);
 			// 查找扩展名	
-			static daxia::String FindExtension(const daxia::String& dir);
+			static daxia::tstring FindExtension(const daxia::tstring& dir);
 		};
 	}
 }

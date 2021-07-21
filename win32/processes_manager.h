@@ -36,7 +36,7 @@ namespace daxia
 			};
 		public:
 			static void Enum(std::function<bool(std::shared_ptr<Process>)> fun, EnumType type = EnumType_CreateToolhelp32Snapshot);
-			static bool HasProcess(const daxia::String& name);
+			static bool HasProcess(const daxia::tstring& name);
 		private:
 			static void enumByCreateToolhelp32Snapsho(std::function<bool(std::shared_ptr<Process>)> fun);
 			static void enumByEnumProcesses(std::function<bool(std::shared_ptr<Process>)> fun);

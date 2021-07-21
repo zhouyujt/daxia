@@ -13,12 +13,12 @@ namespace daxia
 		{
 		}
 
-		bool Path::CreateDirectory(const daxia::String& dir)
+		bool Path::CreateDirectory(const daxia::tstring& dir)
 		{
 			bool created = false;
 
-			daxia::String path(dir);
-			daxia::String root = path.Left(3);
+			daxia::tstring path(dir);
+			daxia::tstring root = path.Left(3);
 			path = path.Mid(3, -1);
 
 			while (!path.IsEmpty())
@@ -31,7 +31,7 @@ namespace daxia
 				}
 				else
 				{
-					daxia::String floder = path.Left(pos);
+					daxia::tstring floder = path.Left(pos);
 					path = path.Mid(pos + 1, -1);
 					root += floder;
 				}
@@ -50,23 +50,23 @@ namespace daxia
 			return created;
 		}
 
-		daxia::String Path::GetSpecialPath(int csidl/*АэИзЈє CSIDL_APPDATA*/, bool create /*= false*/)
+		daxia::tstring Path::GetSpecialPath(int csidl/*АэИзЈє CSIDL_APPDATA*/, bool create /*= false*/)
 		{
-			daxia::String path;
+			daxia::tstring path;
 			::SHGetSpecialFolderPath(NULL, path.GetBuffer(MAX_PATH), csidl, create ? TRUE : FALSE);
 			path.ReleaseBuffer();
 
 			return path;
 		}
 
-		daxia::String Path::FindFileName(const daxia::String& dir)
+		daxia::tstring Path::FindFileName(const daxia::tstring& dir)
 		{
-			return daxia::String(::PathFindFileName(dir));
+			return daxia::tstring(::PathFindFileName(dir));
 		}
 
-		daxia::String Path::FindExtension(const daxia::String& dir)
+		daxia::tstring Path::FindExtension(const daxia::tstring& dir)
 		{
-			return daxia::String(::PathFindExtension(dir));
+			return daxia::tstring(::PathFindExtension(dir));
 		}
 
 	}

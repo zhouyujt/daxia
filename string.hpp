@@ -499,12 +499,12 @@ namespace daxia
 		return length - 1;
 	}
 
-	typedef String_base<char, std::char_traits<char>, std::allocator<char>> StringA;
-	typedef String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> StringW;
+	typedef String_base<char, std::char_traits<char>, std::allocator<char>> string;
+	typedef String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> wstring;
 #ifdef UNICODE
-	typedef StringW String;
+	typedef wstring tstring;
 #else
-	typedef StringA String;
+	typedef string tstring;
 #endif // UNICODE
 
 }

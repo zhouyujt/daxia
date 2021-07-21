@@ -49,12 +49,12 @@ namespace daxia
 				if (!head->hearbeat)
 				{
 					// 为了提高效率不使用read_json，自己解析msgId
-					daxia::StringA test(reinterpret_cast<const char*>(data), 32 > len ? len : 32);
+					daxia::string test(reinterpret_cast<const char*>(data), 32 > len ? len : 32);
 					const char* field = "msgId\":";
 					int start = test.Find(field);
 					if (start != -1)
 					{
-						daxia::StringA value = test.Mid(start + static_cast<int>(strlen(field)), 16);
+						daxia::string value = test.Mid(start + static_cast<int>(strlen(field)), 16);
 						if (!value.IsEmpty())
 						{
 							msgID = atoi(value);
