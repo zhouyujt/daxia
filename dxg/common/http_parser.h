@@ -23,6 +23,8 @@
 
 using  daxia::reflect::Reflect;
 
+#define MAKE_INDEX(field) index_[daxia::StringA(field.Tag("http")).MakeLower()] = &field;
+
 namespace daxia
 {
 	namespace dxg
@@ -99,6 +101,9 @@ namespace daxia
 				// 通用首部字段（General Header Fields）请求报文和响应报文双方都会使用的首部
 				struct GeneralHeader
 				{
+					// 起始行
+					std::vector<daxia::StringA> StartLine;
+
 					/* 
 					首部字段名			说明									备注
 					Cache-Control		控制缓存的行为							Cache-Control:private,max-age=0,no-cache 多指令
@@ -121,25 +126,32 @@ namespace daxia
 					reflect::String Via = "http:Via";
 					reflect::String Warning = "http:Warning";
 				public:
-					reflect::String* Find(const reflect::String& key);
+					reflect::String* Find(const daxia::StringA& key) const;
 				protected:
-					// 建立索引
-					template<class T>
-					void makeIndex(T* p)
+					int InitFromData(const void* data, int len, bool isRequest);
+					void makeIndex()
 					{
-						index_.clear();
-						for (reflect::String* start = (reflect::String*)p; start < start + sizeof(T); ++start)
-						{
-							index_[start->Tag("http")] = start;
-						}
+						MAKE_INDEX(CacheControl);
+						MAKE_INDEX(Connection);
+						MAKE_INDEX(Date);
+						MAKE_INDEX(Pragma);
+						MAKE_INDEX(Trailer);
+						MAKE_INDEX(TransferEncoding);
+						MAKE_INDEX(Upgrade);
+						MAKE_INDEX(Via);
+						MAKE_INDEX(CacheControl);
 					}
 				protected:
 					// 加快查找的索引
-					std::map<std::string, reflect::String*> index_;
+					std::map<daxia::StringA, reflect::String*> index_;
 				};
+
+				class HeaderHelp;
 
 				struct RequestHeader : public GeneralHeader
 				{
+					friend HeaderHelp;
+
 					/*请求首部字段(Request Header Fields) 从客户端向服务器端发送请求报文时使用的首部.补充了请求的附加内容/客户端信息/响应内容相关优先级等信息
 					首部字段名			说明									备注
 					Accept				用户代理可处理的媒体类型				文本文件 text/html 图片文件	image/jpeg 视频文件	video/mpeg 应用程序使用的二进制文件 eg: application/json
@@ -208,14 +220,50 @@ namespace daxia
 					reflect::String Expires = "http:Expires";
 					reflect::String LastModified = "http:Last-Modified";
 
-					RequestHeader()
+					int InitFromData(const void* data, int len);
+				private:
+					void makeIndex()
 					{
-						makeIndex(this);
+						GeneralHeader::makeIndex();
+
+						MAKE_INDEX(Accept);
+						MAKE_INDEX(AcceptCharset);
+						MAKE_INDEX(AcceptEncoding);
+						MAKE_INDEX(AcceptLanguage);
+						MAKE_INDEX(Authorization);
+						MAKE_INDEX(Expect);
+						MAKE_INDEX(From);
+						MAKE_INDEX(Host);
+						MAKE_INDEX(IfMatch);
+						MAKE_INDEX(IfModifiedSince);
+						MAKE_INDEX(IfNoneMatch);
+						MAKE_INDEX(IfRange);
+						MAKE_INDEX(IfUnmodifiedSince);
+						MAKE_INDEX(MaxForward);
+						MAKE_INDEX(ProxyAuthorization);
+						MAKE_INDEX(Range);
+						MAKE_INDEX(Referer);
+						MAKE_INDEX(TE);
+						MAKE_INDEX(UserAgent);
+
+						MAKE_INDEX(Allow);
+						MAKE_INDEX(Cookie);
+						MAKE_INDEX(ContentEncoding);
+						MAKE_INDEX(ContentLanguage);
+						MAKE_INDEX(ContentLength);
+						MAKE_INDEX(ContentLocation);
+						MAKE_INDEX(ContentMD5);
+						MAKE_INDEX(ContentRange);
+						MAKE_INDEX(ContentType);
+						MAKE_INDEX(Expires);
+						MAKE_INDEX(LastModified);
 					}
 				};
 
 				struct ResponseHeader : public GeneralHeader
 				{
+					friend HeaderHelp;
+
 					/*响应首部字段(Response Header Fields) 从服务器端向客户端返回响应报文时使用的首部.补充了响应的附加内容,也会要求客户端附加额外的内容信息
 					首部字段名			说明
 					Accept-Ranges		是否接受字节范围请求
@@ -264,17 +312,59 @@ namespace daxia
 					reflect::String Expires = "http:Expires";
 					reflect::String LastModified = "http:Last-Modified";
 
-					ResponseHeader()
+					int InitFromData(const void* data, int len);
+				private:
+					void makeIndex()
 					{
-						makeIndex(this);
+						GeneralHeader::makeIndex();
+
+						MAKE_INDEX(AcceptRanges);
+						MAKE_INDEX(Age);
+						MAKE_INDEX(ETage);
+						MAKE_INDEX(Location);
+						MAKE_INDEX(ProxyAuthenticate);
+						MAKE_INDEX(RetryAfter);
+						MAKE_INDEX(Server);
+						MAKE_INDEX(Vary);
+						MAKE_INDEX(WWWAuthenticate);
+
+						MAKE_INDEX(Allow);
+						MAKE_INDEX(SetCookie);
+						MAKE_INDEX(ContentEncoding);
+						MAKE_INDEX(ContentLanguage);
+						MAKE_INDEX(ContentLength);
+						MAKE_INDEX(ContentLocation);
+						MAKE_INDEX(ContentMD5);
+						MAKE_INDEX(ContentRange);
+						MAKE_INDEX(ContentType);
+						MAKE_INDEX(Expires);
+						MAKE_INDEX(LastModified);
 					}
 				};
-			private:
+			public:
+				class HeaderHelp
+				{
+				public:
+					HeaderHelp()
+					{
+						request_.makeIndex();
+						response_.makeIndex();
+					}
+					~HeaderHelp()
+					{
+
+					}
+				public:
+					RequestHeader request_;
+					ResponseHeader response_;
+				};
 				static Methods methodsHelp_;
-				static RequestHeader requestHeaderHelp_;
-				static ResponseHeader responseHeaderHelp_;
+				static HeaderHelp headerHelp_;
 			};
 		}
 	}
 }
+
+#undef MAKE_INDEX
+
 #endif // !__DAXIA_DXG_COMMON_HTTPPARSER_H

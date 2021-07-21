@@ -52,6 +52,11 @@ namespace daxia
 			router_.Handle(msgId, controller);
 		}
 
+		void Server::Handle(const char* url, std::shared_ptr<HttpController> controller)
+		{
+			router_.Handle(url, controller);
+		}
+
 		void Server::EnableCheckHeartbeat(unsigned long milliseconds)
 		{
 			router_.EnableCheckHeartbeat(milliseconds);

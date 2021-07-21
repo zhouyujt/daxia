@@ -4,6 +4,7 @@
 #include "router.h"
 #include "sessions_manager.h"
 #include "common/parser.h"
+#include "common/http_parser.h"
 #include "controller.h"
 
 namespace daxia
@@ -14,7 +15,7 @@ namespace daxia
 			: heartbeatSchedulerId_(-1)
 			, nextSessionId_(0)
 		{
-			parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
+			
 		}
 
 		Router::~Router()
@@ -24,6 +25,11 @@ namespace daxia
 
 		void Router::RunAsTCP(short port)
 		{
+			if (!parser_)
+			{
+				parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
+			}
+
 			endpoint ep(boost::asio::ip::tcp::v4(), port);
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
 
@@ -56,7 +62,28 @@ namespace daxia
 
 		void Router::RunAsHTTP(short port)
 		{
+			parser_ = std::shared_ptr<common::Parser>(new common::HttpParser);
 
+			endpoint ep(boost::asio::ip::tcp::v4(), port);
+			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
+
+			socket_ptr socketSession(new socket(ios_));
+			acceptor_->async_accept(*socketSession, bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
+
+			// 启动I/O线程
+			int coreCount = getCoreCount();
+			for (int i = 0; i < coreCount * 2; ++i)
+			{
+				ioThreads_.push_back(
+					std::thread([=]()
+				{
+					ios_.run();
+				}));
+			}
+
+			// 启动调度器
+			scheduler_.SetNetDispatch(std::bind(&Router::dispatchHttpMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+			scheduler_.Run();
 		}
 
 		void Router::SetParser(std::shared_ptr<common::Parser> parser)
@@ -84,6 +111,11 @@ namespace daxia
 		void Router::Handle(int msgID, std::shared_ptr<Controller> controller)
 		{
 			controllers_[msgID] = controller;
+		}
+
+		void Router::Handle(const char* url, std::shared_ptr<HttpController> controller)
+		{
+			httpControllers_[url] = controller;
 		}
 
 		void Router::EnableCheckHeartbeat(unsigned long interval)
@@ -145,6 +177,56 @@ namespace daxia
 				if (iter != controllers_.end())
 				{
 					iter->second->Proc(msgID, client.get(), this, data);
+				}
+			}
+		}
+
+		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
+		{
+			if (data.size() == 0) return;
+
+			common::HttpParser::RequestHeader header;
+			int packetLen = header.InitFromData(data.get(), static_cast<int>(data.size()));
+
+			if (packetLen == -1) return;
+			
+			auto iter = httpControllers_.find(header.StartLine[common::HttpParser::RequstLineIndex_Url].GetString());
+			if (iter != httpControllers_.end())
+			{
+				iter->second->requestHeader_ = header;
+
+				static const common::HttpParser::Methods methodsHelp;
+				static const daxia::StringA methodGetHelp = daxia::StringA(methodsHelp.Get.Tag("http")).MakeLower();
+				static const daxia::StringA methodPostHelp = daxia::StringA(methodsHelp.Post.Tag("http")).MakeLower();
+				static const daxia::StringA methodPutHelp = daxia::StringA(methodsHelp.Put.Tag("http")).MakeLower();
+				static const daxia::StringA methodHeadHelp = daxia::StringA(methodsHelp.Head.Tag("http")).MakeLower();
+				static const daxia::StringA methodDeleteHelp = daxia::StringA(methodsHelp.Delete.Tag("http")).MakeLower();
+				static const daxia::StringA methodOptionsHelp = daxia::StringA(methodsHelp.Options.Tag("http")).MakeLower();
+				static const daxia::StringA methodTraceHelp = daxia::StringA(methodsHelp.Trace.Tag("http")).MakeLower();
+				static const daxia::StringA methodConnectHelp = daxia::StringA(methodsHelp.Connect.Tag("http")).MakeLower();
+
+				if (msgID == methodGetHelp.Hash()) iter->second->Get(client.get(), this, data);
+				else if (msgID == methodPostHelp.Hash()) iter->second->Post(client.get(), this, data);
+				else if (msgID == methodPutHelp.Hash()) iter->second->Put(client.get(), this, data);
+				else if (msgID == methodHeadHelp.Hash()) iter->second->Head(client.get(), this, data);
+				else if (msgID == methodDeleteHelp.Hash()) iter->second->Delete(client.get(), this, data);
+				else if (msgID == methodOptionsHelp.Hash()) iter->second->Options(client.get(), this, data);
+				else if (msgID == methodTraceHelp.Hash()) iter->second->Trace(client.get(), this, data);
+				else if (msgID == methodConnectHelp.Hash()) iter->second->Connect(client.get(), this, data);
+			}
+			else
+			{
+				if (header.StartLine[common::HttpParser::RequstLineIndex_Url] == "/")
+				{
+					std::string html;
+					html += "<html>\r\n";
+					html += "<body>\r\n";
+					html += "hello world!<br/>\r\n";
+					html += "powered by dxg<br/>\r\n";
+					html += "<a href=\"https://github.com/zhouyujt/daxia\">https://github.com/zhouyujt/daxia</a>\r\n";
+					html += "</body>\r\n";
+					html += "</html>\r\n";
+					client->WriteMessage(html);
 				}
 			}
 		}

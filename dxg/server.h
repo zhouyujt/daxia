@@ -35,6 +35,7 @@ namespace daxia
 			void Stop();
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Handle(int msgId, std::shared_ptr<Controller> controller);
+			void Handle(const char* url, std::shared_ptr<HttpController> controller);
 			void EnableCheckHeartbeat(unsigned long milliseconds);
 			void SetFPS(unsigned long fps);
 			long long ScheduleUpdate(Scheduler::scheduleFunc func);
