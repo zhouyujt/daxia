@@ -109,6 +109,26 @@ namespace daxia
 			return s;
 		}
 
+		bool operator>(const Elem* str) const
+		{
+			return Compare(str) > 0;
+		}
+
+		bool operator>=(const Elem* str) const
+		{
+			return !(Compare(str) < 0);
+		}
+
+		bool operator<(const Elem* str) const
+		{
+			return Compare(str) < 0;
+		}
+
+		bool operator<=(const Elem* str) const
+		{
+			return !(Compare(str) > 0);
+		}
+
 		bool operator==(const Elem* str) const
 		{
 			return Compare(str) == 0;
