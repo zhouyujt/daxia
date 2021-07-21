@@ -29,7 +29,7 @@ namespace daxia
 			Controller(){}
 			virtual ~Controller(){}
 		public:
-			virtual void Proc(int msgId, Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data) = 0;
+			virtual void Proc(int msgId, daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data) = 0;
 		};
 
 		// HTTP逻辑控制器接口类
@@ -39,17 +39,20 @@ namespace daxia
 			HttpController(){}
 			virtual ~HttpController(){}
 		public:
-			virtual void Get(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Post(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Put(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Head(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Delete(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Options(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Trace(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
-			virtual void Connect(Session* session, SessionsManager* sessionsMgr, const common::shared_buffer data){}
+			virtual void Get(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Post(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Put(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Head(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Delete(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Options(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Trace(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
+			virtual void Connect(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
 		public:
+			void InitRequestHeader(const common::HttpParser::RequestHeader& requestHeader){ requestHeader_ = requestHeader; }
+		public:
+			const common::HttpParser::RequestHeader& Header() const { return requestHeader_; }
+		private:
 			common::HttpParser::RequestHeader requestHeader_;
-			common::HttpParser::ResponseHeader responserHeader_;
 		};
 
 	}// namespace dxg

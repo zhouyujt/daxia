@@ -50,6 +50,8 @@ namespace daxia
 					daxia::dxg::common::shared_buffer& buffer,
 					int& packetLen
 					) const override;
+			private:
+				class HeaderHelp;
 			public:
 
 				// 请求起始行分词索引
@@ -98,13 +100,40 @@ namespace daxia
 					}
 				};
 
-				// 通用首部字段（General Header Fields）请求报文和响应报文双方都会使用的首部
-				struct GeneralHeader
+				struct RequestStartLine
 				{
-					// 起始行
+					daxia::string Method;
+					daxia::string Url;
+					daxia::string Version;
+					std::map<daxia::string, daxia::string> Params;
+
+					daxia::string GetParam(const char* param)
+					{
+						daxia::string value;
+						auto iter = Params.find(param);
+						if (iter != Params.end())
+						{
+							value = iter->second;
+						}
+
+						return value;
+					}
+				};
+
+				struct ResponseStartLine
+				{
+					daxia::string Version;
+					daxia::string StatusCode;
+					daxia::string StatusText;
+				};
+
+				// 通用首部字段（General Header Fields）请求报文和响应报文双方都会使用的首部
+				class GeneralHeader
+				{
+				protected:
 					std::vector<daxia::string> StartLine;
 
-					/* 
+					/*
 					首部字段名			说明									备注
 					Cache-Control		控制缓存的行为							Cache-Control:private,max-age=0,no-cache 多指令
 					Connection			逐跳首部/连接的管理						1. 控制不能转发给代理的首部字段 2. 管理持久连接
@@ -116,6 +145,7 @@ namespace daxia
 					Via					代理服务器的相关信息					Via的首部是为了追踪传输路径,配合TRACE方法使用
 					Warning				错误通知								110 111 112 113 199 214 299
 					*/
+				public:
 					reflect::String CacheControl = "http:Cache-Control";
 					reflect::String Connection = "http:Connection";
 					reflect::String Date = "http:Date";
@@ -146,11 +176,12 @@ namespace daxia
 					std::map<daxia::string, reflect::String*> index_;
 				};
 
-				class HeaderHelp;
-
-				struct RequestHeader : public GeneralHeader
+				class RequestHeader : public GeneralHeader
 				{
 					friend HeaderHelp;
+
+				public:
+					RequestStartLine StartLine;
 
 					/*请求首部字段(Request Header Fields) 从客户端向服务器端发送请求报文时使用的首部.补充了请求的附加内容/客户端信息/响应内容相关优先级等信息
 					首部字段名			说明									备注
@@ -174,6 +205,7 @@ namespace daxia
 					TE					传输编码的优先级
 					User-Agent			HTTP客户端程序的信息					创建请求的浏览器 \用户代理名称等信息
 					*/
+				public:
 					reflect::String Accept = "http:Accept";
 					reflect::String AcceptCharset = "http:Accept-Charset";
 					reflect::String AcceptEncoding = "http:Accept-Encoding";
@@ -208,6 +240,7 @@ namespace daxia
 					Expires				实体主体过期的日期时间
 					Last-Modified		资源的最后修改日期时间
 					*/
+				public:
 					reflect::String Allow = "http:Allow";
 					reflect::String Cookie = "http:Cookie";
 					reflect::String ContentEncoding = "http:Content-Encoding";
@@ -220,6 +253,7 @@ namespace daxia
 					reflect::String Expires = "http:Expires";
 					reflect::String LastModified = "http:Last-Modified";
 
+				public:
 					int InitFromData(const void* data, int len);
 				private:
 					void makeIndex()
@@ -260,9 +294,12 @@ namespace daxia
 					}
 				};
 
-				struct ResponseHeader : public GeneralHeader
+				class ResponseHeader : public GeneralHeader
 				{
 					friend HeaderHelp;
+
+				public:
+					ResponseStartLine StartLine;
 
 					/*响应首部字段(Response Header Fields) 从服务器端向客户端返回响应报文时使用的首部.补充了响应的附加内容,也会要求客户端附加额外的内容信息
 					首部字段名			说明
@@ -276,6 +313,7 @@ namespace daxia
 					Vary				代理服务器缓存的管理信息
 					WWW-Authenticate	服务器对客户端的认证信息
 					*/
+				public:
 					reflect::String AcceptRanges = "http:Accept-Ranges";
 					reflect::String Age = "http:Age";
 					reflect::String ETage = "http:ETage";
@@ -300,6 +338,7 @@ namespace daxia
 					Expires				实体主体过期的日期时间
 					Last-Modified		资源的最后修改日期时间
 					*/
+				public:
 					reflect::String Allow = "http:Allow";
 					reflect::String SetCookie = "http:Set-Cookie";
 					reflect::String ContentEncoding = "http:Content-Encoding";
@@ -312,6 +351,7 @@ namespace daxia
 					reflect::String Expires = "http:Expires";
 					reflect::String LastModified = "http:Last-Modified";
 
+				public:
 					int InitFromData(const void* data, int len);
 				private:
 					void makeIndex()
@@ -341,7 +381,7 @@ namespace daxia
 						MAKE_INDEX(LastModified);
 					}
 				};
-			public:
+			private:
 				class HeaderHelp
 				{
 				public:

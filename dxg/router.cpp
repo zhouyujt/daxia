@@ -190,10 +190,10 @@ namespace daxia
 
 			if (packetLen == -1) return;
 			
-			auto iter = httpControllers_.find(header.StartLine[common::HttpParser::RequstLineIndex_Url].GetString());
+			auto iter = httpControllers_.find(header.StartLine.Url.GetString());
 			if (iter != httpControllers_.end())
 			{
-				iter->second->requestHeader_ = header;
+				iter->second->InitRequestHeader(header);
 
 				static const common::HttpParser::Methods methodsHelp;
 				static const daxia::string methodGetHelp = daxia::string(methodsHelp.Get.Tag("http")).MakeLower();
@@ -216,7 +216,7 @@ namespace daxia
 			}
 			else
 			{
-				if (header.StartLine[common::HttpParser::RequstLineIndex_Url] == "/")
+				if (header.StartLine.Url == "/")
 				{
 					std::string html;
 					html += "<html>\r\n";

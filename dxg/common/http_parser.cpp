@@ -219,12 +219,41 @@ namespace daxia
 
 			int HttpParser::RequestHeader::InitFromData(const void* data, int len)
 			{
-				return GeneralHeader::InitFromData(data, len, true);
+				int packetLen = GeneralHeader::InitFromData(data, len, true);
+
+				if (packetLen != -1)
+				{
+					StartLine.Method = GeneralHeader::StartLine[RequstLineIndex_Method];
+					int pos = 0;
+					StartLine.Url = GeneralHeader::StartLine[RequstLineIndex_Url].Tokenize("?",pos);
+					StartLine.Version = GeneralHeader::StartLine[RequstLineIndex_Version];
+
+					// 获取参数
+					daxia::string params = GeneralHeader::StartLine[RequstLineIndex_Url].Mid(pos, -1);
+					std::vector<daxia::string> key_value;
+					params.Split("&", key_value);
+					for each (const daxia::string& kv in key_value)
+					{
+						int pos = 0;
+						StartLine.Params[kv.Tokenize("=", pos).MakeLower()] = kv.Mid(pos, -1);
+					}
+				}
+
+				return packetLen;
 			}
 
 			int HttpParser::ResponseHeader::InitFromData(const void* data, int len)
 			{
-				return GeneralHeader::InitFromData(data, len, false);
+				int packetLen = GeneralHeader::InitFromData(data, len, false);
+
+				if (packetLen != -1)
+				{
+					StartLine.Version = GeneralHeader::StartLine[ResponseLineIndex_Version];
+					StartLine.StatusCode = GeneralHeader::StartLine[ResponseLineIndex_StatusCode];
+					StartLine.StatusText = GeneralHeader::StartLine[ResponseLineIndex_StatusText];
+				}
+
+				return packetLen;
 			}
 
 		}
