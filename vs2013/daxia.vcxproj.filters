@@ -191,5 +191,8 @@
     <ClCompile Include="..\dxg\common\http_parser.cpp">
       <Filter>源文件\dxg\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\dxg\controller.cpp">
+      <Filter>源文件\dxg</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

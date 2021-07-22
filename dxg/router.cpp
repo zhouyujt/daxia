@@ -183,6 +183,8 @@ namespace daxia
 
 		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
 		{
+			using daxia::dxg::common::BasicSession;
+
 			if (data.size() == 0) return;
 
 			common::HttpParser::RequestHeader header;
@@ -193,8 +195,6 @@ namespace daxia
 			auto iter = httpControllers_.find(header.StartLine.Url.GetString());
 			if (iter != httpControllers_.end())
 			{
-				iter->second->InitRequestHeader(header);
-
 				static const common::HttpParser::Methods methodsHelp;
 				static const daxia::string methodGetHelp = daxia::string(methodsHelp.Get.Tag("http")).MakeLower();
 				static const daxia::string methodPostHelp = daxia::string(methodsHelp.Post.Tag("http")).MakeLower();
@@ -205,14 +205,20 @@ namespace daxia
 				static const daxia::string methodTraceHelp = daxia::string(methodsHelp.Trace.Tag("http")).MakeLower();
 				static const daxia::string methodConnectHelp = daxia::string(methodsHelp.Connect.Tag("http")).MakeLower();
 
-				if (msgID == methodGetHelp.Hash()) iter->second->Get(client.get(), this, data);
-				else if (msgID == methodPostHelp.Hash()) iter->second->Post(client.get(), this, data);
-				else if (msgID == methodPutHelp.Hash()) iter->second->Put(client.get(), this, data);
-				else if (msgID == methodHeadHelp.Hash()) iter->second->Head(client.get(), this, data);
-				else if (msgID == methodDeleteHelp.Hash()) iter->second->Delete(client.get(), this, data);
-				else if (msgID == methodOptionsHelp.Hash()) iter->second->Options(client.get(), this, data);
-				else if (msgID == methodTraceHelp.Hash()) iter->second->Trace(client.get(), this, data);
-				else if (msgID == methodConnectHelp.Hash()) iter->second->Connect(client.get(), this, data);
+				iter->second->SetContext(client);
+				client->SetUserData(static_cast<BasicSession::UserDataIndex>(BasicSession::UserDataIndex_End + 1), header);
+				client->SetUserData(static_cast<BasicSession::UserDataIndex>(BasicSession::UserDataIndex_End + 2), common::HttpParser::ResponseHeader());
+
+				if (msgID == static_cast<int>(methodGetHelp.Hash())) iter->second->Get(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodPostHelp.Hash())) iter->second->Post(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodPutHelp.Hash())) iter->second->Put(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash())) iter->second->Head(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())) iter->second->Delete(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())) iter->second->Options(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash())) iter->second->Trace(client.get(), this, data);
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash())) iter->second->Connect(client.get(), this, data);
+
+				iter->second->ResetContext();
 			}
 			else
 			{

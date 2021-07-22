@@ -190,6 +190,7 @@
     <ClCompile Include="..\dxg\common\http_parser.cpp" />
     <ClCompile Include="..\dxg\common\parser.cpp" />
     <ClCompile Include="..\dxg\common\shared_buffer.cpp" />
+    <ClCompile Include="..\dxg\controller.cpp" />
     <ClCompile Include="..\dxg\router.cpp" />
     <ClCompile Include="..\dxg\scheduler.cpp" />
     <ClCompile Include="..\dxg\server.cpp" />

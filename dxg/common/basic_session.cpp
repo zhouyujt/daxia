@@ -136,7 +136,7 @@ namespace daxia
 
 			void BasicSession::WriteMessage(const std::string& data)
 			{
-				WriteMessage(data.c_str(), data.size());
+				WriteMessage(data.c_str(), static_cast<int>(data.size()));
 			}
 
 			void BasicSession::Close()

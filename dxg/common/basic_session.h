@@ -68,10 +68,10 @@ namespace daxia
 
 				// 获取自定义数据
 				template<class T>
-				bool GetUserData(const char* key, T& data);
+				T* GetUserData(const char* key);
 				// 获取自定义数据(高性能)
 				template<class T>
-				bool GetUserData(UserDataIndex index, T& data);
+				T* GetUserData(UserDataIndex index);
 
 				// 删除指定的自定义数据
 				void DeleteUserData(const char* key);
@@ -120,7 +120,7 @@ namespace daxia
 			private:
 				socket_ptr sock_;
 				std::map<unsigned int, boost::any> userData_;
-				boost::any userData2_[UserDataIndex_End];
+				boost::any userData2_[UserDataIndex_End + 10/*框架内部使用*/];
 				std::mutex userDataLocker_;
 				std::shared_ptr<Parser> parser_;
 				std::mutex writeLocker_;
@@ -135,43 +135,44 @@ namespace daxia
 			};
 
 			template<class T>
-			bool BasicSession::GetUserData(const char* key, T& data)
+			T* BasicSession::GetUserData(const char* key)
 			{
 				lock_guard locker(userDataLocker_);
+
+				T* data = nullptr;
 
 				auto iter = userData_.find(hashcode(key));
 				if (iter != userData_.end())
 				{
 					try
 					{
-						data = boost::any_cast<T>(iter->second);
+						data = boost::any_cast<T>(&iter->second);
 					}
 					catch (...)
 					{
-						return false;
 					}
-
-					return true;
 				}
 
-				return  false;
+				return  data;
 			}
 
 			template<class T>
-			bool BasicSession::GetUserData(UserDataIndex index, T& data)
+			T* BasicSession::GetUserData(UserDataIndex index)
 			{
 				lock_guard locker(userDataLocker_);
 
+				if (index >= UserDataIndex_End + 10) return nullptr;
+
+				T* data = nullptr;
 				try
 				{
-					data = boost::any_cast<T>(userData2_[index]);
+					data = boost::any_cast<T>(&userData2_[index]);
 				}
 				catch (...)
 				{
-					return false;
 				}
 
-				return true;
+				return data;
 			}
 
 		}// namespace common

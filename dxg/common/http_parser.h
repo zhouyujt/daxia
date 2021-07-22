@@ -107,7 +107,7 @@ namespace daxia
 					daxia::string Version;
 					std::map<daxia::string, daxia::string> Params;
 
-					daxia::string GetParam(const char* param)
+					daxia::string GetParam(const char* param) const
 					{
 						daxia::string value;
 						auto iter = Params.find(param);

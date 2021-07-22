@@ -48,11 +48,13 @@ namespace daxia
 			virtual void Trace(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
 			virtual void Connect(daxia::dxg::Session* session, daxia::dxg::SessionsManager* sessionsMgr, const daxia::dxg::common::shared_buffer data){}
 		public:
-			void InitRequestHeader(const common::HttpParser::RequestHeader& requestHeader){ requestHeader_ = requestHeader; }
-		public:
-			const common::HttpParser::RequestHeader& Header() const { return requestHeader_; }
+			void SetContext(std::shared_ptr<Session> session);
+			void ResetContext();
+		protected:
+			const common::HttpParser::RequestHeader& Request() const;
+			common::HttpParser::ResponseHeader& Response();
 		private:
-			common::HttpParser::RequestHeader requestHeader_;
+			std::shared_ptr<Session> context_;
 		};
 
 	}// namespace dxg
