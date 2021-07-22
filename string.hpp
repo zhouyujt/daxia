@@ -193,7 +193,7 @@ namespace daxia
 			return const_cast<Elem*>(GetString());
 		}
 
-		size_t newLength = v_.size();
+		int newLength = static_cast<int>(v_.size());
 		if (newLength > 1024 * 1024 * 1024)
 		{
 			newLength += 1024 * 1024;
