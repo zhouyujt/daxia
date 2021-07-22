@@ -96,15 +96,17 @@ namespace daxia
 		{
 			class HttpParser : public Parser
 			{
-			public:
-				HttpParser();
-				~HttpParser();
+			protected:
+				HttpParser(){}
+				virtual ~HttpParser(){}
+			protected:
+				class HeaderHelp;
 			public:
 				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
 					int len,
 					daxia::dxg::common::shared_buffer& buffer
-					) const override;
+					) const = 0;
 
 				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
@@ -112,9 +114,7 @@ namespace daxia
 					int& msgID,
 					daxia::dxg::common::shared_buffer& buffer,
 					int& packetLen
-					) const override;
-			private:
-				class HeaderHelp;
+					) const = 0;
 			public:
 
 				// 请求起始行分词索引
@@ -365,7 +365,7 @@ namespace daxia
 				public:
 					int InitFromData(const void* data, int len);
 				};
-			private:
+			protected:
 				class HeaderHelp
 				{
 				public:
@@ -405,6 +405,48 @@ namespace daxia
 				};
 				static Methods methodsHelp_;
 				static HeaderHelp headerHelp_;
+			};
+
+			class HttpServerParser : public HttpParser
+			{
+			public:
+				HttpServerParser(){}
+				~HttpServerParser(){}
+			public:
+				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
+					const daxia::dxg::common::byte* data,
+					int len,
+					daxia::dxg::common::shared_buffer& buffer
+					) const override;
+
+				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
+					const daxia::dxg::common::byte* data,
+					int len,
+					int& msgID,
+					daxia::dxg::common::shared_buffer& buffer,
+					int& packetLen
+					) const override;
+			};
+
+			class HttpClientParser : public HttpParser
+			{
+			public:
+				HttpClientParser(){}
+				~HttpClientParser(){}
+			public:
+				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
+					const daxia::dxg::common::byte* data,
+					int len,
+					daxia::dxg::common::shared_buffer& buffer
+					) const override;
+
+				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
+					const daxia::dxg::common::byte* data,
+					int len,
+					int& msgID,
+					daxia::dxg::common::shared_buffer& buffer,
+					int& packetLen
+					) const override;
 			};
 		}
 	}

@@ -62,7 +62,7 @@ namespace daxia
 
 		void Router::RunAsHTTP(short port)
 		{
-			parser_ = std::shared_ptr<common::Parser>(new common::HttpParser);
+			parser_ = std::shared_ptr<common::Parser>(new common::HttpServerParser);
 
 			endpoint ep(boost::asio::ip::tcp::v4(), port);
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
