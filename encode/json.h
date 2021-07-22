@@ -97,8 +97,33 @@ namespace daxia
 			template<class ValueType>
 			static bool Unmarshal(const std::string& jsonStr, ValueType& v)
 			{
+#ifdef _MSC_VER
+				// VC char类型为多字节,只支持UTF8
 				std::wstring str = daxia::encode::Strconv::Ansi2Unicode(jsonStr.c_str());
 				return Unmarshal(str, v);
+#else
+				using namespace std;
+				using namespace boost::property_tree;
+				using daxia::reflect::Reflect;
+
+				// 获取内存布局
+				const ptree& layout = Reflect<ValueType>().Layout();
+
+				try
+				{
+					ptree root;
+					stringstream ss(jsonStr);
+					json_parser::read_json(ss, root);
+
+					ummarshal(reinterpret_cast<char*>(&v), layout, root, nullptr);
+				}
+				catch (const boost::property_tree::ptree_error&)
+				{
+					return false;
+				}
+
+				return true;
+#endif
 			}
 
 			// 数组信息
