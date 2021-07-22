@@ -59,6 +59,8 @@ namespace daxia
 		String_base& MakeUpper();
 		int Compare(const Elem* str) const;
 		int CompareNoCase(const Elem* str) const;
+		void Append(const Elem* str, int len);
+		void Append(const Elem* str);
 		// 其他方法
 	public:
 		// 获取哈希值
@@ -422,6 +424,18 @@ namespace daxia
 		temp2.MakeLower();
 
 		return temp1.Compare(temp2);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str, int len)
+	{
+		v_.append(str, len);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str)
+	{
+		v_.append(str);
 	}
 
 	template<class Elem, class Traits, class Alloc>
