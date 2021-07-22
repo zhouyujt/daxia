@@ -40,6 +40,12 @@ namespace daxia
 			{
 				MaxBufferSize = 1024 * 32
 			};
+
+			enum ReserveUserDataIndex
+			{
+				HttpRequestHeaderIndex = 10,
+				HttpResponseHeaderIndex
+			};
 		}
 
 	}

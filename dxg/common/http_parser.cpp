@@ -1,4 +1,5 @@
 #include "http_parser.h"
+#include "basic_session.h"
 #include "../../string.hpp"
 #include "../../encode/json.h"
 
@@ -19,6 +20,7 @@ using daxia::encode::Json;
 
 #define CRLF				"\r\n"
 #define CRLFCRLF			"\r\n\r\n"
+#define OFFSET "offset"
 
 namespace daxia
 {
@@ -41,15 +43,57 @@ namespace daxia
 
 			bool HttpParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
 			{
+				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
+				if (request == nullptr || response == nullptr) return false;
+
 				daxia::string msg;
-				msg += "HTTP/1.1 200 ok\r\n";
-				msg += "Content-Length:";
-				msg.Format("%s%d\r\n", msg.GetString(), len);
-				msg += "\r\n";
-				msg += daxia::string(reinterpret_cast<const char*>(data), len);
+
+				// 设置起始行
+				response->StartLine.Version = request->StartLine.Version;
+				if (response->StartLine.StatusCode.IsEmpty()) response->StartLine.StatusCode = "200";
+				auto iter = headerHelp_.status_.find(atoi(response->StartLine.StatusCode.GetString()));
+				if (iter != headerHelp_.status_.end()) response->StartLine.StatusText = iter->second;
+				msg.Format("%s %s %s", response->StartLine.Version.GetString(), response->StartLine.StatusCode.GetString(), response->StartLine.StatusText.GetString());
+				msg += CRLF;
+
+				// 设置Content-Length
+				daxia::string temp;
+				temp.Format("%d", len);
+				if (len) response->ContentLength.Value() = temp;
+
+				// 设置Server
+				if (response->Server.Value().empty()) response->Server = "powered by dxg";
+
+				// 设置所有响应头
+				auto layout = headerHelp_.response_.Layout();
+				for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+				{
+					unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
+					const reflect::String* field = nullptr;
+					try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response) + offset)); }
+					catch (const std::exception&){}
+					if (field == nullptr) continue;
+
+					auto test = field->Tag("http");
+
+					if (!field->Value().empty())
+					{
+						daxia::string temp;
+						temp.Format("%s:%s", field->Tag("http").c_str(), field->Value().c_str());
+						msg += temp;
+						msg += CRLF;
+					}
+				}
+
+				// 设置头结束符号
+				msg += CRLF;
+
+				// 设置content
+				msg.Append(reinterpret_cast<const char*>(data), len);
+
 				buffer.resize(msg.GetLength());
 				memcpy(buffer.get(), msg, msg.GetLength());
-
 				return true;
 			}
 
@@ -113,7 +157,7 @@ namespace daxia
 				packetLen = headerEndPos + STRLEN_INT(CRLFCRLF);
 
 				// 获取Content-Length
-				daxia::string ContentLengtTag = headerHelp_.request_.ContentLength.Tag("http");
+				daxia::string ContentLengtTag = headerHelp_.request_.Value().ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
 				int lastLineEndPos = startLineEndPos;
 				int lineEndPos = -1;
@@ -151,16 +195,16 @@ namespace daxia
 				return Parser::Result::Result_Success;
 			}
 
-			daxia::reflect::String* HttpParser::GeneralHeader::Find(const daxia::string& key) const
+			daxia::reflect::String* HttpParser::GeneralHeader::Find(const daxia::string& key,const void* base) const
 			{
-				daxia::reflect::String* str = nullptr;
+				const daxia::reflect::String* str = nullptr;
 				auto iter = index_.find(key);
 				if (iter != index_.end())
 				{
-					str = iter->second;
+					str = reinterpret_cast<const daxia::reflect::String*>(reinterpret_cast<const char*>(base) + iter->second);
 				}
 
-				return str;
+				return const_cast<daxia::reflect::String*>(str);
 			}
 
 			int HttpParser::GeneralHeader::InitFromData(const void* data, int len, bool isRequest)
@@ -195,17 +239,15 @@ namespace daxia
 					reflect::String* address = nullptr;
 					if (isRequest)
 					{
-						address = headerHelp_.request_.Find(line.Tokenize(":", pos).MakeLower());
+						address = headerHelp_.request_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
 					}
 					else
 					{
-						address = headerHelp_.response_.Find(line.Tokenize(":", pos).MakeLower());
+						address = headerHelp_.response_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
 					}
 
 					if (address)
 					{
-						size_t offset = (size_t)address - (size_t)&headerHelp_.request_;
-						address = (reflect::String*)((size_t)this + offset);
 						*address = line.Mid(pos, -1);
 					}
 

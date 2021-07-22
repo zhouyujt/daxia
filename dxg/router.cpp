@@ -206,8 +206,8 @@ namespace daxia
 				static const daxia::string methodConnectHelp = daxia::string(methodsHelp.Connect.Tag("http")).MakeLower();
 
 				iter->second->SetContext(client);
-				client->SetUserData(static_cast<BasicSession::UserDataIndex>(BasicSession::UserDataIndex_End + 1), header);
-				client->SetUserData(static_cast<BasicSession::UserDataIndex>(BasicSession::UserDataIndex_End + 2), common::HttpParser::ResponseHeader());
+				client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
+				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
 
 				if (msgID == static_cast<int>(methodGetHelp.Hash())) iter->second->Get(client.get(), this, data);
 				else if (msgID == static_cast<int>(methodPostHelp.Hash())) iter->second->Post(client.get(), this, data);
@@ -218,12 +218,17 @@ namespace daxia
 				else if (msgID == static_cast<int>(methodTraceHelp.Hash())) iter->second->Trace(client.get(), this, data);
 				else if (msgID == static_cast<int>(methodConnectHelp.Hash())) iter->second->Connect(client.get(), this, data);
 
+				client->DeleteUserData(SESSION_USERDATA_REQUEST_INDEX);
+				client->DeleteUserData(SESSION_USERDATA_RESPONSE_INDEX);
 				iter->second->ResetContext();
 			}
 			else
 			{
 				if (header.StartLine.Url == "/")
 				{
+					client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
+					client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());;
+
 					std::string html;
 					html += "<html>\r\n";
 					html += "<body>\r\n";
@@ -233,6 +238,9 @@ namespace daxia
 					html += "</body>\r\n";
 					html += "</html>\r\n";
 					client->WriteMessage(html);
+
+					client->DeleteUserData(SESSION_USERDATA_REQUEST_INDEX);
+					client->DeleteUserData(SESSION_USERDATA_RESPONSE_INDEX);
 				}
 			}
 		}

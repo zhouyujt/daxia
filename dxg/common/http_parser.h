@@ -16,14 +16,77 @@
 
 #ifndef __DAXIA_DXG_COMMON_HTTPPARSER_H
 #define __DAXIA_DXG_COMMON_HTTPPARSER_H
-#include "parser.h"
 #include <map>
+#include "parser.h"
 #include "../../reflect/reflect.hpp"
 #include "../../string.hpp"
 
 using  daxia::reflect::Reflect;
 
-#define MAKE_INDEX(field) index_[daxia::string(field.Tag("http")).MakeLower()] = &field;
+#define OFFSET "offset"
+
+#define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(common::HttpRequestHeaderIndex)
+#define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(common::HttpResponseHeaderIndex)
+#define HTTP_STATUS_MAP(XX)						\
+	XX(100,	Continue)							\
+	XX(101, Switching Protocols)				\
+	XX(102, Processing)							\
+	XX(200, OK)									\
+	XX(201, Created)							\
+	XX(202, Accepted)							\
+	XX(203, Non-Authoritative Information)		\
+	XX(204, No Content)							\
+	XX(205, Reset Content)						\
+	XX(206, Partial Content)					\
+	XX(207, Multi - Status)						\
+	XX(208, Already Reported)					\
+	XX(226, IM Used)							\
+	XX(300, Multiple Choices)					\
+	XX(301, Moved Permanently)					\
+	XX(302, Found)								\
+	XX(303, See Other)							\
+	XX(304, Not Modified)						\
+	XX(305, Use Proxy)							\
+	XX(307, Temporary Redirect)					\
+	XX(308, Permanent Redirect)					\
+	XX(400, Bad Request)						\
+	XX(401, Unauthorized)						\
+	XX(402, Payment Required)					\
+	XX(403, Forbidden)							\
+	XX(404, Not Found)							\
+	XX(405, Method Not Allowed)					\
+	XX(406, Not Acceptable)						\
+	XX(407, Proxy Authentication Required)		\
+	XX(408, Request Timeout)					\
+	XX(409, Conflict)							\
+	XX(410, Gone)								\
+	XX(411, Length Required)					\
+	XX(412, Precondition Failed)				\
+	XX(413, Payload Too Large)					\
+	XX(414, URI Too Long)						\
+	XX(415,	Unsupported Media Type)				\
+	XX(416, Range Not Satisfiable)				\
+	XX(417, Expectation Failed)					\
+	XX(421, Misdirected Request)				\
+	XX(422, Unprocessable Entity)				\
+	XX(423,	Locked)								\
+	XX(424, Failed Dependency)					\
+	XX(426, Upgrade Required)					\
+	XX(428, Precondition Required)				\
+	XX(429, Too Many Requests)					\
+	XX(431, Request Header Fields Too Large)	\
+	XX(451, Unavailable For Legal Reasons)		\
+	XX(500,	Internal Server Error)				\
+	XX(501, Not Implemented)					\
+	XX(502, Bad Gateway)						\
+	XX(503, Service Unavailable)				\
+	XX(504, Gateway Timeout)					\
+	XX(505, HTTP Version Not Supported)			\
+	XX(506, Variant Also Negotiates)			\
+	XX(507, Insufficient Storage)				\
+	XX(508, Loop Detected)						\
+	XX(510, Not Extended)						\
+	XX(511, Network Authentication Required)	\
 
 namespace daxia
 {
@@ -130,6 +193,7 @@ namespace daxia
 				// 通用首部字段（General Header Fields）请求报文和响应报文双方都会使用的首部
 				class GeneralHeader
 				{
+					friend HeaderHelp;
 				protected:
 					std::vector<daxia::string> StartLine;
 
@@ -156,30 +220,16 @@ namespace daxia
 					reflect::String Via = "http:Via";
 					reflect::String Warning = "http:Warning";
 				public:
-					reflect::String* Find(const daxia::string& key) const;
+					reflect::String* Find(const daxia::string& key,const void* base) const;
 				protected:
 					int InitFromData(const void* data, int len, bool isRequest);
-					void makeIndex()
-					{
-						MAKE_INDEX(CacheControl);
-						MAKE_INDEX(Connection);
-						MAKE_INDEX(Date);
-						MAKE_INDEX(Pragma);
-						MAKE_INDEX(Trailer);
-						MAKE_INDEX(TransferEncoding);
-						MAKE_INDEX(Upgrade);
-						MAKE_INDEX(Via);
-						MAKE_INDEX(CacheControl);
-					}
-				protected:
+				private:
 					// 加快查找的索引
-					std::map<daxia::string, reflect::String*> index_;
+					std::map<daxia::string/*tag*/, unsigned long/*offset*/> index_;
 				};
 
 				class RequestHeader : public GeneralHeader
 				{
-					friend HeaderHelp;
-
 				public:
 					RequestStartLine StartLine;
 
@@ -255,49 +305,10 @@ namespace daxia
 
 				public:
 					int InitFromData(const void* data, int len);
-				private:
-					void makeIndex()
-					{
-						GeneralHeader::makeIndex();
-
-						MAKE_INDEX(Accept);
-						MAKE_INDEX(AcceptCharset);
-						MAKE_INDEX(AcceptEncoding);
-						MAKE_INDEX(AcceptLanguage);
-						MAKE_INDEX(Authorization);
-						MAKE_INDEX(Expect);
-						MAKE_INDEX(From);
-						MAKE_INDEX(Host);
-						MAKE_INDEX(IfMatch);
-						MAKE_INDEX(IfModifiedSince);
-						MAKE_INDEX(IfNoneMatch);
-						MAKE_INDEX(IfRange);
-						MAKE_INDEX(IfUnmodifiedSince);
-						MAKE_INDEX(MaxForward);
-						MAKE_INDEX(ProxyAuthorization);
-						MAKE_INDEX(Range);
-						MAKE_INDEX(Referer);
-						MAKE_INDEX(TE);
-						MAKE_INDEX(UserAgent);
-
-						MAKE_INDEX(Allow);
-						MAKE_INDEX(Cookie);
-						MAKE_INDEX(ContentEncoding);
-						MAKE_INDEX(ContentLanguage);
-						MAKE_INDEX(ContentLength);
-						MAKE_INDEX(ContentLocation);
-						MAKE_INDEX(ContentMD5);
-						MAKE_INDEX(ContentRange);
-						MAKE_INDEX(ContentType);
-						MAKE_INDEX(Expires);
-						MAKE_INDEX(LastModified);
-					}
 				};
 
 				class ResponseHeader : public GeneralHeader
 				{
-					friend HeaderHelp;
-
 				public:
 					ResponseStartLine StartLine;
 
@@ -353,33 +364,6 @@ namespace daxia
 
 				public:
 					int InitFromData(const void* data, int len);
-				private:
-					void makeIndex()
-					{
-						GeneralHeader::makeIndex();
-
-						MAKE_INDEX(AcceptRanges);
-						MAKE_INDEX(Age);
-						MAKE_INDEX(ETage);
-						MAKE_INDEX(Location);
-						MAKE_INDEX(ProxyAuthenticate);
-						MAKE_INDEX(RetryAfter);
-						MAKE_INDEX(Server);
-						MAKE_INDEX(Vary);
-						MAKE_INDEX(WWWAuthenticate);
-
-						MAKE_INDEX(Allow);
-						MAKE_INDEX(SetCookie);
-						MAKE_INDEX(ContentEncoding);
-						MAKE_INDEX(ContentLanguage);
-						MAKE_INDEX(ContentLength);
-						MAKE_INDEX(ContentLocation);
-						MAKE_INDEX(ContentMD5);
-						MAKE_INDEX(ContentRange);
-						MAKE_INDEX(ContentType);
-						MAKE_INDEX(Expires);
-						MAKE_INDEX(LastModified);
-					}
 				};
 			private:
 				class HeaderHelp
@@ -387,16 +371,37 @@ namespace daxia
 				public:
 					HeaderHelp()
 					{
-						request_.makeIndex();
-						response_.makeIndex();
+						InitIndex(request_);
+						InitIndex(response_);
+
+#define XX(code,text)	status_[code] = #text;
+						HTTP_STATUS_MAP(XX)
+#undef XX
 					}
 					~HeaderHelp()
 					{
 
 					}
+				private:
+					template<class T>
+					void InitIndex(T& obj)
+					{
+						auto layout = obj.Layout();
+						for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+						{
+							unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
+							const reflect::String* field = nullptr;
+							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(&obj.Value()) + offset)); }
+							catch (const std::exception&){}
+							if (field == nullptr) continue;
+
+							obj.Value().index_[daxia::string(field->Tag("http")).MakeLower()] = offset;
+						}
+					}
 				public:
-					RequestHeader request_;
-					ResponseHeader response_;
+					reflect::Reflect<RequestHeader> request_;
+					reflect::Reflect<ResponseHeader> response_;
+					std::map<int, std::string> status_;
 				};
 				static Methods methodsHelp_;
 				static HeaderHelp headerHelp_;
@@ -405,6 +410,7 @@ namespace daxia
 	}
 }
 
+#undef OFFSET
 #undef MAKE_INDEX
 
 #endif // !__DAXIA_DXG_COMMON_HTTPPARSER_H
