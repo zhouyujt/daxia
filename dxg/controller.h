@@ -17,6 +17,7 @@
 #include "common/http_parser.h"
 #include "session.h"
 #include "sessions_manager.h"
+#include "../encode/json.h"
 
 namespace daxia
 {
@@ -50,9 +51,33 @@ namespace daxia
 		public:
 			void SetContext(std::shared_ptr<Session> session);
 			void ResetContext();
+		public:
+			class ContentTypeHelper
+			{
+			public:
+				ContentTypeHelper() 
+					: json("application/json")
+					, xml("text/xml")
+					, stream("application/octet-stream")
+				{
+				}
+				~ContentTypeHelper() {}
+			public:
+				std::string json;
+				std::string xml;
+				std::string stream;
+			};
+			static ContentTypeHelper ContentType;
 		protected:
 			const common::HttpParser::RequestHeader& Request() const;
 			common::HttpParser::ResponseHeader& Response();
+		protected:
+			template<class T>
+			void ServeJson(const T& v)
+			{
+				Response().ContentType = ContentType.json;
+				context_->WriteMessage(daxia::encode::Json::Marshal(v));
+			}
 		private:
 			std::shared_ptr<Session> context_;
 		};
