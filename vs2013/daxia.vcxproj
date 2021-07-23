@@ -170,6 +170,7 @@
     <ClInclude Include="..\dxg\sessions_manager.h" />
     <ClInclude Include="..\encode\base64.h" />
     <ClInclude Include="..\encode\json.h" />
+    <ClInclude Include="..\encode\md5.h" />
     <ClInclude Include="..\encode\strconv.h" />
     <ClInclude Include="..\include\daxia.h" />
     <ClInclude Include="..\include\dxg.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="..\dxg\sessions_manager.cpp" />
     <ClCompile Include="..\encode\base64.cpp" />
     <ClCompile Include="..\encode\json.cpp" />
+    <ClCompile Include="..\encode\md5.cpp" />
     <ClCompile Include="..\encode\strconv.cpp" />
     <ClCompile Include="..\reflect\reflect_base.cpp" />
     <ClCompile Include="..\win32\access_token.cpp" />

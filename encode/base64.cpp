@@ -28,6 +28,24 @@ namespace daxia
 			return result.str();
 		}
 
+		daxia::string Base64::Marshal(const std::string& str)
+		{
+			using namespace boost::archive::iterators;
+
+			typedef base64_from_binary<transform_width<std::string::const_iterator, 6, 8>> Base64EncodeIter;
+
+			std::stringstream  result;
+			std::copy(Base64EncodeIter(str.begin()), Base64EncodeIter(str.end()), std::ostream_iterator<char>(result));
+
+			size_t Num = (3 - str.size() % 3) % 3;
+			for (size_t i = 0; i < Num; i++)
+			{
+				result.put('=');
+			}
+
+			return result.str();
+		}
+
 		daxia::string Base64::Unmarshal(const char* str)
 		{
 			using namespace boost::archive::iterators;

@@ -135,6 +135,9 @@
     <ClInclude Include="..\dxg\common\http_parser.h">
       <Filter>头文件\dxg\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\encode\md5.h">
+      <Filter>头文件\encode</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\encode\strconv.cpp">
@@ -193,6 +196,9 @@
     </ClCompile>
     <ClCompile Include="..\dxg\controller.cpp">
       <Filter>源文件\dxg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encode\md5.cpp">
+      <Filter>源文件\encode</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
