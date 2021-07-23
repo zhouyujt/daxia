@@ -572,7 +572,14 @@ namespace daxia
 	template<class T>
 	T daxia::String_base<Elem, Traits, Alloc>::NumericCast()
 	{
-		return NumericCastHelp<T>(*this).Cast();
+		if (v_.empty())
+		{
+			return 0;
+		}
+		else
+		{
+			return NumericCastHelp<T>(*this).Cast();
+		}
 	}
 
 	template<class Elem, class Traits, class Alloc>
