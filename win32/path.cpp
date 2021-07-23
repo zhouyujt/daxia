@@ -23,7 +23,7 @@ namespace daxia
 
 			while (!path.IsEmpty())
 			{
-				int pos = path.Find(L'\\');
+				size_t pos = path.Find(L'\\');
 				if (pos == -1)
 				{
 					root += path;

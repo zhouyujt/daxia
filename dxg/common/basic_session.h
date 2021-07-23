@@ -21,6 +21,7 @@
 #include <boost/asio.hpp>
 #include <boost/any.hpp>
 #include "shared_buffer.h"
+#include "../../string.hpp"
 
 namespace daxia
 {
@@ -103,8 +104,9 @@ namespace daxia
 				unsigned long long GetRecvPacketCount() const;
 
 				// 发送消息
-				void WriteMessage(const void* data, int len);
+				void WriteMessage(const void* data, size_t len);
 				void WriteMessage(const std::string& data);
+				void WriteMessage(const daxia::string& data);
 
 				// 关闭会话
 				void Close();

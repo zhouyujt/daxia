@@ -188,7 +188,7 @@ namespace daxia
 			if (data.size() == 0) return;
 
 			common::HttpParser::RequestHeader header;
-			int packetLen = header.InitFromData(data.get(), static_cast<int>(data.size()));
+			size_t packetLen = header.InitFromData(data.get(), data.size());
 
 			if (packetLen == -1) return;
 			

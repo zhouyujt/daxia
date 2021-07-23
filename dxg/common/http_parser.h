@@ -104,16 +104,16 @@ namespace daxia
 			public:
 				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					daxia::dxg::common::shared_buffer& buffer
 					) const = 0;
 
 				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					int& msgID,
 					daxia::dxg::common::shared_buffer& buffer,
-					int& packetLen
+					size_t& packetLen
 					) const = 0;
 			public:
 
@@ -222,7 +222,7 @@ namespace daxia
 				public:
 					reflect::String* Find(const daxia::string& key,const void* base) const;
 				protected:
-					int InitFromData(const void* data, int len, bool isRequest);
+					size_t InitFromData(const void* data, size_t len, bool isRequest);
 				private:
 					// 加快查找的索引
 					std::map<daxia::string/*tag*/, unsigned long/*offset*/> index_;
@@ -304,7 +304,7 @@ namespace daxia
 					reflect::String LastModified = "http:Last-Modified";
 
 				public:
-					int InitFromData(const void* data, int len);
+					size_t InitFromData(const void* data, size_t len);
 				};
 
 				class ResponseHeader : public GeneralHeader
@@ -366,7 +366,7 @@ namespace daxia
 					reflect::String LastModified = "http:Last-Modified";
 
 				public:
-					int InitFromData(const void* data, int len);
+					size_t InitFromData(const void* data, size_t len);
 				};
 			protected:
 				class HeaderHelp
@@ -418,16 +418,16 @@ namespace daxia
 			public:
 				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					daxia::dxg::common::shared_buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					int& msgID,
 					daxia::dxg::common::shared_buffer& buffer,
-					int& packetLen
+					size_t& packetLen
 					) const override;
 			};
 
@@ -439,16 +439,16 @@ namespace daxia
 			public:
 				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					daxia::dxg::common::shared_buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
 					const daxia::dxg::common::byte* data,
-					int len,
+					size_t len,
 					int& msgID,
 					daxia::dxg::common::shared_buffer& buffer,
-					int& packetLen
+					size_t& packetLen
 					) const override;
 			};
 		}

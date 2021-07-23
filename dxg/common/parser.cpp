@@ -10,14 +10,14 @@ namespace daxia
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
+			bool DefaultParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
 
 				PacketHead head;
 				head.magic = 88;
-				head.len = len;
+				head.len = static_cast<int>(len);
 				head.hearbeat = (data == nullptr && len == 0) ? 1 : 0;
 				head.reserve = 0;
 
@@ -31,7 +31,7 @@ namespace daxia
 				return true;
 			}
 
-			Parser::Result DefaultParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer, int& packetLen) const
+			Parser::Result DefaultParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, int& msgID, daxia::dxg::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				buffer.clear();
 
@@ -51,10 +51,10 @@ namespace daxia
 					// 为了提高效率不使用read_json，自己解析msgId
 					daxia::string test(reinterpret_cast<const char*>(data), 32 > len ? len : 32);
 					const char* field = "msgId\":";
-					int start = test.Find(field);
+					size_t start = test.Find(field);
 					if (start != -1)
 					{
-						daxia::string value = test.Mid(start + static_cast<int>(strlen(field)), 16);
+						daxia::string value = test.Mid(start + strlen(field), 16);
 						if (!value.IsEmpty())
 						{
 							msgID = atoi(value);

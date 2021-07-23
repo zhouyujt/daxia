@@ -120,7 +120,7 @@ namespace daxia
 			return token_;
 		}
 
-		void* Process::LoadMemLibrary(const char* data, unsigned long len) const
+		void* Process::LoadMemLibrary(const char* data, size_t len) const
 		{
 			unsigned long size = getImageSize(data);
 
@@ -244,7 +244,7 @@ namespace daxia
 			return ntHeader->OptionalHeader.SizeOfImage;
 		}
 
-		void Process::mapImage(const char* imageData, unsigned long len, char* address, unsigned long size) const
+		void Process::mapImage(const char* imageData, size_t len, char* address, size_t size) const
 		{
 			// ªÒ»°DosÕ∑
 			PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)imageData;
