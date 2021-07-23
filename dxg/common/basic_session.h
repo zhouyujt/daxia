@@ -103,7 +103,7 @@ namespace daxia
 				unsigned long long GetRecvPacketCount() const;
 
 				// 发送消息
-				void WriteMessage(const void* data, int len);
+				void WriteMessage(const void* data, size_t len);
 				void WriteMessage(const std::string& data);
 
 				// 关闭会话

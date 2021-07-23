@@ -22,7 +22,7 @@
 #include "common/basic_session.h"
 #include "common/shared_buffer.h"
 
-#define DXG_CLIENT_HANDLER(id,error,data,len) [&](int id, const boost::system::error_code& error, const void* data, int len)
+#define DXG_CLIENT_HANDLER(id,error,data,len) [&](int id, const boost::system::error_code& error, const void* data, size_t len)
 
 namespace daxia
 {
@@ -34,7 +34,7 @@ namespace daxia
 		public:
 			typedef boost::asio::ip::tcp::endpoint endpoint;
 			typedef boost::asio::ip::tcp::socket socket;
-			typedef std::function<void(int, const boost::system::error_code&, const void*, int)> handler;
+			typedef std::function<void(int, const boost::system::error_code&, const void*, size_t)> handler;
 			typedef std::lock_guard<std::mutex> lock_guard;
 			typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
 			typedef std::function<void()> scheduleFunc;

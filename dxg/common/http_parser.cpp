@@ -16,8 +16,6 @@ using daxia::encode::Json;
 #define MIN(a,b) a < b ? a : b
 #endif
 
-#define STRLEN_INT(s) static_cast<int>(strlen(s))
-
 #define CRLF				"\r\n"
 #define CRLFCRLF			"\r\n\r\n"
 #define OFFSET "offset"
@@ -43,12 +41,12 @@ namespace daxia
 				return const_cast<daxia::reflect::String*>(str);
 			}
 
-			int HttpParser::GeneralHeader::InitFromData(const void* data, int len, bool isRequest)
+			size_t HttpParser::GeneralHeader::InitFromData(const void* data, size_t len, bool isRequest)
 			{
 				daxia::string header(reinterpret_cast<const char*>(data), len);
 
 				// 获取起始行结束位置
-				int startLineEndPos = header.Find(CRLF);
+				size_t startLineEndPos = header.Find(CRLF);
 				if (startLineEndPos == -1) return -1;
 
 				// 获取起始行各个参数并校验
@@ -60,18 +58,18 @@ namespace daxia
 				if (params.size() != RequstLineIndex_End && params.size() != ResponseLineIndex_End) return -1;
 
 				// 获取整个头
-				int headerEndPos = header.Find(CRLFCRLF, startLineEndPos + STRLEN_INT(CRLF));
+				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
 				if (headerEndPos == -1) return -1;
 
 				StartLine = params;
 
 				// 获取所有请求头信息
-				int lastLineEndPos = startLineEndPos;
-				int lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + STRLEN_INT(CRLF))) != -1)
+				size_t lastLineEndPos = startLineEndPos;
+				size_t lineEndPos = -1;
+				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
 				{
-					daxia::string line = header.Mid(lastLineEndPos + STRLEN_INT(CRLF), lineEndPos - lastLineEndPos - STRLEN_INT(CRLF));
-					int pos = 0;
+					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
+					size_t pos = 0;
 					reflect::String* address = nullptr;
 					if (isRequest)
 					{
@@ -90,19 +88,19 @@ namespace daxia
 					lastLineEndPos = lineEndPos;
 				}
 
-				int packetLen = headerEndPos + STRLEN_INT(CRLFCRLF);
+				size_t packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				return packetLen;
 			}
 
-			int HttpParser::RequestHeader::InitFromData(const void* data, int len)
+			size_t HttpParser::RequestHeader::InitFromData(const void* data, size_t len)
 			{
-				int packetLen = GeneralHeader::InitFromData(data, len, true);
+				size_t packetLen = GeneralHeader::InitFromData(data, len, true);
 
 				if (packetLen != -1)
 				{
 					StartLine.Method = GeneralHeader::StartLine[RequstLineIndex_Method];
-					int pos = 0;
+					size_t pos = 0;
 					StartLine.Url = GeneralHeader::StartLine[RequstLineIndex_Url].Tokenize("?",pos);
 					StartLine.Version = GeneralHeader::StartLine[RequstLineIndex_Version];
 
@@ -112,7 +110,7 @@ namespace daxia
 					params.Split("&", key_value);
 					for each (const daxia::string& kv in key_value)
 					{
-						int pos = 0;
+						size_t pos = 0;
 						auto key = kv.Tokenize("=", pos).MakeLower();
 						StartLine.Params[key] = kv.Mid(pos, -1);
 					}
@@ -121,9 +119,9 @@ namespace daxia
 				return packetLen;
 			}
 
-			int HttpParser::ResponseHeader::InitFromData(const void* data, int len)
+			size_t HttpParser::ResponseHeader::InitFromData(const void* data, size_t len)
 			{
-				int packetLen = GeneralHeader::InitFromData(data, len, false);
+				size_t packetLen = GeneralHeader::InitFromData(data, len, false);
 
 				if (packetLen != -1)
 				{
@@ -135,7 +133,7 @@ namespace daxia
 				return packetLen;
 			}
 
-			bool HttpServerParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
+			bool HttpServerParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
 				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
@@ -200,12 +198,12 @@ namespace daxia
 				return true;
 			}
 
-			daxia::dxg::common::Parser::Result HttpServerParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer, int& packetLen) const
+			daxia::dxg::common::Parser::Result HttpServerParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, int& msgID, daxia::dxg::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
 
 				// 获取起始行结束位置
-				int startLineEndPos = header.Find(CRLF);
+				size_t startLineEndPos = header.Find(CRLF);
 				if (startLineEndPos == -1)
 				{
 					if (len >= LIMIT_START_LINE_SIZE)
@@ -232,7 +230,7 @@ namespace daxia
 				if (!methodsHelp_.IsValidMethod(params.front())) return Parser::Result::Result_Fail;
 
 				// 获取整个头
-				int headerEndPos = header.Find(CRLFCRLF, startLineEndPos + STRLEN_INT(CRLF));
+				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
 				if (headerEndPos == -1)
 				{
 					if (len >= LIMIT_HEAD_SIZE)
@@ -247,17 +245,17 @@ namespace daxia
 					}
 				}
 
-				packetLen = headerEndPos + STRLEN_INT(CRLFCRLF);
+				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
 				daxia::string ContentLengtTag = headerHelp_.request_.Value().ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
-				int lastLineEndPos = startLineEndPos;
-				int lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + STRLEN_INT(CRLF))) != -1)
+				size_t lastLineEndPos = startLineEndPos;
+				size_t lineEndPos = -1;
+				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
 				{
-					daxia::string line = header.Mid(lastLineEndPos + STRLEN_INT(CRLF), lineEndPos - lastLineEndPos - STRLEN_INT(CRLF));
-					int pos = 0;
+					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
+					size_t pos = 0;
 
 					if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
 					{
@@ -280,17 +278,17 @@ namespace daxia
 				return Parser::Result::Result_Success;
 			}
 
-			bool HttpClientParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, daxia::dxg::common::shared_buffer& buffer) const
+			bool HttpClientParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, daxia::dxg::common::shared_buffer& buffer) const
 			{
 				throw "尚未实现";
 			}
 
-			daxia::dxg::common::Parser::Result HttpClientParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, int len, int& msgID, daxia::dxg::common::shared_buffer& buffer, int& packetLen) const
+			daxia::dxg::common::Parser::Result HttpClientParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, int& msgID, daxia::dxg::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
 
 				// 获取起始行结束位置
-				int startLineEndPos = header.Find(CRLF);
+				size_t startLineEndPos = header.Find(CRLF);
 				if (startLineEndPos == -1)
 				{
 					if (len >= LIMIT_START_LINE_SIZE)
@@ -314,7 +312,7 @@ namespace daxia
 				if ( params.size() != ResponseLineIndex_End) return Parser::Result::Result_Fail;
 
 				// 获取整个头
-				int headerEndPos = header.Find(CRLFCRLF, startLineEndPos + STRLEN_INT(CRLF));
+				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
 				if (headerEndPos == -1)
 				{
 					if (len >= LIMIT_HEAD_SIZE)
@@ -329,17 +327,17 @@ namespace daxia
 					}
 				}
 
-				packetLen = headerEndPos + STRLEN_INT(CRLFCRLF);
+				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
 				daxia::string ContentLengtTag = headerHelp_.request_.Value().ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
-				int lastLineEndPos = startLineEndPos;
-				int lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + STRLEN_INT(CRLF))) != -1)
+				size_t lastLineEndPos = startLineEndPos;
+				size_t lineEndPos = -1;
+				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
 				{
-					daxia::string line = header.Mid(lastLineEndPos + STRLEN_INT(CRLF), lineEndPos - lastLineEndPos - STRLEN_INT(CRLF));
-					int pos = 0;
+					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
+					size_t pos = 0;
 
 					if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
 					{

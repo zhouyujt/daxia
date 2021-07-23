@@ -109,7 +109,7 @@ namespace daxia
 				return recvPacketCount_;
 			}
 
-			void BasicSession::WriteMessage(const void* data, int len)
+			void BasicSession::WriteMessage(const void* data, size_t len)
 			{
 				shared_buffer buffer;
 				if (parser_)
@@ -136,7 +136,7 @@ namespace daxia
 
 			void BasicSession::WriteMessage(const std::string& data)
 			{
-				WriteMessage(data.c_str(), static_cast<int>(data.size()));
+				WriteMessage(data.c_str(), data.size());
 			}
 
 			void BasicSession::Close()
@@ -187,9 +187,9 @@ namespace daxia
 					if (parser_)
 					{
 						int msgID = 0;
-						int packetLen = 0;
+						size_t packetLen = 0;
 						common::shared_buffer msg;
-						Parser::Result result = parser_->Unmarshal(this, buffer_.get(), static_cast<int>(buffer_.size()), msgID, msg, packetLen);
+						Parser::Result result = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg, packetLen);
 
 						if (result != Parser::Result::Result_Success)
 						{

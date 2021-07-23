@@ -34,32 +34,32 @@ namespace daxia
 	public:
 		String_base();
 		String_base(const Elem* str);
-		String_base(const Elem* str, int count);
+		String_base(const Elem* str, size_t count);
 		String_base(const std::basic_string<Elem, Traits, Alloc>& str);
 
 		// VC里CString的功能
 	public:
-		int GetLength() const;
+		size_t GetLength() const;
 		const Elem* GetString() const;
-		Elem* GetBuffer(int length = 0);
-		void ReleaseBuffer(int maxCount = -1);
+		Elem* GetBuffer(size_t length = 0);
+		void ReleaseBuffer(size_t maxCount = -1);
 		void Empty();
 		bool IsEmpty() const;
-		int Find(Elem ch, int start = 0) const;
-		int Find(const Elem* str, int start = 0) const;
+		size_t Find(Elem ch, size_t start = 0) const;
+		size_t Find(const Elem* str, size_t start = 0) const;
 		void Format(const Elem* format, ...);
 		inline void FormatV(const Elem* format, va_list valist);
-		String_base Left(int count) const; 
-		String_base Right(int count) const;
-		String_base Mid(int start, int count) const;
-		String_base Tokenize(const Elem* sub, int& start) const;
+		String_base Left(size_t count) const; 
+		String_base Right(size_t count) const;
+		String_base Mid(size_t start, size_t count) const;
+		String_base Tokenize(const Elem* sub, size_t& start) const;
 		int Replace(Elem oldch, Elem newch);
 		int Replace(const Elem* oldstr, const Elem* newstr);
 		String_base& MakeLower();
 		String_base& MakeUpper();
 		int Compare(const Elem* str) const;
 		int CompareNoCase(const Elem* str) const;
-		void Append(const Elem* str, int len);
+		void Append(const Elem* str, size_t len);
 		void Append(const Elem* str);
 		// 其他方法
 	public:
@@ -159,7 +159,7 @@ namespace daxia
 			return v_.c_str();
 		}
 	private:
-		int strlen(int maxCount = -1) const;
+		size_t strlen(size_t maxCount = -1) const;
 		template<class T> class NumericCastHelp{};
 		template<> class NumericCastHelp < int > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: int Cast() const{ return std::stoi(str_.v_); } private: const String_base& str_; };
 		template<> class NumericCastHelp < long > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: long Cast() const{ return std::stol(str_.v_); } private: const String_base& str_; };
@@ -193,7 +193,7 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str, int count)
+	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str, size_t count)
 	{
 		v_.append(str, count);
 	}
@@ -205,9 +205,9 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	int daxia::String_base<Elem, Traits, Alloc>::GetLength() const
+	size_t daxia::String_base<Elem, Traits, Alloc>::GetLength() const
 	{
-		return static_cast<int>(v_.length());
+		return v_.length();
 	}
 
 	template<class Elem, class Traits, class Alloc>
@@ -217,14 +217,14 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	Elem* daxia::String_base<Elem, Traits, Alloc>::GetBuffer(int length)
+	Elem* daxia::String_base<Elem, Traits, Alloc>::GetBuffer(size_t length)
 	{
 		if (length == 0)
 		{
 			return const_cast<Elem*>(GetString());
 		}
 
-		int newLength = static_cast<int>(v_.size());
+		size_t newLength = v_.size();
 		if (newLength > 1024 * 1024 * 1024)
 		{
 			newLength += 1024 * 1024;
@@ -245,11 +245,11 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::ReleaseBuffer(int maxCount)
+	void daxia::String_base<Elem, Traits, Alloc>::ReleaseBuffer(size_t maxCount)
 	{
-		if (maxCount == -1 || maxCount > static_cast<int>(v_.size()))
+		if (maxCount == -1 || maxCount > v_.size())
 		{
-			maxCount = static_cast<int>(v_.size());
+			maxCount = v_.size();
 		}
 
 		v_.resize(strlen(maxCount));
@@ -268,15 +268,15 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	int daxia::String_base<Elem, Traits, Alloc>::Find(Elem ch, int start /*= 0*/) const
+	size_t daxia::String_base<Elem, Traits, Alloc>::Find(Elem ch, size_t start /*= 0*/) const
 	{
-		return static_cast<int>(v_.find(ch, start));
+		return v_.find(ch, start);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	int daxia::String_base<Elem, Traits, Alloc>::Find(const Elem* str, int start /*= 0*/) const
+	size_t daxia::String_base<Elem, Traits, Alloc>::Find(const Elem* str, size_t start /*= 0*/) const
 	{
-		return static_cast<int>(v_.find(str, start));
+		return v_.find(str, start);
 	}
 
 	template<class Elem, class Traits, class Alloc>
@@ -327,22 +327,22 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Left(int count) const
+	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Left(size_t count) const
 	{
 		return String_base<Elem, Traits, Alloc>(v_.substr(0, count));
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Right(int count) const
+	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Right(size_t count) const
 	{
 		return String_base<Elem, Traits, Alloc>(v_.substr(v_.size() - count, count));
 	}
 
 
 	template<class Elem, class Traits, class Alloc>
-	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Mid(int start, int count) const
+	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Mid(size_t start, size_t count) const
 	{
-		if (start >= static_cast<int>(v_.size()))
+		if (start >= v_.size())
 		{
 			return String_base<Elem, Traits, Alloc>();
 		}
@@ -352,26 +352,26 @@ namespace daxia
 
 
 	template<class Elem, class Traits, class Alloc>
-	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Tokenize(const Elem* sub, int& start /*= 0*/) const
+	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Tokenize(const Elem* sub, size_t& start /*= 0*/) const
 	{
-		if (start >= static_cast<int>(v_.size()))
+		if (start >= v_.size())
 		{
 			start = -1;
 			return String_base<Elem, Traits, Alloc>();
 		}
 
-		int pos = Find(sub, start);
+		size_t pos = Find(sub, start);
 		if (pos != -1)
 		{
-			int from = start;
-			int count = pos - start;
+			size_t from = start;
+			size_t count = pos - start;
 			start = pos + 1;
 			return Mid(from, count);
 		}
 		else
 		{
-			int from = start;
-			start = static_cast<int>(v_.size()) + 1;
+			size_t from = start;
+			start = v_.size() + 1;
 			return Mid(from, -1);
 		}
 	}
@@ -405,11 +405,11 @@ namespace daxia
 		if (IsEmpty()) return 0;
 
 		String_base<Elem, Traits, Alloc> buffer;
-		int replaceLen = String_base<Elem, Traits, Alloc>(oldstr).GetLength();
+		size_t replaceLen = String_base<Elem, Traits, Alloc>(oldstr).GetLength();
 
-		int pos;
+		size_t pos;
 		int count = 0;
-		int start = 0;
+		size_t start = 0;
 		while ((pos = Find(oldstr,start)) != -1)
 		{
 			++count;
@@ -456,7 +456,7 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str, int len)
+	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str, size_t len)
 	{
 		v_.append(str, len);
 	}
@@ -478,7 +478,7 @@ namespace daxia
 	void daxia::String_base<Elem, Traits, Alloc>::Split(const Elem* sub, std::vector<String_base>& strings) const
 	{
 		strings.clear();
-		int pos = 0;
+		size_t pos = 0;
 		while (pos >= 0)
 		{
 			String_base<Elem, Traits, Alloc> str = Tokenize(sub, pos);
@@ -583,9 +583,9 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	int daxia::String_base<Elem, Traits, Alloc>::strlen(int maxCount /*= -1*/) const
+	size_t daxia::String_base<Elem, Traits, Alloc>::strlen(size_t maxCount /*= -1*/) const
 	{
-		int length = 0;
+		size_t length = 0;
 
 		const Elem* start = v_.c_str();
 		while (maxCount < 0 || length < maxCount)

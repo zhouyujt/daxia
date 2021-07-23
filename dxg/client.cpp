@@ -5,8 +5,6 @@
 #include "common/parser.h"
 #include "../encode/strconv.h"
 
-#define DXG_CLIENT_HANDLER(id,error,date,len) [&](int id, const boost::system::error_code& error, const void* date, int len)
-
 namespace daxia
 {
 	namespace dxg
@@ -345,14 +343,14 @@ namespace daxia
 					auto iter = handler_.find(msg.msgID);
 					if (iter != handler_.end())
 					{
-						iter->second(msg.msgID, msg.error, msg.buffer.get(), static_cast<int>(msg.buffer.size()));
+						iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
 					}
 					else
 					{
 						auto iter = handler_.find(common::DefMsgID_UnHandle);
 						if (iter != handler_.end())
 						{
-							iter->second(msg.msgID, msg.error, msg.buffer.get(), static_cast<int>(msg.buffer.size()));
+							iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
 						}
 					}
 					handlerLocker_.unlock();
