@@ -57,7 +57,7 @@ namespace daxia
 						daxia::string value = test.Mid(start + strlen(field), 16);
 						if (!value.IsEmpty())
 						{
-							msgID = atoi(value);
+							msgID = value.NumericCast<int>();
 						}
 						else
 						{

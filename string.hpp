@@ -129,9 +129,19 @@ namespace daxia
 			return Compare(str) > 0;
 		}
 
+		bool operator>(const String_base& str) const
+		{
+			return Compare(str.GetString()) > 0;
+		}
+
 		bool operator>=(const Elem* str) const
 		{
 			return !(Compare(str) < 0);
+		}
+
+		bool operator>=(const String_base& str) const
+		{
+			return !(Compare(str.GetString()) < 0);
 		}
 
 		bool operator<(const Elem* str) const
@@ -139,9 +149,19 @@ namespace daxia
 			return Compare(str) < 0;
 		}
 
+		bool operator<(const String_base& str) const
+		{
+			return Compare(str.GetString()) < 0;
+		}
+
 		bool operator<=(const Elem* str) const
 		{
 			return !(Compare(str) > 0);
+		}
+
+		bool operator<=(const String_base& str) const
+		{
+			return !(Compare(str.GetString()) > 0);
 		}
 
 		bool operator==(const Elem* str) const
@@ -149,14 +169,24 @@ namespace daxia
 			return Compare(str) == 0;
 		}
 
+		bool operator==(const String_base& str) const
+		{
+			return Compare(str.GetString()) == 0;
+		}
+
 		bool operator!=(const Elem* str) const
 		{
 			return Compare(str) != 0;
 		}
 
-		operator const Elem*() const
+		bool operator!=(const String_base& str) const
 		{
-			return v_.c_str();
+			return Compare(str.GetString()) != 0;
+		}
+
+		operator const std::basic_string<Elem, Traits, Alloc>&() const
+		{
+			return v_;
 		}
 	private:
 		size_t strlen(size_t maxCount = -1) const;
@@ -452,7 +482,7 @@ namespace daxia
 		temp1.MakeLower();
 		temp2.MakeLower();
 
-		return temp1.Compare(temp2);
+		return temp1.Compare(temp2.GetString());
 	}
 
 	template<class Elem, class Traits, class Alloc>

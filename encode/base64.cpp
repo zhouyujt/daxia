@@ -1,117 +1,66 @@
-#ifdef _MSC_VER
-#include <windows.h>
-#endif // _MSC_VER
 #include <string>
-#include <algorithm>
+#include <sstream>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/binary_from_base64.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
 #include "base64.h"
 
 namespace daxia
 {
 	namespace encode
 	{
-		const std::string Base64::_base64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-		const char Base64::base64_pad = '-';
-
-		std::string Base64::Encode(const char* str, unsigned int size)
+		daxia::string Base64::Marshal(const char* data, size_t size)
 		{
-			int num = 0, bin = 0;
-			std::string _encode_result;
-			const unsigned char* current;
-			current = reinterpret_cast<const unsigned char*>(str);
-			while (size > 2) {
-				_encode_result += _base64_table[current[0] >> 2];
-				_encode_result += _base64_table[((current[0] & 0x03) << 4) + (current[1] >> 4)];
-				_encode_result += _base64_table[((current[1] & 0x0f) << 2) + (current[2] >> 6)];
-				_encode_result += _base64_table[current[2] & 0x3f];
+			using namespace boost::archive::iterators;
 
-				current += 3;
-				size -= 3;
-			}
-			if (size > 0)
+			typedef base64_from_binary<transform_width<std::string::const_iterator, 6, 8>> Base64EncodeIter;
+
+			std::stringstream  result;
+			std::string str(data, size);
+			std::copy(Base64EncodeIter(str.begin()), Base64EncodeIter(str.end()), std::ostream_iterator<char>(result));
+
+			size_t Num = (3 - size % 3) % 3;
+			for (size_t i = 0; i < Num; i++)
 			{
-				_encode_result += _base64_table[current[0] >> 2];
-				if (size % 3 == 1) {
-					_encode_result += _base64_table[(current[0] & 0x03) << 4];
-					_encode_result += "==";
-				}
-				else if (size % 3 == 2) {
-					_encode_result += _base64_table[((current[0] & 0x03) << 4) + (current[1] >> 4)];
-					_encode_result += _base64_table[(current[1] & 0x0f) << 2];
-					_encode_result += "=";
-				}
+				result.put('=');
 			}
-			return _encode_result;
+
+			return result.str();
 		}
 
-		std::string Base64::Decode(const char* str, unsigned int size)
+		daxia::string Base64::Unmarshal(const char* str)
 		{
-			//解码表
-			static char DecodeTable[] =
-			{
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -1, -1, -2, -2, -1, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-1, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, 62, -2, -2, -2, 63,
-				52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -2, -2, -2, -2, -2, -2,
-				-2, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
-				15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -2, -2, -2, -2, -2,
-				-2, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-				41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2,
-				-2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2, -2
-			};
+			using namespace boost::archive::iterators;
+			typedef transform_width<binary_from_base64<std::string::const_iterator>, 8, 6> Base64DecodeIter;
 
-			int bin = 0, i = 0, pos = 0;
-			std::string _decode_result;
-			const char *current = str;
-			char ch;
-			while ((ch = *current++) != '\0' && size-- > 0)
+			std::stringstream result;
+			std::string temp(str);
+			try
 			{
-				if (ch == base64_pad) { // 当前一个字符是“=”号
-					/*
-					先说明一个概念：在解码时，4个字符为一组进行一轮字符匹配。
-					两个条件：
-					1、如果某一轮匹配的第二个是“=”且第三个字符不是“=”，说明这个带解析字符串不合法，直接返回空
-					2、如果当前“=”不是第二个字符，且后面的字符只包含空白符，则说明这个这个条件合法，可以继续。
-					*/
-					if (*current != '=' && (i % 4) == 1) {
-						return NULL;
-					}
-					continue;
-				}
-				ch = DecodeTable[ch];
-				//这个很重要，用来过滤所有不合法的字符
-				if (ch < 0) { /* a space or some other separator character, we simply skip over */
-					continue;
-				}
-				switch (i % 4)
-				{
-				case 0:
-					bin = ch << 2;
-					break;
-				case 1:
-					bin |= ch >> 4;
-					_decode_result += bin;
-					bin = (ch & 0x0f) << 4;
-					break;
-				case 2:
-					bin |= ch >> 2;
-					_decode_result += bin;
-					bin = (ch & 0x03) << 6;
-					break;
-				case 3:
-					bin |= ch;
-					_decode_result += bin;
-					break;
-				}
-				i++;
+				copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
 			}
-			return _decode_result;
+			catch (...)
+			{
+			}
+			
+			return result.str();
+		}
+
+		daxia::string Base64::Unmarshal(const std::string& str)
+		{
+			using namespace boost::archive::iterators;
+			typedef transform_width<binary_from_base64<std::string::const_iterator>, 8, 6> Base64DecodeIter;
+
+			std::stringstream result;
+			try
+			{
+				copy(Base64DecodeIter(str.begin()), Base64DecodeIter(str.end()), std::ostream_iterator<char>(result));
+			}
+			catch (...)
+			{
+			}
+
+			return result.str();
 		}
 	}// namespace encode
 }// namespace daxia

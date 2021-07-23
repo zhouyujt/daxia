@@ -36,7 +36,7 @@ namespace daxia
 					root += floder;
 				}
 
-				if (!::CreateDirectory(root, NULL))
+				if (!::CreateDirectory(root.GetString(), NULL))
 				{
 					if (::GetLastError() != ERROR_ALREADY_EXISTS)
 					{
@@ -61,12 +61,12 @@ namespace daxia
 
 		daxia::tstring Path::FindFileName(const daxia::tstring& dir)
 		{
-			return daxia::tstring(::PathFindFileName(dir));
+			return daxia::tstring(::PathFindFileName(dir.GetString()));
 		}
 
 		daxia::tstring Path::FindExtension(const daxia::tstring& dir)
 		{
-			return daxia::tstring(::PathFindExtension(dir));
+			return daxia::tstring(::PathFindExtension(dir.GetString()));
 		}
 
 	}

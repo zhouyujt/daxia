@@ -194,7 +194,7 @@ namespace daxia
 				msg.Append(reinterpret_cast<const char*>(data), len);
 
 				buffer.resize(msg.GetLength());
-				memcpy(buffer.get(), msg, msg.GetLength());
+				memcpy(buffer.get(), msg.GetString(), msg.GetLength());
 				return true;
 			}
 
@@ -227,7 +227,7 @@ namespace daxia
 				if (params.size() != RequstLineIndex_End) return Parser::Result::Result_Fail;
 
 				// 校验方法是否合法
-				if (!methodsHelp_.IsValidMethod(params.front())) return Parser::Result::Result_Fail;
+				if (!methodsHelp_.IsValidMethod(params.front().GetString())) return Parser::Result::Result_Fail;
 
 				// 获取整个头
 				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
@@ -259,7 +259,7 @@ namespace daxia
 
 					if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
 					{
-						packetLen += atoi(line.Tokenize(":", pos));
+						packetLen += line.Tokenize(":", pos).NumericCast<int>();
 						break;
 					}
 
@@ -341,7 +341,7 @@ namespace daxia
 
 					if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
 					{
-						packetLen += atoi(line.Tokenize(":", pos));
+						packetLen += line.Tokenize(":", pos).NumericCast<int>();
 						break;
 					}
 
@@ -351,7 +351,7 @@ namespace daxia
 				// 数据不足
 				if (len < packetLen)  return Parser::Result::Result_Uncomplete;
 
-				msgID = atoi(params[ResponseLineIndex_StatusCode]);
+				msgID = params[ResponseLineIndex_StatusCode].NumericCast<int>();
 
 				// 构造消息
 				buffer.resize(packetLen);

@@ -7,13 +7,13 @@
  * \author 漓江里的大虾
  * \date 七月 2021
  *
- * BASE64的编解码
+ * 封装boost库的BASE64的编解码
  *
  */
 #ifndef __DAXIA_ENCODE_BASE64_H
 #define __DAXIA_ENCODE_BASE64_H
-
 #include <string>
+#include "../string.hpp"
 
 namespace daxia
 {
@@ -25,11 +25,9 @@ namespace daxia
 			Base64() = delete;
 			~Base64(){};
 		public:
-			static std::string Encode(const char* str, unsigned int size);
-			static std::string Decode(const char* str, unsigned int size);
-		private:
-			static const std::string _base64_table;
-			static const char base64_pad;
+			static daxia::string Marshal(const char* data, size_t size);
+			static daxia::string Unmarshal(const char* str);
+			static daxia::string Unmarshal(const std::string& str);
 		};// class Base64
 	}// namespace encode
 }// namespace daxia
