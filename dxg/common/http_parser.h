@@ -25,8 +25,8 @@ using  daxia::reflect::Reflect;
 
 #define OFFSET "offset"
 
-#define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(common::HttpRequestHeaderIndex)
-#define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(common::HttpResponseHeaderIndex)
+#define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(daxia::dxg::common::HttpRequestHeaderIndex)
+#define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(daxia::dxg::common::HttpResponseHeaderIndex)
 #define HTTP_STATUS_MAP(XX)						\
 	XX(100,	Continue)							\
 	XX(101, Switching Protocols)				\
@@ -309,6 +309,9 @@ namespace daxia
 
 				class ResponseHeader : public GeneralHeader
 				{
+				public:
+					bool isNoHeader;
+					ResponseHeader() : isNoHeader(false){}
 				public:
 					ResponseStartLine StartLine;
 

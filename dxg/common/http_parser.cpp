@@ -140,6 +140,14 @@ namespace daxia
 				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
 				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
 				if (request == nullptr || response == nullptr) return false;
+				
+				// 不写响应头(分段数据)
+				if (response->isNoHeader)
+				{
+					buffer.resize(len);
+					memcpy(buffer.get(), data, len);
+					return true;
+				}
 
 				daxia::string msg;
 
@@ -152,9 +160,10 @@ namespace daxia
 				msg += CRLF;
 
 				// 设置Content-Length
-				daxia::string temp;
-				temp.Format("%d", len);
-				if (len) response->ContentLength.Value() = temp;
+				if (daxia::string(response->ContentLength.Value()).NumericCast<int>() == 0)
+				{
+					if (len) response->ContentLength.Value() = daxia::string::ToString(len);
+				}
 
 				// 设置Server
 				if (response->Server.Value().empty()) response->Server = "powered by dxg";

@@ -55,8 +55,8 @@ namespace daxia
 			class ContentTypeHelper
 			{
 			public:
-				ContentTypeHelper() 
-					: json("application/json")
+				ContentTypeHelper()
+					: json("application/json;charset=gbk")
 					, xml("text/xml")
 					, stream("application/octet-stream")
 				{
@@ -76,12 +76,15 @@ namespace daxia
 			template<class T>
 			void ServeJson(const T& v)
 			{
-				Response().StartLine.StatusCode = "200";
-				Response().ContentType = ContentType.json;
-				context_->WriteMessage(daxia::encode::Json::Marshal(v));
+				if (!context_.expired())
+				{
+					Response().StartLine.StatusCode = "200";
+					Response().ContentType = ContentType.json;
+					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
+				}
 			}
 		private:
-			std::shared_ptr<Session> context_;
+			std::weak_ptr<Session> context_;
 		};
 
 	}// namespace dxg

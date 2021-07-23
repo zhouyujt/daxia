@@ -218,8 +218,6 @@ namespace daxia
 				else if (msgID == static_cast<int>(methodTraceHelp.Hash())) iter->second->Trace(client.get(), this, data);
 				else if (msgID == static_cast<int>(methodConnectHelp.Hash())) iter->second->Connect(client.get(), this, data);
 
-				client->DeleteUserData(SESSION_USERDATA_REQUEST_INDEX);
-				client->DeleteUserData(SESSION_USERDATA_RESPONSE_INDEX);
 				iter->second->ResetContext();
 			}
 			else
@@ -238,9 +236,6 @@ namespace daxia
 					html += "</body>\r\n";
 					html += "</html>\r\n";
 					client->WriteMessage(html);
-
-					client->DeleteUserData(SESSION_USERDATA_REQUEST_INDEX);
-					client->DeleteUserData(SESSION_USERDATA_RESPONSE_INDEX);
 				}
 			}
 		}

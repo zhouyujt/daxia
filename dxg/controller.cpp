@@ -21,10 +21,18 @@ namespace daxia
 			using common::BasicSession;
 
 			static common::HttpParser::RequestHeader null;
-			auto* request = context_->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
-			if (request)
+
+			if (!context_.expired())
 			{
-				return *request;
+				auto* request = context_.lock()->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+				if (request)
+				{
+					return *request;
+				}
+				else
+				{
+					return null;
+				}
 			}
 			else
 			{
@@ -37,22 +45,33 @@ namespace daxia
 			using common::BasicSession;
 
 			static common::HttpParser::ResponseHeader null;
-			auto* responser = context_->GetUserData<common::HttpParser::ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
-			if (responser)
+
+			if (!context_.expired())
 			{
-				return *responser;
+				auto* responser = context_.lock()->GetUserData<common::HttpParser::ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
+				if (responser)
+				{
+					return *responser;
+				}
+				else
+				{
+					return null;
+				};
 			}
 			else
 			{
 				return null;
-			};
+			}
 		}
 
 		void HttpController::ServeNone(int status)
 		{
 			Response().StartLine.StatusCode.Format("%d", status);
 
-			context_->WriteMessage(nullptr,0);
+			if (!context_.expired())
+			{
+				context_.lock()->WriteMessage(nullptr,0);
+			}
 		}
 
 	}// namespace dxg
