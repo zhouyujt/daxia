@@ -19,6 +19,18 @@ namespace daxia
 			r.resize(size);
 			::WideCharToMultiByte(CP_ACP, 0, str, -1, const_cast<char*>(r.c_str()), size, NULL, NULL);
 #else
+			if (str == nullptr || wcslen(str) == 0) return r;
+
+			auto old = setlocale(LC_ALL, "zh_CN.gbk");
+			if (old == nullptr) return r;
+		
+			size_t size = wcstombs(nullptr, str, 0);
+			if (size <= 0) return r;
+
+			r.resize(size);
+			wcstombs(const_cast<char*>(r.c_str()), str, size);
+
+			setlocale(LC_ALL, old);
 #endif // _MSC_VER
 
 			return r;
@@ -39,6 +51,18 @@ namespace daxia
 			r.resize(size);
 			::MultiByteToWideChar(CP_ACP, 0, str, -1, const_cast<wchar_t*>(r.c_str()), size);
 #else
+			if (str == nullptr || strlen(str) == 0) return r;
+
+			auto old = setlocale(LC_ALL, "zh_CN.gbk");
+			if (old == nullptr) return r;
+
+			size_t size = mbstowcs(nullptr, str, 0);
+			if (size <= 0) return r;
+
+			r.resize(size);
+			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
+
+			setlocale(LC_ALL, old);
 #endif // _MSC_VER
 
 			return r;
@@ -59,6 +83,18 @@ namespace daxia
 			r.resize(size);
 			::MultiByteToWideChar(CP_UTF8, 0, str, -1, const_cast<wchar_t*>(r.c_str()), size);
 #else
+			if (str == nullptr || strlen(str) == 0) return r;
+
+			auto old = setlocale(LC_ALL, "zh_CN.utf8");
+			if (old == nullptr) return r;
+
+			size_t size = mbstowcs(nullptr, str, 0);
+			if (size <= 0) return r;
+
+			r.resize(size);
+			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
+
+			setlocale(LC_ALL, old);
 #endif // _MSC_VER
 
 			return r;
@@ -73,11 +109,8 @@ namespace daxia
 		{
 			std::string r;
 
-#ifdef _MSC_VER
 			std::wstring temp = Utf82Unicode(str);
 			r = Unicode2Ansi(temp.c_str());
-#else
-#endif // _MSC_VER
 
 			return r;
 		}
@@ -97,6 +130,18 @@ namespace daxia
 			r.resize(size);
 			::WideCharToMultiByte(CP_UTF8, 0, str, -1, const_cast<char*>(r.c_str()), size, NULL, NULL);
 #else
+			if (str == nullptr || wcslen(str) == 0) return r;
+
+			auto old = setlocale(LC_ALL, "zh_CN.utf8");
+			if (old == nullptr) return r;
+
+			size_t size = wcstombs(nullptr, str, 0);
+			if (size <= 0) return r;
+
+			r.resize(size);
+			wcstombs(const_cast<char*>(r.c_str()), str, size);
+
+			setlocale(LC_ALL, old);
 #endif // _MSC_VER
 
 			return r;
@@ -111,11 +156,8 @@ namespace daxia
 		{
 			std::string r;
 
-#ifdef _MSC_VER
 			std::wstring temp = Ansi2Unicode(str);
 			r = Unicode2Utf8(temp.c_str());
-#else
-#endif // _MSC_VER
 
 			return r;
 		}
