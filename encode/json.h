@@ -40,7 +40,7 @@ namespace daxia
 			~Json(){}
 		public:
 			template<class ValueType>
-			static std::string Marshal(const ValueType& v, bool pretty = false)
+			static daxia::string Marshal(const ValueType& v, bool pretty = false)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
@@ -59,7 +59,7 @@ namespace daxia
 			}
 
 			template<class ValueType>
-			static bool Unmarshal(const std::wstring& jsonStr, ValueType& v)
+			static bool Unmarshal(const daxia::wstring& jsonStr, ValueType& v)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
@@ -71,7 +71,7 @@ namespace daxia
 				try
 				{
 					wptree root;
-					wstringstream ss(jsonStr);
+					wstringstream ss(jsonStr.GetString());
 					json_parser::read_json(ss, root);
 
 					// wptree => ptree
@@ -95,12 +95,11 @@ namespace daxia
 			}
 
 			template<class ValueType>
-			static bool Unmarshal(const std::string& jsonStr, ValueType& v)
+			static bool Unmarshal(const daxia::string& jsonStr, ValueType& v)
 			{
 #ifdef _MSC_VER
 				// VC char类型为多字节,只支持UTF8
-				std::wstring str = daxia::encode::Strconv::Ansi2Unicode(jsonStr.c_str());
-				return Unmarshal(str, v);
+				return Unmarshal(jsonStr.Ansi2Unicode(), v);
 #else
 				using namespace std;
 				using namespace boost::property_tree;
@@ -112,7 +111,7 @@ namespace daxia
 				try
 				{
 					ptree root;
-					stringstream ss(jsonStr);
+					stringstream ss(jsonStr.GetString());
 					json_parser::read_json(ss, root);
 
 					ummarshal(reinterpret_cast<char*>(&v), layout, root, nullptr);
