@@ -40,10 +40,10 @@ namespace daxia
 			daxia::string Update(const char* data, size_t size);
 			daxia::string Update(const std::string& data);
 		public:
-			static daxia::string Marshal(const char* data, size_t size);
+			static daxia::string Marshal(const void* data, size_t size);
 			static daxia::string Marshal(const std::string& data);
 		private:
-			static daxia::string update(const char* data, size_t size, std::shared_ptr<boost::uuids::detail::md5> md5);
+			static daxia::string update(const void* data, size_t size, std::shared_ptr<boost::uuids::detail::md5> md5);
 			std::shared_ptr<boost::uuids::detail::md5> md5_;
 		};// class Base64
 	}// namespace encode

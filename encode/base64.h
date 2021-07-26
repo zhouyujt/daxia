@@ -25,7 +25,7 @@ namespace daxia
 			Base64() = delete;
 			~Base64(){};
 		public:
-			static daxia::string Marshal(const char* data, size_t size);
+			static daxia::string Marshal(const void* data, size_t size);
 			static daxia::string Marshal(const std::string& str);
 			static daxia::string Unmarshal(const char* str);
 			static daxia::string Unmarshal(const std::string& str);

@@ -24,7 +24,7 @@ namespace daxia
 			return update(data.c_str(), data.size(), md5_);
 		}
 
-		daxia::string Md5::Marshal(const char* data, size_t size)
+		daxia::string Md5::Marshal(const void* data, size_t size)
 		{
 			return update(data, size, std::shared_ptr<boost::uuids::detail::md5>(new boost::uuids::detail::md5));
 		}
@@ -34,7 +34,7 @@ namespace daxia
 			return update(data.c_str(), data.size(), std::shared_ptr<boost::uuids::detail::md5>(new boost::uuids::detail::md5));
 		}
 
-		daxia::string Md5::update(const char* data, size_t size, std::shared_ptr<boost::uuids::detail::md5> md5)
+		daxia::string Md5::update(const void* data, size_t size, std::shared_ptr<boost::uuids::detail::md5> md5)
 		{
 			daxia::string ret;
 			if (data == nullptr) return ret;

@@ -9,14 +9,14 @@ namespace daxia
 {
 	namespace encode
 	{
-		daxia::string Base64::Marshal(const char* data, size_t size)
+		daxia::string Base64::Marshal(const void* data, size_t size)
 		{
 			using namespace boost::archive::iterators;
 
 			typedef base64_from_binary<transform_width<std::string::const_iterator, 6, 8>> Base64EncodeIter;
 
 			std::stringstream  result;
-			std::string str(data, size);
+			std::string str(reinterpret_cast<const char*>(data), size);
 			std::copy(Base64EncodeIter(str.begin()), Base64EncodeIter(str.end()), std::ostream_iterator<char>(result));
 
 			size_t Num = (3 - size % 3) % 3;
