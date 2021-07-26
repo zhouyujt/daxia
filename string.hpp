@@ -184,6 +184,16 @@ namespace daxia
 			return Compare(str.GetString()) != 0;
 		}
 
+		const Elem& operator[](size_t pos) const
+		{
+			return v_[pos];
+		}
+
+		Elem& operator[](size_t pos)
+		{
+			return v_[pos];
+		}
+
 		operator const std::basic_string<Elem, Traits, Alloc>&() const
 		{
 			return v_;
@@ -509,7 +519,7 @@ namespace daxia
 	{
 		strings.clear();
 		size_t pos = 0;
-		while (pos >= 0)
+		while (pos != -1)
 		{
 			String_base<Elem, Traits, Alloc> str = Tokenize(sub, pos);
 			if (!str.IsEmpty())
