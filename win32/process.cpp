@@ -126,7 +126,7 @@ namespace daxia
 
 			// 分配内存
 			char* address = (char*)::VirtualAllocEx(handle_, NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-			if (address == nullptr) return false;
+			if (address == nullptr) return nullptr;
 			memset(address, 0, size);
 
 			// 将内存DLL数据按映像对齐大小（SectionAlignment）映射到刚刚申请的内存中
@@ -172,9 +172,9 @@ namespace daxia
 			LPDWORD addressofNames = (LPDWORD)((const char*)address + exportDirectory->AddressOfNames);
 
 			int ordinal = -1;
-			if (((DWORD)name & 0xFFFF0000) == 0) //IT IS A ORDINAL!
+			if (((size_t)name & 0xFFFF0000) == 0) //IT IS A ORDINAL!
 			{
-				ordinal = (DWORD)name & 0x0000FFFF - base;
+				ordinal = (size_t)name & 0x0000FFFF - base;
 			}
 			else //use name
 			{
@@ -386,7 +386,7 @@ namespace daxia
 						// 获取IMAGE_IMPORT_BY_NAME结构
 						PIMAGE_IMPORT_BY_NAME ImportName = (PIMAGE_IMPORT_BY_NAME)((const char*)dosHeader + iat->u1.AddressOfData);
 						// 获取函数地址
-						func = GetProcAddress(module, ImportName->Name);
+						func = GetProcAddress(module, (LPCSTR)ImportName->Name);
 					}
 					// 将函数地址填入到IAT中
 					iat->u1.Function = (decltype(iat->u1.Function))func;

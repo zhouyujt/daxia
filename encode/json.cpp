@@ -252,7 +252,7 @@ namespace daxia
 
 			ArrayInfo ai;
 			boost::property_tree::ptree child;
-			const char* baseaddr = array->Value().begin()._Ptr;
+			const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
 			if (baseaddr != nullptr)
 			{
 				marshal(baseaddr, layout, child, &ai);
@@ -282,7 +282,7 @@ namespace daxia
 			ArrayInfo ai;
 			ai.ptree = root;
 
-			ummarshal(array->Value().begin()._Ptr, layout, root, &ai);
+			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, &ai);
 		}
 
 		void Json::extendArrayLayout(const daxia::reflect::Reflect_base* reflectBase, boost::property_tree::ptree& layout)

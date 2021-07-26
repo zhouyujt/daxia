@@ -392,7 +392,7 @@ namespace daxia
 						auto layout = obj.Layout();
 						for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 						{
-							unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
+							unsigned long offset = iter->second.get(OFFSET, 0);
 							const reflect::String* field = nullptr;
 							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(&obj.Value()) + offset)); }
 							catch (const std::exception&){}

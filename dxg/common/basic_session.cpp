@@ -33,7 +33,7 @@ namespace daxia
 			{
 				lock_guard locker(userDataLocker_);
 
-				userData_[hashcode(key)] = data;
+				userData_[static_cast<int>(daxia::string(key).Hash())] = data;
 			}
 
 			void BasicSession::SetUserData(UserDataIndex index, boost::any data)
@@ -47,7 +47,7 @@ namespace daxia
 			{
 				lock_guard locker(userDataLocker_);
 
-				userData_.erase(hashcode(key));
+				userData_.erase(static_cast<int>(daxia::string(key).Hash()));
 			}
 
 			void BasicSession::DeleteUserData(UserDataIndex index)
@@ -278,19 +278,6 @@ namespace daxia
 					}
 				});
 			}
-
-			unsigned int BasicSession::hashcode(const char* str) const
-			{
-				unsigned int seed = 131;
-				unsigned int hash = 0;
-				while (*str)
-				{
-					hash = hash * seed + (*str++);
-				}
-
-				return (hash & 0x7fffffff);
-			}
-
 		}// namespace common
 	}// namespace dxg
 }// namespace daxia

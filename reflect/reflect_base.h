@@ -36,8 +36,10 @@ namespace daxia
 		class Reflect_base : public Reflect_helper
 		{
 		protected:
-			Reflect_base(size_t size, const type_info& typeinfo);
-			Reflect_base(size_t size, const type_info& typeinfo, const std::string& tags);
+			Reflect_base();
+			Reflect_base(size_t size, const std::type_info& typeinfo);
+			Reflect_base(size_t size, const std::type_info& typeinfo, const std::string& tags);
+			Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags);
 			virtual ~Reflect_base();
 		protected:
 			Reflect_base& Swap(Reflect_base& r);
@@ -48,7 +50,7 @@ namespace daxia
 			virtual bool IsArray() const = 0;
 		public:
 			size_t Size() const{ return size_; }
-			const type_info& Type() const { return typeInfo_; }
+			const std::type_info& Type() const { return typeInfo_; }
 			const std::string& Tags() const { return tagsStr_; }
 			std::string Tag(const std::string& prefix) const;
 		private:

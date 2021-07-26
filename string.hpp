@@ -200,15 +200,14 @@ namespace daxia
 		}
 	private:
 		size_t strlen(size_t maxCount = -1) const;
-		template<class T> class NumericCastHelp{};
-		template<> class NumericCastHelp < int > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: int Cast() const{ return std::stoi(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < long > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: long Cast() const{ return std::stol(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < unsigned long > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: unsigned long Cast() const{ return std::stoul(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < long long > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: long long Cast() const{ return std::stoll(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < unsigned long long > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: unsigned long long Cast() const{ return std::stoull(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < float > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: float Cast() const{ return std::stof(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < double > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: double Cast() const{ return std::stod(str_.v_); } private: const String_base& str_; };
-		template<> class NumericCastHelp < long double > { public: NumericCastHelp(const String_base& str) : str_(str) { } public: long double Cast() const{ return std::stold(str_.v_); } private: const String_base& str_; };
+		void cast(int& v);
+		void cast(long& v);
+		void cast(unsigned long& v);
+		void cast(long long& v);
+		void cast(unsigned long long& v);
+		void cast(float& v);
+		void cast(double& v);
+		void cast(long double& v);
 	private:
 		std::basic_string<Elem, Traits, Alloc> v_;
 	};
@@ -618,7 +617,9 @@ namespace daxia
 		}
 		else
 		{
-			return NumericCastHelp<T>(*this).Cast();
+			T v;
+			cast(v);
+			return v;
 		}
 	}
 
@@ -637,6 +638,54 @@ namespace daxia
 		}
 
 		return length - 1;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(int& v)
+	{
+		v = std::stoi(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long& v)
+	{
+		v = std::stol(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long& v)
+	{
+		v = std::stoul(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long long& v)
+	{
+		v = std::stoll(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long long& v)
+	{
+		v = std::stoull(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(float& v)
+	{
+		v = std::stof(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(double& v)
+	{
+		v = std::stod(v_);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long double& v)
+	{
+		v = std::stold(v_);
 	}
 
 	typedef String_base<char, std::char_traits<char>, std::allocator<char>> string;

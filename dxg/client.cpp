@@ -132,17 +132,9 @@ namespace daxia
 
 		int Client::initHelper::getCoreCount() const
 		{
-			int count = 1; // 至少一个
+			int count = std::thread::hardware_concurrency();
 
-#if !defined (_MSC_VER) 
-			count = sysconf(_SC_NPROCESSORS_CONF);
-#else
-			SYSTEM_INFO si;
-			GetSystemInfo(&si);
-			count = si.dwNumberOfProcessors;
-#endif  
-
-			return count;
+			return count == 0 ? 1 : count;
 		}
 
 		void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)

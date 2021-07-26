@@ -82,7 +82,7 @@ namespace daxia
 
 					if (address)
 					{
-						*address = line.Mid(pos, -1);
+						address->Value() = line.Mid(pos, -1);
 					}
 
 					lastLineEndPos = lineEndPos;
@@ -108,7 +108,7 @@ namespace daxia
 					daxia::string params = GeneralHeader::StartLine[RequstLineIndex_Url].Mid(pos, -1);
 					std::vector<daxia::string> key_value;
 					params.Split("&", key_value);
-					for each (const daxia::string& kv in key_value)
+					for(const daxia::string& kv : key_value)
 					{
 						size_t pos = 0;
 						auto key = kv.Tokenize("=", pos).MakeLower();
@@ -164,7 +164,7 @@ namespace daxia
 				}
 
 				// 设置Server
-				if (response->Server.Value().empty()) response->Server = "powered by dxg";
+				if (response->Server.Value().empty()) response->Server.Value() = "powered by dxg";
 
 				// 设置所有响应头
 				auto layout = headerHelp_.response_.Layout();

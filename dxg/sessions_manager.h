@@ -72,7 +72,7 @@ namespace daxia
 				clientIter != sessions_.end();
 				++clientIter)
 			{
-				auto userDataIter = clientIter->second->userData_.find(key);
+				auto userDataIter = clientIter->second->userData_.find(static_cast<int>(daxia::string(key).Hash()));
 				if (userDataIter != clientIter->second->userData_.end() && userDataIter->second.type() == typeid(data))
 				{
 					try

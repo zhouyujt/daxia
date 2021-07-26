@@ -2,6 +2,7 @@
 #include <windows.h>
 #endif // _MSC_VER
 #include <string>
+#include <string.h>
 #include <algorithm>
 #include "strconv.h"
 

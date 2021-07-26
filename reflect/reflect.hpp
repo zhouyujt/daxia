@@ -43,6 +43,12 @@ namespace daxia
 				init();
 			}
 
+			Reflect(const char* tags)
+				: Reflect_base(sizeof(*this), typeid(ValueType), tags)
+			{
+				init();
+			}
+
 			~Reflect(){}
 		public:
 			Reflect_base& Swap(Reflect_base& r)
@@ -56,26 +62,6 @@ namespace daxia
 
 				return *this;
 			};
-
-			Reflect& operator=(const Reflect& r)
-			{
-				Reflect(r).Swap(*this);
-				return *this;
-			}
-
-			Reflect& operator=(Reflect&& r)
-			{
-				r.Swap(*this);
-				return *this;
-			}
-
-			template<class ValueType>
-			Reflect& operator=(ValueType&& v)
-			{
-				v_ = v;
-
-				return *this;
-			}
 
 			operator ValueType()
 			{
@@ -138,7 +124,7 @@ namespace daxia
 
 						boost::property_tree::ptree childLayout;
 						childLayout.put(HASH, reflectBase->Type().hash_code());
-						childLayout.put(OFFSET, reinterpret_cast<unsigned long>(start)-reinterpret_cast<unsigned long>(baseaddr));
+						childLayout.put(OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
 						rootLayout.put_child(reflectBase->Tags(), childLayout);
 
 						start += reflectBase->Size() - 1;
@@ -179,6 +165,12 @@ namespace daxia
 				init();
 			}
 
+			Reflect(const char* tags)
+				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>), tags)
+			{
+				init();
+			}
+
 			~Reflect(){}
 		public:
 			Reflect_base& Swap(Reflect_base& r)
@@ -205,7 +197,6 @@ namespace daxia
 				return *this;
 			}
 
-			template<class ValueType>
 			Reflect& operator=(std::vector<ValueType>&& v)
 			{
 				v_ = v;

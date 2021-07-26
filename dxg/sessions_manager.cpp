@@ -104,7 +104,7 @@ namespace daxia
 		{
 			lock_guard locker(sessionsLocker_);
 
-			for each (const std::pair<long long, Session::ptr>& session in sessions_)
+			for (const std::pair<long long, Session::ptr>& session : sessions_)
 			{
 				if (!func(session.second))
 				{
@@ -117,7 +117,7 @@ namespace daxia
 		{
 			lock_guard locker(groupLocker_);
 
-			for each (const std::pair<std::string, SessionsManager::ptr>& group in group_)
+			for (const std::pair<std::string, SessionsManager::ptr>& group : group_)
 			{
 				if (!func(group.second))
 				{

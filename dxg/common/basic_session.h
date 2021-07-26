@@ -118,7 +118,6 @@ namespace daxia
 			private:
 				void onRead(const boost::system::error_code& err, size_t len);
 				void doWriteMessage(const common::shared_buffer msg);
-				unsigned int hashcode(const char* str) const;
 			private:
 				socket_ptr sock_;
 				std::map<unsigned int, boost::any> userData_;
@@ -143,7 +142,7 @@ namespace daxia
 
 				T* data = nullptr;
 
-				auto iter = userData_.find(hashcode(key));
+				auto iter = userData_.find(static_cast<int>(daxia::string(key).Hash()));
 				if (iter != userData_.end())
 				{
 					try
