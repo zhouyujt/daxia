@@ -1,3 +1,4 @@
+#ifdef _MSC_VER
 #include <Windows.h>
 #include <Psapi.h>
 #include <tlhelp32.h>
@@ -423,3 +424,4 @@ namespace daxia
 
 	}
 }
+#endif // !_MSC_VER

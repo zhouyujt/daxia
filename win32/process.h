@@ -10,6 +10,7 @@
 * WIN32 进程相关的操作
 *
 */
+#ifdef _MSC_VER
 #ifndef _DAXIA_WIN32_PROCESS_H
 #define _DAXIA_WIN32_PROCESS_H
 
@@ -68,4 +69,5 @@ namespace daxia
 	}
 }
 #endif // !_DAXIA_WIN32_PROCESS_H
+#endif // !_MSC_VER
 

@@ -10,6 +10,7 @@
 * WIN32 Access Token Ïà¹Ø²Ù×÷
 *
 */
+#ifdef _MSC_VER
 #ifndef _DAXIA_WIN32_ACCESSTOKEN_H
 #define _DAXIA_WIN32_ACCESSTOKEN_H
 #include <string>
@@ -49,4 +50,5 @@ namespace daxia
 	}
 }
 #endif // !_DAXIA_WIN32_ACCESSTOKEN_H
+#endif // !_MSC_VER
 

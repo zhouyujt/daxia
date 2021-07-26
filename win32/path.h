@@ -10,6 +10,7 @@
 * WIN32 文件路径相关操作
 *
 */
+#ifdef _MSC_VER
 #ifndef _DAXIA_WIN32_PATH_H
 #define _DAXIA_WIN32_PATH_H
 
@@ -42,4 +43,5 @@ namespace daxia
 	}
 }
 #endif // !_DAXIA_WIN32_PATH_H
+#endif // !_MSC_VER
 

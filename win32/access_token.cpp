@@ -1,3 +1,4 @@
+#ifdef _MSC_VER
 #include <windows.h>
 #include <memory>
 #include "access_token.h"
@@ -110,3 +111,4 @@ namespace daxia
 		}
 	}
 }
+#endif // !_MSC_VER
