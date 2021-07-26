@@ -28,7 +28,7 @@
 
 namespace daxia
 {
-	template<class Elem,class Traits,class Alloc>
+	template<class Elem, class Traits, class Alloc>
 	class String_base
 	{
 	public:
@@ -49,7 +49,7 @@ namespace daxia
 		size_t Find(const Elem* str, size_t start = 0) const;
 		void Format(const Elem* format, ...);
 		inline void FormatV(const Elem* format, va_list valist);
-		String_base Left(size_t count) const; 
+		String_base Left(size_t count) const;
 		String_base Right(size_t count) const;
 		String_base Mid(size_t start, size_t count) const;
 		String_base Tokenize(const Elem* sub, size_t& start) const;
@@ -69,12 +69,12 @@ namespace daxia
 		void Split(const Elem* sub, std::vector<String_base>& strings) const;
 
 		// ±àÂë×ª»» 
-		inline String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> Ansi2Unicode() const;
-		inline String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> Utf82Unicode() const;
-		inline String_base<char, std::char_traits<char>, std::allocator<char>> Unicode2Ansi() const;
-		inline String_base<char, std::char_traits<char>, std::allocator<char>> Utf82Ansi() const;
-		inline String_base<char, std::char_traits<char>, std::allocator<char>> Ansi2Utf8() const;
-		inline String_base<char, std::char_traits<char>, std::allocator<char>> Unicode2Utf8() const;
+		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Ansi2Unicode() const;
+		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Utf82Unicode() const;
+		inline String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Ansi() const;
+		inline String_base< char, std::char_traits<char>, std::allocator<char> > Utf82Ansi() const;
+		inline String_base< char, std::char_traits<char>, std::allocator<char> > Ansi2Utf8() const;
+		inline String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Utf8() const;
 
 		// Êý×Ö×ª»»
 		template<class T> static String_base ToString(T v);
@@ -450,7 +450,7 @@ namespace daxia
 		size_t pos;
 		int count = 0;
 		size_t start = 0;
-		while ((pos = Find(oldstr,start)) != -1)
+		while ((pos = Find(oldstr, start)) != -1)
 		{
 			++count;
 			buffer += Mid(start, pos - start);
