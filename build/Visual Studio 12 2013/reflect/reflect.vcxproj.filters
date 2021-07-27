@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\third-party\github.com\zhouyujt\daxia\reflect\reflect_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\third-party\github.com\zhouyujt\daxia\reflect\reflect.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\third-party\github.com\zhouyujt\daxia\reflect\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{C49BC98D-C328-3778-8B7E-DE67598BC85C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F3EE9E38-8FDB-3A9B-A85F-F1600688CDEA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

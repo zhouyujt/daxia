@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\third-party\github.com\zhouyujt\daxia\win32\access_token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\third-party\github.com\zhouyujt\daxia\win32\path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\third-party\github.com\zhouyujt\daxia\win32\process.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\third-party\github.com\zhouyujt\daxia\win32\processes_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\third-party\github.com\zhouyujt\daxia\win32\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{A17BBB1A-4611-3A10-B3C2-861767A949AE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
