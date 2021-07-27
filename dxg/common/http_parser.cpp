@@ -2,6 +2,7 @@
 #include "basic_session.h"
 #include "../../string.hpp"
 #include "../../encode/json.h"
+#include "../../singleton.hpp"
 
 using daxia::encode::Json;
 
@@ -26,9 +27,6 @@ namespace daxia
 	{
 		namespace common
 		{
-			HttpParser::Methods HttpParser::methodsHelp_;
-			HttpParser::HeaderHelp HttpParser::headerHelp_;
-
 			daxia::reflect::String* HttpParser::GeneralHeader::Find(const daxia::string& key,const void* base) const
 			{
 				const daxia::reflect::String* str = nullptr;
@@ -73,11 +71,11 @@ namespace daxia
 					reflect::String* address = nullptr;
 					if (isRequest)
 					{
-						address = headerHelp_.request_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
+						address = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
 					}
 					else
 					{
-						address = headerHelp_.response_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
+						address = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.Value().Find(line.Tokenize(":", pos).MakeLower(), this);
 					}
 
 					if (address)
@@ -152,8 +150,8 @@ namespace daxia
 				// 设置起始行
 				response->StartLine.Version = request->StartLine.Version;
 				if (response->StartLine.StatusCode.IsEmpty()) response->StartLine.StatusCode = "200";
-				auto iter = headerHelp_.status_.find(atoi(response->StartLine.StatusCode.GetString()));
-				if (iter != headerHelp_.status_.end()) response->StartLine.StatusText = iter->second;
+				auto iter = daxia::Singleton<HttpParser::HeaderHelp>::Instance().status_.find(atoi(response->StartLine.StatusCode.GetString()));
+				if (iter != daxia::Singleton<HttpParser::HeaderHelp>::Instance().status_.end()) response->StartLine.StatusText = iter->second;
 				msg.Format("%s %s %s", response->StartLine.Version.GetString(), response->StartLine.StatusCode.GetString(), response->StartLine.StatusText.GetString());
 				msg += CRLF;
 
@@ -167,7 +165,7 @@ namespace daxia
 				if (response->Server.Value().empty()) response->Server.Value() = "powered by dxg";
 
 				// 设置所有响应头
-				auto layout = headerHelp_.response_.Layout();
+				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.Layout();
 				for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 				{
 					unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
@@ -227,7 +225,7 @@ namespace daxia
 				if (params.size() != RequstLineIndex_End) return Parser::Result::Result_Fail;
 
 				// 校验方法是否合法
-				if (!methodsHelp_.IsValidMethod(params.front().GetString())) return Parser::Result::Result_Fail;
+				if (!daxia::Singleton<HttpParser::Methods>::Instance().IsValidMethod(params.front().GetString())) return Parser::Result::Result_Fail;
 
 				// 获取整个头
 				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
@@ -248,7 +246,7 @@ namespace daxia
 				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
-				daxia::string ContentLengtTag = headerHelp_.request_.Value().ContentLength.Tag("http");
+				daxia::string ContentLengtTag = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;
@@ -330,7 +328,7 @@ namespace daxia
 				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
-				daxia::string ContentLengtTag = headerHelp_.request_.Value().ContentLength.Tag("http");
+				daxia::string ContentLengtTag = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;

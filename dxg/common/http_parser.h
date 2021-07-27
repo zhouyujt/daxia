@@ -99,7 +99,7 @@ namespace daxia
 			protected:
 				HttpParser(){}
 				virtual ~HttpParser(){}
-			protected:
+			public:
 				class HeaderHelp;
 			public:
 				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
@@ -368,7 +368,7 @@ namespace daxia
 				public:
 					size_t InitFromData(const void* data, size_t len);
 				};
-			protected:
+			public:
 				class HeaderHelp
 				{
 				public:
@@ -406,8 +406,6 @@ namespace daxia
 					reflect::Reflect<ResponseHeader> response_;
 					std::map<int, std::string> status_;
 				};
-				static Methods methodsHelp_;
-				static HeaderHelp headerHelp_;
 			};
 
 			class HttpServerParser : public HttpParser
