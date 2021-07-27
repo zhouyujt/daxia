@@ -185,25 +185,6 @@ namespace daxia
 				return *this;
 			};
 
-			Reflect& operator=(const Reflect& r)
-			{
-				Reflect(r).Swap(*this);
-				return *this;
-			}
-
-			Reflect& operator=(Reflect&& r)
-			{
-				r.Swap(*this);
-				return *this;
-			}
-
-			Reflect& operator=(std::vector<ValueType>&& v)
-			{
-				v_ = v;
-
-				return *this;
-			}
-
 			operator std::vector<ValueType>()
 			{
 				return v_;
@@ -284,11 +265,21 @@ namespace daxia
 		template <typename T> class Vector : public Reflect<std::vector<T>>
 		{
 		public:
-			Vector(const std::string& tags)
-			: Reflect<std::vector<T>>(tags)
+			Vector()
+				: Reflect<std::vector<T>>()
 			{
-
 			}
+
+			Vector(const std::string& tags)
+				: Reflect<std::vector<T>>(tags)
+			{
+			}
+
+			Vector(const char* tags)
+				: Reflect<std::vector<T>>(tags)
+			{
+			}
+
 		};
 	}// namespace reflect
 }// namespace daxia

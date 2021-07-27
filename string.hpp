@@ -48,7 +48,8 @@ namespace daxia
 		size_t Find(Elem ch, size_t start = 0) const;
 		size_t Find(const Elem* str, size_t start = 0) const;
 		void Format(const Elem* format, ...);
-		inline void FormatV(const Elem* format, va_list valist);
+		void FormatV(const char* format, va_list valist);
+		void FormatV(const wchar_t* format, va_list valist);
 		String_base Left(size_t count) const;
 		String_base Right(size_t count) const;
 		String_base Mid(size_t start, size_t count) const;
@@ -69,12 +70,12 @@ namespace daxia
 		void Split(const Elem* sub, std::vector<String_base>& strings) const;
 
 		// ±àÂë×ª»» 
-		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Ansi2Unicode() const;
-		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Utf82Unicode() const;
-		inline String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Ansi() const;
-		inline String_base< char, std::char_traits<char>, std::allocator<char> > Utf82Ansi() const;
-		inline String_base< char, std::char_traits<char>, std::allocator<char> > Ansi2Utf8() const;
-		inline String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Utf8() const;
+		String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Ansi2Unicode() const;
+		String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > Utf82Unicode() const;
+		String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Ansi() const;
+		String_base< char, std::char_traits<char>, std::allocator<char> > Utf82Ansi() const;
+		String_base< char, std::char_traits<char>, std::allocator<char> > Ansi2Utf8() const;
+		String_base< char, std::char_traits<char>, std::allocator<char> > Unicode2Utf8() const;
 
 		// Êý×Ö×ª»»
 		template<class T> static String_base ToString(T v);
@@ -327,8 +328,8 @@ namespace daxia
 		va_end(valist);
 	}
 
-	template<>
-	void daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::FormatV(const char* format, va_list valist)
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::FormatV(const char* format, va_list valist)
 	{
 		char buffer[1024];
 
@@ -346,8 +347,8 @@ namespace daxia
 		*this = buffer;
 	}
 
-	template<>
-	void daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::FormatV(const wchar_t* format, va_list valist)
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::FormatV(const wchar_t* format, va_list valist)
 	{
 		wchar_t buffer[1024];
 
@@ -528,76 +529,40 @@ namespace daxia
 		}
 	}
 
-	template<>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Ansi2Unicode() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<Elem, Traits, Alloc>::Ansi2Unicode() const
 	{
-		return String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>();
+		return daxia::encode::Strconv::Ansi2Unicode(reinterpret_cast<const char*>(v_.c_str()));
 	}
 
-	template<>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Utf82Unicode() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<Elem, Traits, Alloc>::Utf82Unicode() const
 	{
-		return String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>();
+		return daxia::encode::Strconv::Utf82Unicode(reinterpret_cast<const char*>(v_.c_str()));
 	}
 
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Unicode2Ansi() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<Elem, Traits, Alloc>::Unicode2Ansi() const
 	{
-		return daxia::encode::Strconv::Unicode2Ansi(v_);
+		return daxia::encode::Strconv::Unicode2Ansi(reinterpret_cast<const wchar_t*>(v_.c_str()));
 	}
 
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Utf82Ansi() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<Elem, Traits, Alloc>::Utf82Ansi() const
 	{
-		return String_base<char, std::char_traits<char>, std::allocator<char>>();
+		return daxia::encode::Strconv::Utf82Ansi(reinterpret_cast<const char*>(v_.c_str()));
 	}
 
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Ansi2Utf8() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<Elem, Traits, Alloc>::Ansi2Utf8() const
 	{
-		return String_base<char, std::char_traits<char>, std::allocator<char>>();
+		return daxia::encode::Strconv::Ansi2Utf8(reinterpret_cast<const char*>(v_.c_str()));
 	}
 
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::Unicode2Utf8() const
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<Elem, Traits, Alloc>::Unicode2Utf8() const
 	{
-		return daxia::encode::Strconv::Unicode2Utf8(v_);
-	}
-
-	template<>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Ansi2Unicode() const
-	{
-		return daxia::encode::Strconv::Ansi2Unicode(v_);
-	}
-
-	template<>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Utf82Unicode() const
-	{
-		return daxia::encode::Strconv::Utf82Unicode(v_);
-	}
-
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Unicode2Ansi() const
-	{
-		return String_base<char, std::char_traits<char>, std::allocator<char>>();
-	}
-
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Utf82Ansi() const
-	{
-		return daxia::encode::Strconv::Utf82Ansi(v_);
-	}
-
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Ansi2Utf8() const
-	{
-		return daxia::encode::Strconv::Ansi2Utf8(v_);
-	}
-
-	template<>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::Unicode2Utf8() const
-	{
-		return String_base<char, std::char_traits<char>, std::allocator<char>>();
+		return daxia::encode::Strconv::Unicode2Utf8(reinterpret_cast<const wchar_t*>(v_.c_str()));
 	}
 
 	template<>

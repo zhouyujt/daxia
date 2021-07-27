@@ -35,15 +35,15 @@
 
 #ifdef _MSC_VER
 #ifdef _WIN64
-#	define dxPATH x64
+#	define dxPATH x64/
 #else
 #	define dxPATH
 #endif // !_WIN64
 
 #ifdef _DEBUG
-#	define dxPATH2 debug
+#	define dxPATH2 debug/
 #else
-#	define dxPATH2 release
+#	define dxPATH2 release/Release/
 #endif // !_DEBUG
 
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,dxg.lib)))
