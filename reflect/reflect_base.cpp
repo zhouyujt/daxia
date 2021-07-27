@@ -11,11 +11,32 @@ namespace daxia
 
 		Reflect_helper::Reflect_helper()
 		{
+			typeflag_[0] = TypeFlag0;
+			typeflag_[1] = TypeFlag1;
+			typeflag_[2] = TypeFlag2;
+			typeflag_[3] = TypeFlag3;
 		}
 
 		Reflect_helper::~Reflect_helper()
 		{
 
+		}
+
+		bool Reflect_helper::IsValidReflect(const void* addr)
+		{
+			if (addr != nullptr)
+			{
+				const Reflect_helper* test = reinterpret_cast<const Reflect_helper*>(addr);
+				if (test->typeflag_[0] == TypeFlag0
+					&& test->typeflag_[1] == TypeFlag1
+					&& test->typeflag_[2] == TypeFlag2
+					&& test->typeflag_[3] == TypeFlag3)
+				{
+					return true;
+				}
+			}
+			
+			return false;
 		}
 
 		Reflect_base::Reflect_base()

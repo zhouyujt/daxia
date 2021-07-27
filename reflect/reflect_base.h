@@ -24,12 +24,24 @@ namespace daxia
 {
 	namespace reflect
 	{
+		// daxia::reflect  md5ֵ 81b55790f56eb5c017cced954d1c97a9
+		enum TypeFlag
+		{
+			TypeFlag0 = 0x81b55790,
+			TypeFlag1 = 0xf56eb5c0,
+			TypeFlag2 = 0x17cced95,
+			TypeFlag3 = 0x4d1c97a9
+		};
+
 		class Reflect_helper
 		{
 		protected:
 			Reflect_helper();
 			virtual ~Reflect_helper();
-
+		public:
+			static bool IsValidReflect(const void* addr);
+		private:
+			int typeflag_[4];
 		};// class reflect_helper
 
 		//////////////////////////////////////////////////////////////////////////

@@ -117,6 +117,11 @@ namespace daxia
 					{
 						const Reflect_base* reflectBase = nullptr;
 
+						// 根据前4个字节判断是不是Reflect_helper
+						// 如果省略这一步，MSVC编译器工作正常
+						// gcc dynamic_cast 会报segmentation fault
+						if (!Reflect_helper::IsValidReflect(start)) continue;
+				
 						try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
 						catch (const std::exception&){}
 
