@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "../../encode/strconv.h"
 #include "../../string.hpp"
+#include "byte_order.hpp"
 
 namespace daxia
 {
@@ -17,8 +18,8 @@ namespace daxia
 
 				PacketHead head;
 				head.magic = 88;
-				head.len = static_cast<int>(len);
 				head.hearbeat = (data == nullptr && len == 0) ? 1 : 0;
+				head.len = ByteOrder::hton(static_cast<int>(len));
 				head.reserve = 0;
 
 				memcpy(buffer.get(), &head, sizeof(head));
@@ -43,8 +44,8 @@ namespace daxia
 
 				// Êý¾Ý²»×ã
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				int contentLen = head->len;
-				if (head->len + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
+				int contentLen = ByteOrder::ntoh(head->len);
+				if (contentLen + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
 			
 				if (!head->hearbeat)
 				{
@@ -74,10 +75,10 @@ namespace daxia
 					msgID = DefMsgID_Heartbeat;
 				}
 
-				buffer.resize(head->len);
-				memcpy(buffer.get(), data + sizeof(PacketHead), head->len);
+				buffer.resize(contentLen);
+				memcpy(buffer.get(), data + sizeof(PacketHead), contentLen);
 
-				packetLen = sizeof(PacketHead) + head->len;
+				packetLen = sizeof(PacketHead) + contentLen;
 
 				return Parser::Result::Result_Success;
 			}
