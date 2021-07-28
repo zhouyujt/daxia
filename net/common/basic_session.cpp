@@ -8,7 +8,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -76,12 +76,12 @@ namespace daxia
 				return (boost::format("%s:%d") % ep.address().to_string() % ep.port()).str();
 			}
 
-			const daxia::dxg::common::BasicSession::timepoint& BasicSession::GetConnectTime() const
+			const daxia::net::common::BasicSession::timepoint& BasicSession::GetConnectTime() const
 			{
 				return connectTime_;
 			}
 
-			const daxia::dxg::common::BasicSession::timepoint& BasicSession::UpdateConnectTime()
+			const daxia::net::common::BasicSession::timepoint& BasicSession::UpdateConnectTime()
 			{
 				using namespace std::chrono;
 				connectTime_ = time_point_cast<milliseconds>(system_clock::now());
@@ -279,5 +279,5 @@ namespace daxia
 				});
 			}
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

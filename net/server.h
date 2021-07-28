@@ -3,16 +3,16 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file dxg.hpp
+ * \file server.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
- * 一个通用的游戏服务器框架
+ * 一个通用的服务器框架
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_H
-#define __DAXIA_DXG_SERVER_H
+#ifndef __DAXIA_NET_SERVER_H
+#define __DAXIA_NET_SERVER_H
 
 #include <memory>
 #include "common/parser.h"
@@ -23,7 +23,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		class Server
 		{
@@ -49,7 +49,7 @@ namespace daxia
 			std::string websocketPath_;
 			Router router_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif // !__DAXIA_DXG_SERVER_H
+#endif // !__DAXIA_NET_SERVER_H

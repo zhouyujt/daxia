@@ -5,7 +5,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Server::Server()
 		{
@@ -97,10 +97,10 @@ namespace daxia
 			router_.GetScheduler().UnscheduleAll();
 		}
 
-		daxia::dxg::SessionsManager& Server::GetSessionManager()
+		daxia::net::SessionsManager& Server::GetSessionManager()
 		{
 			return router_;
 		}
 
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

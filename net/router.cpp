@@ -9,7 +9,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Router::Router()
 			: heartbeatSchedulerId_(-1)
@@ -183,7 +183,7 @@ namespace daxia
 
 		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
 		{
-			using daxia::dxg::common::BasicSession;
+			using daxia::net::common::BasicSession;
 
 			if (data.size() == 0) return;
 
@@ -231,7 +231,7 @@ namespace daxia
 					html += "<html>\r\n";
 					html += "<body>\r\n";
 					html += "hello world!<br/>\r\n";
-					html += "powered by dxg<br/>\r\n";
+					html += "powered by net<br/>\r\n";
 					html += "<a href=\"https://github.com/zhouyujt/daxia\">https://github.com/zhouyujt/daxia</a>\r\n";
 					html += "</body>\r\n";
 					html += "</html>\r\n";
@@ -284,6 +284,6 @@ namespace daxia
 				scheduler_.PushNetRequest(GetSession(sessionId), msgId, msg);
 			}
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 

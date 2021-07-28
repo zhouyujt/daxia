@@ -3,7 +3,7 @@
 * Copyright (c) 2021 漓江里的大虾.
 * All rights reserved.
 *
-* \file parser.hpp
+* \file http_parser.h
 * \author 漓江里的大虾
 * \date 七月 2021
 *
@@ -14,8 +14,8 @@
 * 《HTTP协议相关知识点整理汇总(图解HTTP)》 https://www.cnblogs.com/nyatom/p/13038058.html
 */
 
-#ifndef __DAXIA_DXG_COMMON_HTTPPARSER_H
-#define __DAXIA_DXG_COMMON_HTTPPARSER_H
+#ifndef __DAXIA_NET_COMMON_HTTPPARSER_H
+#define __DAXIA_NET_COMMON_HTTPPARSER_H
 #include <map>
 #include "parser.h"
 #include "../../reflect/reflect.hpp"
@@ -25,8 +25,8 @@ using  daxia::reflect::Reflect;
 
 #define OFFSET "offset"
 
-#define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(daxia::dxg::common::HttpRequestHeaderIndex)
-#define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::dxg::common::BasicSession::UserDataIndex>(daxia::dxg::common::HttpResponseHeaderIndex)
+#define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpRequestHeaderIndex)
+#define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpResponseHeaderIndex)
 #define HTTP_STATUS_MAP(XX)						\
 	XX(100,	Continue)							\
 	XX(101, Switching Protocols)				\
@@ -90,7 +90,7 @@ using  daxia::reflect::Reflect;
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -102,17 +102,17 @@ namespace daxia
 			public:
 				class HeaderHelp;
 			public:
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual bool Marshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
-					daxia::dxg::common::shared_buffer& buffer
+					daxia::net::common::shared_buffer& buffer
 					) const = 0;
 
-				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
 					int& msgID,
-					daxia::dxg::common::shared_buffer& buffer,
+					daxia::net::common::shared_buffer& buffer,
 					size_t& packetLen
 					) const = 0;
 			public:
@@ -414,17 +414,17 @@ namespace daxia
 				HttpServerParser(){}
 				~HttpServerParser(){}
 			public:
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual bool Marshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
-					daxia::dxg::common::shared_buffer& buffer
+					daxia::net::common::shared_buffer& buffer
 					) const override;
 
-				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
 					int& msgID,
-					daxia::dxg::common::shared_buffer& buffer,
+					daxia::net::common::shared_buffer& buffer,
 					size_t& packetLen
 					) const override;
 			};
@@ -435,17 +435,17 @@ namespace daxia
 				HttpClientParser(){}
 				~HttpClientParser(){}
 			public:
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual bool Marshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
-					daxia::dxg::common::shared_buffer& buffer
+					daxia::net::common::shared_buffer& buffer
 					) const override;
 
-				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,
-					const daxia::dxg::common::byte* data,
+				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
+					const daxia::net::common::byte* data,
 					size_t len,
 					int& msgID,
-					daxia::dxg::common::shared_buffer& buffer,
+					daxia::net::common::shared_buffer& buffer,
 					size_t& packetLen
 					) const override;
 			};
@@ -456,4 +456,4 @@ namespace daxia
 #undef OFFSET
 #undef MAKE_INDEX
 
-#endif // !__DAXIA_DXG_COMMON_HTTPPARSER_H
+#endif // !__DAXIA_NET_COMMON_HTTPPARSER_H

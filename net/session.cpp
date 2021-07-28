@@ -5,7 +5,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Session::Session(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id)
 			: onMessage_(onMessage)
@@ -32,5 +32,5 @@ namespace daxia
 				onMessage_(error, id_, msgId, buffer);
 			}
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

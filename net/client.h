@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file dxg.hpp
+ * \file client.h
  * \author 漓江里的大虾
  * \date 十月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_CLIENT_H
-#define __DAXIA_DXG_CLIENT_H
+#ifndef __DAXIA_NET_CLIENT_H
+#define __DAXIA_NET_CLIENT_H
 
 #include <functional>
 #include <map>
@@ -26,7 +26,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		// 客户端类
 		class Client : public common::BasicSession
@@ -109,7 +109,7 @@ namespace daxia
 			std::map<long long, boost::asio::deadline_timer*> timers_;
 			long long nextTimerId_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif // !__DAXIA_DXG_CLIENT_H
+#endif // !__DAXIA_NET_CLIENT_H

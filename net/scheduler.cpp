@@ -6,7 +6,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Scheduler::Scheduler()
 			: fps_(20)
@@ -216,6 +216,6 @@ namespace daxia
 
 			return nextScheduleID_++;
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 

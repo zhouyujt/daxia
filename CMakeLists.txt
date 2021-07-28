@@ -1,3 +1,4 @@
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 3.21)
 project(daxia)
 
@@ -32,7 +33,7 @@ ENDIF(CMAKE_CL_64)
 find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_subdirectory("dxg" dxg)
+add_subdirectory("net" net)
 add_subdirectory("encode" encode)
 add_subdirectory("reflect" reflect)
 add_subdirectory("win32" win32)

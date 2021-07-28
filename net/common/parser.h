@@ -3,7 +3,7 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file parser.hpp
+ * \file parser.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
@@ -11,15 +11,15 @@
  *
  */
 
-#ifndef __DAXIA_DXG_COMMON_PARSER_H
-#define __DAXIA_DXG_COMMON_PARSER_H
+#ifndef __DAXIA_NET_COMMON_PARSER_H
+#define __DAXIA_NET_COMMON_PARSER_H
 
 #include "define.h"
 #include "shared_buffer.h"
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -40,18 +40,18 @@ namespace daxia
 				};
 			public:
 				// 封装消息
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session,	// 会话指针
-					const daxia::dxg::common::byte* data,							// 需封装的数据
+				virtual bool Marshal(daxia::net::common::BasicSession* session,	// 会话指针
+					const daxia::net::common::byte* data,							// 需封装的数据
 					size_t len,														// data大小，单位字节
-					daxia::dxg::common::shared_buffer& buffer						// 封装后的数据
+					daxia::net::common::shared_buffer& buffer						// 封装后的数据
 					) const = 0;
 
 				// 解析消息
-				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session,	// 会话指针 
-					const daxia::dxg::common::byte* data,								// 解封的数据
+				virtual Result Unmarshal(daxia::net::common::BasicSession* session,	// 会话指针 
+					const daxia::net::common::byte* data,								// 解封的数据
 					size_t len,															// data大小，单位字节
 					int& msgID,															// 解析出的消息ID
-					daxia::dxg::common::shared_buffer& buffer,							// 解析后的数据			
+					daxia::net::common::shared_buffer& buffer,							// 解析后的数据			
 					size_t& packetLen													// 封包长度，单位字节
 					) const = 0;
 			};
@@ -86,23 +86,23 @@ namespace daxia
 
 #undef ATTRIBUTE_PACKED
 			public:
-				virtual bool Marshal(daxia::dxg::common::BasicSession* session, 
-					const daxia::dxg::common::byte* data, 
+				virtual bool Marshal(daxia::net::common::BasicSession* session, 
+					const daxia::net::common::byte* data, 
 					size_t len,
-					daxia::dxg::common::shared_buffer& buffer
+					daxia::net::common::shared_buffer& buffer
 					) const override;
 
-				virtual Result Unmarshal(daxia::dxg::common::BasicSession* session, 
-					const daxia::dxg::common::byte* data, 
+				virtual Result Unmarshal(daxia::net::common::BasicSession* session, 
+					const daxia::net::common::byte* data, 
 					size_t len,
 					int& msgID,
-					daxia::dxg::common::shared_buffer& buffer, 
+					daxia::net::common::shared_buffer& buffer, 
 					size_t& packetLen
 					) const override;
 			};
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif // !__DAXIA_DXG_COMMON_PARSER_H
+#endif // !__DAXIA_NET_COMMON_PARSER_H
 

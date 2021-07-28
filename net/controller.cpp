@@ -2,9 +2,9 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
-		daxia::dxg::HttpController::ContentTypeHelper HttpController::ContentType;
+		daxia::net::HttpController::ContentTypeHelper HttpController::ContentType;
 
 		void HttpController::SetContext(std::shared_ptr<Session> session)
 		{
@@ -16,7 +16,7 @@ namespace daxia
 			context_.reset();
 		}
 
-		const daxia::dxg::common::HttpParser::RequestHeader& HttpController::Request() const
+		const daxia::net::common::HttpParser::RequestHeader& HttpController::Request() const
 		{
 			using common::BasicSession;
 
@@ -40,7 +40,7 @@ namespace daxia
 			}
 		}
 
-		daxia::dxg::common::HttpParser::ResponseHeader& HttpController::Response()
+		daxia::net::common::HttpParser::ResponseHeader& HttpController::Response()
 		{
 			using common::BasicSession;
 
@@ -74,5 +74,5 @@ namespace daxia
 			}
 		}
 
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

@@ -6,11 +6,11 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, daxia::dxg::common::shared_buffer& buffer) const
+			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, daxia::net::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
@@ -31,7 +31,7 @@ namespace daxia
 				return true;
 			}
 
-			Parser::Result DefaultParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, int& msgID, daxia::dxg::common::shared_buffer& buffer, size_t& packetLen) const
+			Parser::Result DefaultParser::Unmarshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				buffer.clear();
 
@@ -82,5 +82,5 @@ namespace daxia
 				return Parser::Result::Result_Success;
 			}
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

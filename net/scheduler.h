@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file scheduler.hpp
+ * \file scheduler.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_SCHEDULER_H
-#define __DAXIA_DXG_SERVER_SCHEDULER_H
+#ifndef __DAXIA_NET_SERVER_SCHEDULER_H
+#define __DAXIA_NET_SERVER_SCHEDULER_H
 
 #include <memory>
 #include <mutex>
@@ -20,7 +20,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		class Session;
 
@@ -95,7 +95,7 @@ namespace daxia
 			long long nextScheduleID_;
 			std::mutex nextScheduleIDLocker_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
-#endif // !__DAXIA_DXG_SERVER_SCHEDULER_H
+#endif // !__DAXIA_NET_SERVER_SCHEDULER_H
 

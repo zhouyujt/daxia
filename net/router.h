@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file router.hpp
+ * \file router.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_ROUTER_H
-#define __DAXIA_DXG_SERVER_ROUTER_H
+#ifndef __DAXIA_NET_SERVER_ROUTER_H
+#define __DAXIA_NET_SERVER_ROUTER_H
 
 #include <memory>
 #include <boost/asio.hpp>
@@ -21,7 +21,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		class Controller;
 		class HttpController;
@@ -69,7 +69,7 @@ namespace daxia
 			long long nextSessionId_;
 			std::mutex sessionIdLocker_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
-#endif // !__DAXIA_DXG_SERVER_ROUTER_H
+#endif // !__DAXIA_NET_SERVER_ROUTER_H
 
