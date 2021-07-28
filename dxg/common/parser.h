@@ -65,20 +65,20 @@ namespace daxia
 #ifdef _MSC_VER
 #define ATTRIBUTE_PACKED
 #else
-#define ATTRIBUTE_PACKED  __attribute__((packed))
+#define ATTRIBUTE_PACKED  __attribute__ ((__packed__))
 #endif // _MSC_VER
 
 #ifdef _MSC_VER
 #pragma pack(1)
 #endif
 				// 数据包头
-				struct PacketHead
+					struct ATTRIBUTE_PACKED PacketHead
 				{
 					byte	magic;			// 恒定为88
 					byte	hearbeat;		// 心跳包标识
 					unsigned int len;		// 数据长度，不包括本包头
 					unsigned long reserve;	// 保留数据
-				}ATTRIBUTE_PACKED;
+				};
 
 #ifdef _MSC_VER
 #pragma pack()
