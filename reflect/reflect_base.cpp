@@ -69,7 +69,7 @@ namespace daxia
 			, typeInfo_(typeinfo)
 			, tagsStr_("-")
 		{
-			if (tags == nullptr)
+			if (tags != nullptr)
 			{
 				tagsStr_ = tags;
 			}
