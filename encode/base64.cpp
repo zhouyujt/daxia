@@ -72,7 +72,16 @@ namespace daxia
 			std::stringstream result;
 			try
 			{
-				copy(Base64DecodeIter(str.begin()), Base64DecodeIter(str.end()), std::ostream_iterator<char>(result));
+				std::string temp = str;
+				for (int i = 0; i < 2; ++i)
+				{
+					if (temp.back() == '=')
+					{
+						temp.pop_back();
+					}
+				}
+
+				copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
 			}
 			catch (...)
 			{
