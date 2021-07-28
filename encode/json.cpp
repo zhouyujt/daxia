@@ -252,10 +252,13 @@ namespace daxia
 
 			ArrayInfo ai;
 			boost::property_tree::ptree child;
-			const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
-			if (baseaddr != nullptr)
+			if (!array->Value().empty())
 			{
-				marshal(baseaddr, layout, child, &ai);
+				const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+				if (baseaddr != nullptr)
+				{
+					marshal(baseaddr, layout, child, &ai);
+				}
 			}
 
 			// 保存解析完毕的元素
@@ -269,6 +272,8 @@ namespace daxia
 		void Json::getArray(daxia::reflect::Reflect_base* reflectBase,
 			const boost::property_tree::ptree& root)
 		{
+			if (root.empty()) return;
+
 			typedef char unknow;
 			using daxia::reflect::Reflect;
 
