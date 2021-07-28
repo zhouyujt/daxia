@@ -194,7 +194,7 @@ namespace daxia
 						int msgID = 0;
 						size_t packetLen = 0;
 						common::shared_buffer msg;
-						Parser::Result result = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg, packetLen);
+						result = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg, packetLen);
 
 						if (result != Parser::Result::Result_Success)
 						{
