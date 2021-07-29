@@ -5,9 +5,6 @@
 #include "json.h"
 
 #define JSON "json"
-#define HASH "hash"
-#define OFFSET "offset"
-#define SIZE "size"
 
 namespace daxia
 {
@@ -33,8 +30,8 @@ namespace daxia
 
 			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 			{
-				size_t hashcode = iter->second.get<size_t>(HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
+				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
+				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
 
 				if (hashcode == 0) continue;
 
@@ -120,8 +117,8 @@ namespace daxia
 				//s2 = ss2.str();
 				//std::cout << s2;
 
-				size_t hashcode = iter->second.get<size_t>(HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
+				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
+				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
 
 				if (hashcode == 0) continue;
 
@@ -296,12 +293,12 @@ namespace daxia
 			using daxia::reflect::Reflect;
 
 			// 计算元素个数
-			size_t size = layout.get<size_t>(SIZE);
+			size_t size = layout.get<size_t>(REFLECT_LAYOUT_FIELD_SIZE);
 			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 			size_t count = array->Value().size() / size;
 
 			// 为所有元素扩展布局
-			layout.erase(SIZE);
+			layout.erase(REFLECT_LAYOUT_FIELD_SIZE);
 			auto attribleCount = layout.size();
 			for (size_t i = 1; i < count; ++i)
 			{
@@ -310,11 +307,11 @@ namespace daxia
 				{
 					boost::property_tree::ptree child;
 
-					size_t hashcode = iter->second.get<size_t>(HASH, 0);
-					unsigned long offset = static_cast<unsigned long>(iter->second.get<unsigned long>(OFFSET, 0) + size * i);
+					size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
+					unsigned long offset = static_cast<unsigned long>(iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0) + size * i);
 
-					child.put(HASH, hashcode);
-					child.put(OFFSET, offset);
+					child.put(REFLECT_LAYOUT_FIELD_HASH, hashcode);
+					child.put(REFLECT_LAYOUT_FIELD_OFFSET, offset);
 
 					layout.add_child(iter->first, child);
 				}
@@ -325,6 +322,3 @@ namespace daxia
 }// namespace daxia
 
 #undef JSON
-#undef HASH
-#undef OFFSET
-#undef SIZE
