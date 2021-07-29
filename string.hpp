@@ -117,10 +117,26 @@ namespace daxia
 			return *this;
 		}
 
+		String_base operator+(Elem ch) const
+		{
+			String_base s(*this);
+			s.v_.append(1, ch);
+
+			return s;
+		}
+
 		String_base operator+(const Elem* str) const
 		{
 			String_base s(*this);
-			s += str;
+			s.v_.append(str);
+
+			return s;
+		}
+
+		String_base operator+(const String_base& str) const
+		{
+			String_base s(*this);
+			s.v_.append(str.v_, 0, -1);
 
 			return s;
 		}
