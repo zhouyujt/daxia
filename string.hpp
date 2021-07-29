@@ -58,6 +58,9 @@ namespace daxia
 		int Replace(const Elem* oldstr, const Elem* newstr);
 		String_base& MakeLower();
 		String_base& MakeUpper();
+		String_base& Trim();
+		String_base& TrimLeft();
+		String_base& TrimRight();
 		int Compare(const Elem* str) const;
 		int CompareNoCase(const Elem* str) const;
 		void Append(const Elem* str, size_t len);
@@ -491,6 +494,35 @@ namespace daxia
 	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::MakeUpper()
 	{
 		v_ = daxia::encode::Strconv::MakeUpper(v_);
+		return *this;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::Trim()
+	{
+		TrimLeft();
+		return TrimRight();
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimLeft()
+	{
+		while (v_.front() == ' ')
+		{
+			v_.erase(v_.begin());
+		}
+
+		return *this;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimRight()
+	{
+		while (v_.back() == ' ')
+		{
+			v_.pop_back():
+		}
+
 		return *this;
 	}
 
