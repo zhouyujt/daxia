@@ -3,21 +3,21 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file sessions_manager.hpp
+ * \file sessions_manager.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_SESSIONS_MANAGER_H
-#define __DAXIA_DXG_SERVER_SESSIONS_MANAGER_H
+#ifndef __DAXIA_NET_SERVER_SESSIONS_MANAGER_H
+#define __DAXIA_NET_SERVER_SESSIONS_MANAGER_H
 
 #include "session.h"
 #include "scheduler.h"
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		// 会话管理类
 		class SessionsManager
@@ -89,7 +89,7 @@ namespace daxia
 
 			return session;
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif // !__DAXIA_DXG_SERVER_SESSIONS_MANAGER_H
+#endif // !__DAXIA_NET_SERVER_SESSIONS_MANAGER_H

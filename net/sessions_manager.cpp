@@ -2,7 +2,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		SessionsManager::SessionsManager()
 		{
@@ -125,5 +125,5 @@ namespace daxia
 				}
 			}
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

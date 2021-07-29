@@ -6,7 +6,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -111,5 +111,5 @@ namespace daxia
 			}
 
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

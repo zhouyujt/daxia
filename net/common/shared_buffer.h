@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file shared_buffer.hpp
+ * \file shared_buffer.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_COMMON_SHARED_BUFFER_H
-#define __DAXIA_DXG_COMMON_SHARED_BUFFER_H
+#ifndef __DAXIA_NET_COMMON_SHARED_BUFFER_H
+#define __DAXIA_NET_COMMON_SHARED_BUFFER_H
 
 #ifdef _MSC_VER
 #include <sdkddkver.h>
@@ -22,7 +22,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -49,8 +49,8 @@ namespace daxia
 			};
 
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif // !__DAXIA_DXG_COMMON_SHARED_BUFFER_H
+#endif // !__DAXIA_NET_COMMON_SHARED_BUFFER_H
 

@@ -2,8 +2,9 @@
 #define __DAXIA_INCLUDE_DAXIA_H
 
 // dxg
-#include "../dxg/client.h"
-#include "../dxg/server.h"
+#include "../net/client.h"
+#include "../net/server.h"
+#include "../net/common/byte_order.hpp"
 
 // encode
 #include "../encode/json.h"
@@ -46,7 +47,7 @@
 #	define dxPATH2 release/Release/
 #endif // !_DEBUG
 
-#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,dxg.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,net.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,encode.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,reflect.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,win32.lib)))

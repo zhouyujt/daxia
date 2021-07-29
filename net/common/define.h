@@ -3,18 +3,18 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file define.hpp
+ * \file define.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_COMMON_DEFINE_H
-#define __DAXIA_DXG_COMMON_DEFINE_H
+#ifndef __DAXIA_NET_COMMON_DEFINE_H
+#define __DAXIA_NET_COMMON_DEFINE_H
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -52,4 +52,4 @@ namespace daxia
 }
 
 
-#endif // !__DAXIA_DXG_COMMON_DEFINE_H
+#endif // !__DAXIA_NET_COMMON_DEFINE_H

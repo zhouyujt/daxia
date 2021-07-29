@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file basic_session.hpp
+ * \file basic_session.h
  * \author 漓江里的大虾
  * \date 十一月 2018
  *
  */
 
-#ifndef __DAXIA_COMMON_BASIC_SESSION_H
-#define __DAXIA_COMMON_BASIC_SESSION_H
+#ifndef __DAXIA_NET_COMMON_BASIC_SESSION_H
+#define __DAXIA_NET_COMMON_BASIC_SESSION_H
 
 #include <mutex>
 #include <memory>
@@ -25,7 +25,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
@@ -177,7 +177,7 @@ namespace daxia
 			}
 
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
-#endif // !__DAXIA_COMMON_BASIC_SESSION_H
+#endif // !__DAXIA_NET_COMMON_BASIC_SESSION_H
 

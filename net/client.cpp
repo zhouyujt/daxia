@@ -7,7 +7,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Client::Client()
 			: hearbeatInterval_(0)
@@ -364,5 +364,5 @@ namespace daxia
 				}
 			}
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

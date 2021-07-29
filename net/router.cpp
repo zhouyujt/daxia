@@ -9,7 +9,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Router::Router()
 			: heartbeatSchedulerId_(-1)
@@ -23,7 +23,7 @@ namespace daxia
 
 		}
 
-		void Router::RunAsTCP(short port)
+		void Router::RunAsTCP(short port, bool enableFps)
 		{
 			if (!parser_)
 			{
@@ -49,18 +49,18 @@ namespace daxia
 
 			// 启动调度器
 			scheduler_.SetNetDispatch(std::bind(&Router::dispatchMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-			scheduler_.Run();
+			scheduler_.Run(enableFps);
 		}
 
-		void Router::RunAsUDP(short port)
+		void Router::RunAsUDP(short port, bool enableFps)
 		{
 		}
 
-		void Router::RunAsWebsocket(short port, const std::string& path)
+		void Router::RunAsWebsocket(short port, const std::string& path, bool enableFps)
 		{
 		}
 
-		void Router::RunAsHTTP(short port)
+		void Router::RunAsHTTP(short port, bool enableFps)
 		{
 			parser_ = std::shared_ptr<common::Parser>(new common::HttpServerParser);
 
@@ -83,7 +83,7 @@ namespace daxia
 
 			// 启动调度器
 			scheduler_.SetNetDispatch(std::bind(&Router::dispatchHttpMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-			scheduler_.Run();
+			scheduler_.Run(enableFps);
 		}
 
 		void Router::SetParser(std::shared_ptr<common::Parser> parser)
@@ -183,7 +183,7 @@ namespace daxia
 
 		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
 		{
-			using daxia::dxg::common::BasicSession;
+			using daxia::net::common::BasicSession;
 
 			if (data.size() == 0) return;
 
@@ -231,7 +231,7 @@ namespace daxia
 					html += "<html>\r\n";
 					html += "<body>\r\n";
 					html += "hello world!<br/>\r\n";
-					html += "powered by dxg<br/>\r\n";
+					html += "powered by net<br/>\r\n";
 					html += "<a href=\"https://github.com/zhouyujt/daxia\">https://github.com/zhouyujt/daxia</a>\r\n";
 					html += "</body>\r\n";
 					html += "</html>\r\n";
@@ -284,6 +284,6 @@ namespace daxia
 				scheduler_.PushNetRequest(GetSession(sessionId), msgId, msg);
 			}
 		}
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 

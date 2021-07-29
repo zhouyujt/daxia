@@ -5,7 +5,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		Server::Server()
 		{
@@ -16,21 +16,21 @@ namespace daxia
 		{
 			Stop();
 		}
-		void Server::Run(short port, common::Protocol protcol)
+		void Server::Run(short port, common::Protocol protcol, bool enableFps)
 		{
 			switch (protcol)
 			{
 			case common::Protocol_TCP:
-				router_.RunAsTCP(port);
+				router_.RunAsTCP(port, enableFps);
 				break;
 			case common::Protocol_UDP:
-				router_.RunAsUDP(port);
+				router_.RunAsUDP(port, enableFps);
 				break;
 			case common::Protocol_Websocket:
-				router_.RunAsWebsocket(port, websocketPath_);
+				router_.RunAsWebsocket(port, websocketPath_, enableFps);
 				break;
 			case common::Protocol_HTTP:
-				router_.RunAsHTTP(port);
+				router_.RunAsHTTP(port, enableFps);
 				break;
 			default:
 				break;
@@ -64,7 +64,7 @@ namespace daxia
 
 		void Server::SetFPS(unsigned long fps)
 		{
-			router_.GetScheduler().SetFPS(fps);
+			router_.GetScheduler().SetFps(fps);
 		}
 
 		long long Server::ScheduleUpdate(Scheduler::scheduleFunc func)
@@ -97,10 +97,10 @@ namespace daxia
 			router_.GetScheduler().UnscheduleAll();
 		}
 
-		daxia::dxg::SessionsManager& Server::GetSessionManager()
+		daxia::net::SessionsManager& Server::GetSessionManager()
 		{
 			return router_;
 		}
 
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

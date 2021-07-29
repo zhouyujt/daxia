@@ -3,22 +3,23 @@
 #include "parser.h"
 #include "../../encode/strconv.h"
 #include "../../string.hpp"
+#include "byte_order.hpp"
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, daxia::dxg::common::shared_buffer& buffer) const
+			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, daxia::net::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
 
 				PacketHead head;
 				head.magic = 88;
-				head.len = static_cast<int>(len);
 				head.hearbeat = (data == nullptr && len == 0) ? 1 : 0;
+				head.len = ByteOrder::hton(static_cast<int>(len));
 				head.reserve = 0;
 
 				memcpy(buffer.get(), &head, sizeof(head));
@@ -31,7 +32,7 @@ namespace daxia
 				return true;
 			}
 
-			Parser::Result DefaultParser::Unmarshal(daxia::dxg::common::BasicSession* session, const daxia::dxg::common::byte* data, size_t len, int& msgID, daxia::dxg::common::shared_buffer& buffer, size_t& packetLen) const
+			Parser::Result DefaultParser::Unmarshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				buffer.clear();
 
@@ -43,8 +44,8 @@ namespace daxia
 
 				// Êý¾Ý²»×ã
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				int contentLen = head->len;
-				if (head->len + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
+				int contentLen = ByteOrder::ntoh(head->len);
+				if (contentLen + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
 			
 				if (!head->hearbeat)
 				{
@@ -74,13 +75,13 @@ namespace daxia
 					msgID = DefMsgID_Heartbeat;
 				}
 
-				buffer.resize(head->len);
-				memcpy(buffer.get(), data + sizeof(PacketHead), head->len);
+				buffer.resize(contentLen);
+				memcpy(buffer.get(), data + sizeof(PacketHead), contentLen);
 
-				packetLen = sizeof(PacketHead) + head->len;
+				packetLen = sizeof(PacketHead) + contentLen;
 
 				return Parser::Result::Result_Success;
 			}
 		}// namespace common
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia

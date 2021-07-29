@@ -3,20 +3,20 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file session.hpp
+ * \file session.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_SESSION_H
-#define __DAXIA_DXG_SERVER_SESSION_H
+#ifndef __DAXIA_NET_SERVER_SESSION_H
+#define __DAXIA_NET_SERVER_SESSION_H
 
 #include "common/basic_session.h"
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		class Router;
 
@@ -40,7 +40,7 @@ namespace daxia
 			long long id_;
 			handler onMessage_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
 
-#endif	// !__DAXIA_DXG_SERVER_SESSION_H
+#endif	// !__DAXIA_NET_SERVER_SESSION_H

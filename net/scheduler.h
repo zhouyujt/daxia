@@ -3,14 +3,14 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file scheduler.hpp
+ * \file scheduler.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
  */
 
-#ifndef __DAXIA_DXG_SERVER_SCHEDULER_H
-#define __DAXIA_DXG_SERVER_SCHEDULER_H
+#ifndef __DAXIA_NET_SERVER_SCHEDULER_H
+#define __DAXIA_NET_SERVER_SCHEDULER_H
 
 #include <memory>
 #include <mutex>
@@ -20,7 +20,7 @@
 
 namespace daxia
 {
-	namespace dxg
+	namespace net
 	{
 		class Session;
 
@@ -53,7 +53,7 @@ namespace daxia
 				}
 			};
 		public:
-			void SetFPS(unsigned long fps);
+			void SetFps(unsigned long fps);
 			long long ScheduleUpdate(scheduleFunc func);
 			long long Schedule(scheduleFunc func, unsigned long duration);
 			long long ScheduleOnce(scheduleFunc func, unsigned long duration);
@@ -62,10 +62,13 @@ namespace daxia
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
 			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback = nullptr);
-			void Run();
+			void Run(bool enableFps);
 			void Stop();
 		private:
 			long long makeScheduleID();
+			void runAsFps();
+			void runAsNoFps();
+			void asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec);
 		private:
 			// 更新函数
 			struct UpdateFunc
@@ -83,6 +86,7 @@ namespace daxia
 			};
 		private:
 			unsigned long fps_;
+			bool enableFps_;
 			std::vector<UpdateFunc> updateFuncs_;
 			std::vector<ScheduleFunc> scheduleFuncs_;
 			std::mutex scheduleLocker_;
@@ -91,11 +95,13 @@ namespace daxia
 			std::mutex netRequestLocker_;
 			std::queue<NetRequest> netRequests_;
 			netDispatchFunc	dispatch_;
-		private:
 			long long nextScheduleID_;
 			std::mutex nextScheduleIDLocker_;
+			boost::asio::io_service logicIoService_;
+			std::vector<std::thread> logicThreads_;
+			std::map<long long, boost::asio::deadline_timer*> timers_;
 		};
-	}// namespace dxg
+	}// namespace net
 }// namespace daxia
-#endif // !__DAXIA_DXG_SERVER_SCHEDULER_H
+#endif // !__DAXIA_NET_SERVER_SCHEDULER_H
 
