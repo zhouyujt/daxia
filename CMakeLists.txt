@@ -33,8 +33,9 @@ ENDIF(CMAKE_CL_64)
 find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_subdirectory("net" net)
-add_subdirectory("encode" encode)
-add_subdirectory("reflect" reflect)
-add_subdirectory("win32" win32)
+add_subdirectory(net)
+add_subdirectory(encode)
+add_subdirectory(reflect)
+add_subdirectory(win32)
+add_subdirectory(database)
 
