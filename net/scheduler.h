@@ -53,7 +53,7 @@ namespace daxia
 				}
 			};
 		public:
-			void SetFPS(unsigned long fps);
+			void SetFps(unsigned long fps);
 			long long ScheduleUpdate(scheduleFunc func);
 			long long Schedule(scheduleFunc func, unsigned long duration);
 			long long ScheduleOnce(scheduleFunc func, unsigned long duration);
@@ -62,10 +62,13 @@ namespace daxia
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
 			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback = nullptr);
-			void Run();
+			void Run(bool enableFps);
 			void Stop();
 		private:
 			long long makeScheduleID();
+			void runAsFps();
+			void runAsNoFps();
+			void asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec);
 		private:
 			// ¸üÐÂº¯Êý
 			struct UpdateFunc
@@ -83,6 +86,7 @@ namespace daxia
 			};
 		private:
 			unsigned long fps_;
+			bool enableFps_;
 			std::vector<UpdateFunc> updateFuncs_;
 			std::vector<ScheduleFunc> scheduleFuncs_;
 			std::mutex scheduleLocker_;
@@ -91,9 +95,11 @@ namespace daxia
 			std::mutex netRequestLocker_;
 			std::queue<NetRequest> netRequests_;
 			netDispatchFunc	dispatch_;
-		private:
 			long long nextScheduleID_;
 			std::mutex nextScheduleIDLocker_;
+			boost::asio::io_service logicIoService_;
+			std::vector<std::thread> logicThreads_;
+			std::map<long long, boost::asio::deadline_timer*> timers_;
 		};
 	}// namespace net
 }// namespace daxia

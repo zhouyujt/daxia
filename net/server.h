@@ -31,7 +31,7 @@ namespace daxia
 			Server();
 			~Server();
 		public:
-			void Run(short port, common::Protocol protcol = common::Protocol_TCP);
+			void Run(short port, common::Protocol protcol = common::Protocol_TCP, bool enableFps = false);
 			void Stop();
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Handle(int msgId, std::shared_ptr<Controller> controller);
