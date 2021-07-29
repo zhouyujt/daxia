@@ -1,4 +1,3 @@
-#include <string>
 #include <map>
 #include <mutex>
 #include <boost/property_tree/ptree.hpp>
@@ -52,12 +51,12 @@ namespace daxia
 		{
 		}
 
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const std::string& tags)
+		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags)
 			: size_(size)
 			, typeInfo_(typeinfo)
 			, tagsStr_("-")
 		{
-			if (!tags.empty())
+			if (!tags.IsEmpty())
 			{
 				tagsStr_ = tags;
 			}
@@ -87,9 +86,9 @@ namespace daxia
 			return *this;
 		}
 
-		std::string Reflect_base::Tag(const std::string& prefix) const
+		daxia::string Reflect_base::Tag(const daxia::string& prefix) const
 		{
-			std::string tag;
+			daxia::string tag;
 
 			auto iter = tags_.find(prefix);
 			if (iter != tags_.end())
@@ -100,26 +99,17 @@ namespace daxia
 			return tag;
 		};
 
-		void Reflect_base::parseTag(const std::string& str)
+		void Reflect_base::parseTag(const daxia::string& str)
 		{
-			using namespace std;
-
-			string::size_type spacePos = string::npos;
-			string::size_type lastPos = 0;
-			do
+			std::vector<daxia::string> tags;
+			str.Split(" ", tags);
+			for (const daxia::string& tag : tags)
 			{
-				spacePos = str.find(' ', lastPos);
-				string tag = spacePos == string::npos ? str.substr(lastPos) : str.substr(lastPos, spacePos - lastPos);
-				string::size_type splitPos = tag.find(':');
-				if (splitPos != string::npos)
-				{
-					string prefix = tag.substr(0, splitPos);
-					string suffix = tag.substr(splitPos + 1);
-					tags_[prefix] = suffix;
-				}
-
-				lastPos = spacePos + 1;
-			} while (spacePos != string::npos);
+				size_t pos = 0;
+				daxia::string prefix = tag.Tokenize(":", pos);
+				daxia::string suffix = tag.Mid(pos, -1);
+				tags_[prefix] = suffix;
+			}
 		}
 	}// namespace reflect
 }// namespace daxia

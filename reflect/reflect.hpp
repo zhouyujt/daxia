@@ -130,7 +130,7 @@ namespace daxia
 						boost::property_tree::ptree childLayout;
 						childLayout.put(REFLECT_LAYOUT_FIELD_HASH, reflectBase->Type().hash_code());
 						childLayout.put(REFLECT_LAYOUT_FIELD_OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
-						rootLayout.put_child(reflectBase->Tags(), childLayout);
+						rootLayout.put_child(reflectBase->Tags().GetString(), childLayout);
 
 						start += reflectBase->Size() - 1;
 					}

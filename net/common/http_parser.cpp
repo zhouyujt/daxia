@@ -174,12 +174,10 @@ namespace daxia
 					catch (const std::exception&){}
 					if (field == nullptr) continue;
 
-					auto test = field->Tag("http");
-
 					if (!field->Value().empty())
 					{
 						daxia::string temp;
-						temp.Format("%s:%s", field->Tag("http").c_str(), field->Value().c_str());
+						temp.Format("%s:%s", field->Tag("http").GetString(), field->Value().c_str());
 						msg += temp;
 						msg += CRLF;
 					}

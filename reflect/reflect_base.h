@@ -15,10 +15,10 @@
 #ifndef __DAXIA_REFLECT_REFLECT_BASE_H
 #define __DAXIA_REFLECT_REFLECT_BASE_H
 
-#include <string>
 #include <map>
 #include <mutex>
 #include <boost/property_tree/ptree.hpp>
+#include "../string.hpp"
 
 namespace daxia
 {
@@ -50,7 +50,7 @@ namespace daxia
 		protected:
 			Reflect_base();
 			Reflect_base(size_t size, const std::type_info& typeinfo);
-			Reflect_base(size_t size, const std::type_info& typeinfo, const std::string& tags);
+			Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags);
 			Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags);
 			virtual ~Reflect_base();
 		protected:
@@ -63,15 +63,15 @@ namespace daxia
 		public:
 			size_t Size() const{ return size_; }
 			const std::type_info& Type() const { return typeInfo_; }
-			const std::string& Tags() const { return tagsStr_; }
-			std::string Tag(const std::string& prefix) const;
+			const daxia::string& Tags() const { return tagsStr_; }
+			daxia::string Tag(const daxia::string& prefix) const;
 		private:
-			void parseTag(const std::string& str);
+			void parseTag(const daxia::string& str);
 		private:
 			size_t size_;
 			const std::type_info& typeInfo_;
-			std::string tagsStr_;
-			std::map<std::string, std::string> tags_;
+			daxia::string tagsStr_;
+			std::map<daxia::string, daxia::string> tags_;
 		};// class reflect_base
 	}// namespace reflect
 }// namespace daxia
