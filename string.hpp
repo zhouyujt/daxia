@@ -233,13 +233,6 @@ namespace daxia
 		std::basic_string<Elem, Traits, Alloc> v_;
 	};
 
-	template<>
-	template<class T>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
-	{
-		return std::to_wstring(v);
-	}
-
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base()
 	{
@@ -644,6 +637,13 @@ namespace daxia
 	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToString(T v)
 	{
 		return std::to_string(v);
+	}
+
+	template<>
+	template<class T>
+	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
+	{
+		return std::to_wstring(v);
 	}
 
 	template<class Elem, class Traits, class Alloc>
