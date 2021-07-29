@@ -9,6 +9,7 @@
  *
  * 提供运行时的反射功能：
  * 标签、类型、内存布局
+ * 标签格式举例："orm:id(identity) json:id other:myid(attribute1 attribute2=xxxx attribute3)"
  *
  */
 

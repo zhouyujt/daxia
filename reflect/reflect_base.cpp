@@ -1,5 +1,6 @@
 #include <map>
 #include <mutex>
+#include <regex>
 #include <boost/property_tree/ptree.hpp>
 #include "reflect_base.h"
 
@@ -93,22 +94,66 @@ namespace daxia
 			auto iter = tags_.find(prefix);
 			if (iter != tags_.end())
 			{
-				tag = iter->second;
+				size_t pos = 0;
+				tag = iter->second.Tokenize(" ",pos);
 			}
 
 			return tag;
 		};
 
-		void Reflect_base::parseTag(const daxia::string& str)
+		daxia::string Reflect_base::TagAttribute(const daxia::string& prefix) const
 		{
-			std::vector<daxia::string> tags;
-			str.Split(" ", tags);
-			for (const daxia::string& tag : tags)
+			daxia::string tag;
+			daxia::string attribute;
+
+			auto iter = tags_.find(prefix);
+			if (iter != tags_.end())
 			{
 				size_t pos = 0;
-				daxia::string prefix = tag.Tokenize(":", pos);
-				daxia::string suffix = tag.Mid(pos, -1);
-				tags_[prefix] = suffix;
+				tag = iter->second.Tokenize(" ", pos);
+				attribute = iter->second.Mid(pos, -1);
+			}
+
+			return attribute;
+		}
+
+		void Reflect_base::parseTag(const daxia::string& str)
+		{
+			daxia::string tagStr(str);
+			tagStr.Trim();
+
+			// ’˝‘Ú∆•≈‰‘ –Ì"orm:id(identity) json:id other:id(attribute1 attribute2=param attribute3)"
+			std::string pattern = "\\w+:\\w+(\\s*\\(([\\w=]\\s*)*\\))?";
+			std::regex express(pattern);
+
+			std::string& s = static_cast<std::string>(tagStr);
+			std::regex_token_iterator<std::string::const_iterator> tokenize(s.begin(), s.end(), express);
+			for (auto iter = tokenize; iter != std::sregex_token_iterator(); iter++)
+			{
+				daxia::string tag = iter->str();
+
+				size_t pos = 0;
+				daxia::string prefix = tag.Tokenize(":", pos).Trim();
+				daxia::string suffix = tag.Mid(pos, -1).Trim();
+
+				pos = 0;
+				daxia::string name = suffix.Tokenize("(", pos).Trim();
+				daxia::string attribute = suffix.Mid(pos, -1).Trim();
+
+				if (!attribute.IsEmpty())
+				{
+					// »•≥˝attribute ◊Û”“¡Ω≤‡¿®∫≈
+					if (attribute[attribute.GetLength() - 1] == ')')
+					{
+						attribute.Delete(attribute.GetLength() - 1);
+					}
+
+					tags_[prefix] = name + " " + attribute;
+				}
+				else
+				{
+					tags_[prefix] = name;
+				}
 			}
 		}
 	}// namespace reflect
