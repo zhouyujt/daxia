@@ -65,6 +65,7 @@ namespace daxia
 		int CompareNoCase(const Elem* str) const;
 		void Append(const Elem* str, size_t len);
 		void Append(const Elem* str);
+		size_t Delete(size_t start, size_t count = 1);
 		// 其他方法
 	public:
 		// 获取哈希值
@@ -507,8 +508,9 @@ namespace daxia
 	template<class Elem, class Traits, class Alloc>
 	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimLeft()
 	{
-		while (v_.front() == ' ')
+		while (true)
 		{
+			if (v_.empty() || v_.front() != ' ') break;
 			v_.erase(v_.begin());
 		}
 
@@ -518,9 +520,10 @@ namespace daxia
 	template<class Elem, class Traits, class Alloc>
 	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimRight()
 	{
-		while (v_.back() == ' ')
+		while (true)
 		{
-			v_.pop_back():
+			if (v_.empty() || v_.back() != ' ') break;
+			v_.pop_back();
 		}
 
 		return *this;
@@ -553,6 +556,29 @@ namespace daxia
 	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str)
 	{
 		v_.append(str);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Delete(size_t start, size_t count)
+	{
+		size_t oldLength = GetLength();
+		if (start > oldLength) return oldLength;
+
+		if (start + count > oldLength)
+		{
+			count = oldLength - start;
+		}
+
+		if (count > 0)
+		{
+			size_t newLength = oldLength - count;
+			Elem* buff = GetBuffer();
+			int copied = oldLength - (start + count) + 1;
+			memmove(buff + start, buff + start + count, copied * sizeof(Elem));
+			ReleaseBuffer(newLength);
+		}
+
+		return GetLength();
 	}
 
 	template<class Elem, class Traits, class Alloc>
