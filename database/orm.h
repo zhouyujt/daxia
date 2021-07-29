@@ -58,6 +58,10 @@ namespace daxia
 			daxia::string Delete(const daxia::reflect::Reflect_base* table);
 			daxia::string Query(daxia::reflect::Reflect_base* table);
 			daxia::string Update(daxia::reflect::Reflect_base* table);
+			virtual std::shared_ptr<Recordset> Excute(const daxia::string& sql);
+		private:
+			daxia::string tostring(const daxia::reflect::Reflect_base* reflectBase);
+			daxia::string makeConditionByIdentityField(const boost::property_tree::ptree& layout);
 		private:
 			std::shared_ptr<Command> command_;
 		};
