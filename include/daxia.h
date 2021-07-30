@@ -19,6 +19,9 @@
 #include "../win32/processes_manager.h"
 #include "../win32/path.h"
 
+// system
+#include "../system/datetime.h"
+
 #include "../singleton.hpp"
 #include "../string.hpp"
 
@@ -51,6 +54,7 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,encode.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,reflect.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,win32.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,system.lib)))
 
 #undef dxPATH
 #undef dxPATH2

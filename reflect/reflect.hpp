@@ -9,6 +9,7 @@
  *
  * 提供运行时的反射功能：
  * 标签、类型、内存布局
+ * 标签格式举例："orm:id(identity) json:id other:myid(attribute1 attribute2=xxxx attribute3)"
  *
  */
 
@@ -19,9 +20,9 @@
 #include <vector>
 #include "reflect_base.h" 
 
-#define HASH "hash"
-#define OFFSET "offset"
-#define SIZE "size"
+#define REFLECT_LAYOUT_FIELD_HASH "hash_reflect_layout_field"
+#define REFLECT_LAYOUT_FIELD_OFFSET "offset_reflect_layout_field"
+#define REFLECT_LAYOUT_FIELD_SIZE "size_reflect_layout_field"
 
 namespace daxia
 {
@@ -128,9 +129,9 @@ namespace daxia
 						if (reflectBase == nullptr) continue;
 
 						boost::property_tree::ptree childLayout;
-						childLayout.put(HASH, reflectBase->Type().hash_code());
-						childLayout.put(OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
-						rootLayout.put_child(reflectBase->Tags(), childLayout);
+						childLayout.put(REFLECT_LAYOUT_FIELD_HASH, reflectBase->Type().hash_code());
+						childLayout.put(REFLECT_LAYOUT_FIELD_OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
+						rootLayout.put_child(reflectBase->Tags().GetString(), childLayout);
 
 						start += reflectBase->Size() - 1;
 					}
@@ -237,7 +238,7 @@ namespace daxia
 						layout_ = Reflect<ValueType>().Layout();
 
 						// 每个元素的大小
-						if (!layout_.empty()) layout_.put(SIZE, sizeof(ValueType));
+						if (!layout_.empty()) layout_.put(REFLECT_LAYOUT_FIELD_SIZE, sizeof(ValueType));
 					}
 
 					layoutLocker_.unlock();
@@ -288,10 +289,6 @@ namespace daxia
 		};
 	}// namespace reflect
 }// namespace daxia
-
-#undef HASH
-#undef OFFSET
-#undef SIZE
 
 #endif // !__DAXIA_REFLECT_REFLECT_HPP
 

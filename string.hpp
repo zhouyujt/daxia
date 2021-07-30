@@ -58,10 +58,14 @@ namespace daxia
 		int Replace(const Elem* oldstr, const Elem* newstr);
 		String_base& MakeLower();
 		String_base& MakeUpper();
+		String_base& Trim();
+		String_base& TrimLeft();
+		String_base& TrimRight();
 		int Compare(const Elem* str) const;
 		int CompareNoCase(const Elem* str) const;
 		void Append(const Elem* str, size_t len);
 		void Append(const Elem* str);
+		size_t Delete(size_t start, size_t count = 1);
 		// 其他方法
 	public:
 		// 获取哈希值
@@ -117,10 +121,26 @@ namespace daxia
 			return *this;
 		}
 
+		String_base operator+(Elem ch) const
+		{
+			String_base s(*this);
+			s.v_.append(1, ch);
+
+			return s;
+		}
+
 		String_base operator+(const Elem* str) const
 		{
 			String_base s(*this);
-			s += str;
+			s.v_.append(str);
+
+			return s;
+		}
+
+		String_base operator+(const String_base& str) const
+		{
+			String_base s(*this);
+			s.v_.append(str.v_, 0, -1);
 
 			return s;
 		}
@@ -212,13 +232,6 @@ namespace daxia
 	private:
 		std::basic_string<Elem, Traits, Alloc> v_;
 	};
-
-	template<>
-	template<class T>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
-	{
-		return std::to_wstring(v);
-	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base()
@@ -479,6 +492,37 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::Trim()
+	{
+		TrimLeft();
+		return TrimRight();
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimLeft()
+	{
+		while (true)
+		{
+			if (v_.empty() || v_.front() != ' ') break;
+			v_.erase(v_.begin());
+		}
+
+		return *this;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::TrimRight()
+	{
+		while (true)
+		{
+			if (v_.empty() || v_.back() != ' ') break;
+			v_.pop_back();
+		}
+
+		return *this;
+	}
+
+	template<class Elem, class Traits, class Alloc>
 	int daxia::String_base<Elem, Traits, Alloc>::Compare(const Elem* str) const
 	{
 		return v_.compare(str);
@@ -505,6 +549,29 @@ namespace daxia
 	void daxia::String_base<Elem, Traits, Alloc>::Append(const Elem* str)
 	{
 		v_.append(str);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Delete(size_t start, size_t count)
+	{
+		size_t oldLength = GetLength();
+		if (start > oldLength) return oldLength;
+
+		if (start + count > oldLength)
+		{
+			count = oldLength - start;
+		}
+
+		if (count > 0)
+		{
+			size_t newLength = oldLength - count;
+			Elem* buff = GetBuffer();
+			int copied = oldLength - (start + count) + 1;
+			memmove(buff + start, buff + start + count, copied * sizeof(Elem));
+			ReleaseBuffer(newLength);
+		}
+
+		return GetLength();
 	}
 
 	template<class Elem, class Traits, class Alloc>
@@ -570,6 +637,13 @@ namespace daxia
 	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToString(T v)
 	{
 		return std::to_string(v);
+	}
+
+	template<>
+	template<class T>
+	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
+	{
+		return std::to_wstring(v);
 	}
 
 	template<class Elem, class Traits, class Alloc>

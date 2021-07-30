@@ -1,6 +1,6 @@
-#include <string>
 #include <map>
 #include <mutex>
+#include <regex>
 #include <boost/property_tree/ptree.hpp>
 #include "reflect_base.h"
 
@@ -52,12 +52,12 @@ namespace daxia
 		{
 		}
 
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const std::string& tags)
+		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags)
 			: size_(size)
 			, typeInfo_(typeinfo)
 			, tagsStr_("-")
 		{
-			if (!tags.empty())
+			if (!tags.IsEmpty())
 			{
 				tagsStr_ = tags;
 			}
@@ -87,39 +87,74 @@ namespace daxia
 			return *this;
 		}
 
-		std::string Reflect_base::Tag(const std::string& prefix) const
+		daxia::string Reflect_base::Tag(const daxia::string& prefix) const
 		{
-			std::string tag;
+			daxia::string tag;
 
 			auto iter = tags_.find(prefix);
 			if (iter != tags_.end())
 			{
-				tag = iter->second;
+				size_t pos = 0;
+				tag = iter->second.Tokenize(" ",pos);
 			}
 
 			return tag;
 		};
 
-		void Reflect_base::parseTag(const std::string& str)
+		daxia::string Reflect_base::TagAttribute(const daxia::string& prefix) const
 		{
-			using namespace std;
+			daxia::string tag;
+			daxia::string attribute;
 
-			string::size_type spacePos = string::npos;
-			string::size_type lastPos = 0;
-			do
+			auto iter = tags_.find(prefix);
+			if (iter != tags_.end())
 			{
-				spacePos = str.find(' ', lastPos);
-				string tag = spacePos == string::npos ? str.substr(lastPos) : str.substr(lastPos, spacePos - lastPos);
-				string::size_type splitPos = tag.find(':');
-				if (splitPos != string::npos)
-				{
-					string prefix = tag.substr(0, splitPos);
-					string suffix = tag.substr(splitPos + 1);
-					tags_[prefix] = suffix;
-				}
+				size_t pos = 0;
+				tag = iter->second.Tokenize(" ", pos);
+				attribute = iter->second.Mid(pos, -1);
+			}
 
-				lastPos = spacePos + 1;
-			} while (spacePos != string::npos);
+			return attribute;
+		}
+
+		void Reflect_base::parseTag(const daxia::string& str)
+		{
+			daxia::string tagStr(str);
+			tagStr.Trim();
+
+			// ’˝‘Ú∆•≈‰‘ –Ì"orm:id(identity) json:id other:id(attribute1 attribute2=param attribute3)"
+			std::string pattern = "\\w+:\\w+(\\s*\\(([\\w=]\\s*)*\\))?";
+			std::regex express(pattern);
+
+			std::string& s = static_cast<std::string>(tagStr);
+			std::regex_token_iterator<std::string::const_iterator> tokenize(s.begin(), s.end(), express);
+			for (auto iter = tokenize; iter != std::sregex_token_iterator(); iter++)
+			{
+				daxia::string tag = iter->str();
+
+				size_t pos = 0;
+				daxia::string prefix = tag.Tokenize(":", pos).Trim();
+				daxia::string suffix = tag.Mid(pos, -1).Trim();
+
+				pos = 0;
+				daxia::string name = suffix.Tokenize("(", pos).Trim();
+				daxia::string attribute = suffix.Mid(pos, -1).Trim();
+
+				if (!attribute.IsEmpty())
+				{
+					// »•≥˝attribute ◊Û”“¡Ω≤‡¿®∫≈
+					if (attribute[attribute.GetLength() - 1] == ')')
+					{
+						attribute.Delete(attribute.GetLength() - 1);
+					}
+
+					tags_[prefix] = name + " " + attribute;
+				}
+				else
+				{
+					tags_[prefix] = name;
+				}
+			}
 		}
 	}// namespace reflect
 }// namespace daxia

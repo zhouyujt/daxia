@@ -150,14 +150,14 @@ namespace daxia
 					bool IsValidMethod(const char* method)
 					{
 						daxia::string temp(method);
-						if (temp.CompareNoCase(Get.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Post.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Put.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Head.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Delete.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Options.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Trace.Tag("http").c_str()) == 0) return true;
-						if (temp.CompareNoCase(Connect.Tag("http").c_str()) == 0) return true;
+						if (temp.CompareNoCase(Get.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Post.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Put.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Head.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Delete.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Options.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Trace.Tag("http").GetString()) == 0) return true;
+						if (temp.CompareNoCase(Connect.Tag("http").GetString()) == 0) return true;
 
 						return false;
 					}
