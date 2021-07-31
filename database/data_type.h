@@ -1,3 +1,17 @@
+/*!
+* Licensed under the MIT License.See License for details.
+* Copyright (c) 2021 漓江里的大虾.
+* All rights reserved.
+*
+* \file data_type.h
+* \author 漓江里的大虾
+* \date 七月 2021
+*
+* 数据库数据类型定义
+*
+*/
+#ifndef __DAXIA_DATABASE_DATA_TYPE_H
+#define __DAXIA_DATABASE_DATA_TYPE_H
 #include <string>
 #include "../string.hpp"
 #include "../system/datetime.h"
@@ -42,3 +56,4 @@ namespace daxia
 		typedef DataType<daxia::system::DateTime> db_datetime;
 	}
 }
+#endif	// !__DAXIA_DATABASE_DATA_TYPE_H

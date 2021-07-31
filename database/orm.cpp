@@ -1,4 +1,7 @@
 #include "orm.h"
+#include "mysql_command.h"
+#include "sqlite_command.h"
+#include "sqlserver_command.h"
 
 #define ORM "orm"
 
@@ -6,6 +9,28 @@ namespace daxia
 {
 	namespace database
 	{
+		Orm::Orm(Driver driver, const daxia::string& host, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
+		{
+			switch (driver)
+			{
+			case daxia::database::Orm::mysql:
+				command_ = std::shared_ptr<MysqlCommand>(new MysqlCommand(host, db, user, psw));
+				break;
+			case daxia::database::Orm::sqlite:
+				command_ = std::shared_ptr<SqliteCommand>(new SqliteCommand(host, db, user, psw));
+				break;
+			case daxia::database::Orm::sqlserver:
+				command_ = std::shared_ptr<SqlserverCommand>(new SqlserverCommand(host, db, user, psw));
+				break;
+			default:
+				break;
+			}
+		}
+
+		Orm::Orm(Driver driver, const daxia::string& connectString)
+		{
+		}
+
 		daxia::string Orm::insert(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;

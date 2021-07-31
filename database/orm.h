@@ -107,6 +107,7 @@ namespace daxia
 				sqlserver
 			};
 		public:
+			Orm(Driver driver, const daxia::string& host, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
 			Orm(Driver driver, const daxia::string& connectString);
 			virtual ~Orm();
 		public:
