@@ -32,7 +32,7 @@ ENDIF(CMAKE_CL_64)
 
 find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
-#find_package(Mysql)
+#find_package(MySQL)
 #include_directories(${MySQL_INCLUDE_DIRS})
 
 add_subdirectory(net)
