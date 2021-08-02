@@ -1,7 +1,7 @@
 #include "orm.h"
-#include "mysql_command.h"
-#include "sqlite_command.h"
-#include "sqlserver_command.h"
+#include "driver/mysql_driver.h"
+#include "driver/sqlite_driver.h"
+#include "driver/sqlserver_driver.h"
 
 #define ORM "orm"
 
@@ -9,18 +9,18 @@ namespace daxia
 {
 	namespace database
 	{
-		Orm::Orm(Driver driver, const daxia::string& host, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
+		Orm::Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
 		{
+			using namespace daxia::database::driver;
+
 			switch (driver)
 			{
 			case daxia::database::Orm::mysql:
-				command_ = std::shared_ptr<MysqlCommand>(new MysqlCommand(host, db, user, psw));
+				command_ = std::shared_ptr<MySQLDriver>(new MySQLDriver(host, port, db, user, psw));
 				break;
 			case daxia::database::Orm::sqlite:
-				command_ = std::shared_ptr<SqliteCommand>(new SqliteCommand(host, db, user, psw));
 				break;
 			case daxia::database::Orm::sqlserver:
-				command_ = std::shared_ptr<SqlserverCommand>(new SqlserverCommand(host, db, user, psw));
 				break;
 			default:
 				break;
@@ -75,7 +75,7 @@ namespace daxia
 
 			// Ö´ÐÐ
 			auto recodset = command_->Excute(sql);
-			return recodset->GetLastError();
+			return command_->GetLastError();
 		}
 
 		daxia::string Orm::delette(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* condition)
@@ -119,10 +119,10 @@ namespace daxia
 
 			// Ö´ÐÐ
 			auto recodset = command_->Excute(sql);
-			return recodset->GetLastError();
+			return command_->GetLastError();
 		}
 
-		std::shared_ptr<Recordset> Orm::query(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix)
+		std::shared_ptr<Orm::Recordset> Orm::query(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix)
 		{
 			using namespace daxia::reflect;
 
@@ -214,7 +214,7 @@ namespace daxia
 
 			// Ö´ÐÐ
 			auto recodset = command_->Excute(sql);
-			return recodset->GetLastError();
+			return command_->GetLastError();
 		}
 
 		const daxia::reflect::Reflect_base* Orm::cast(const void* baseaddr, unsigned long offset)
@@ -228,7 +228,7 @@ namespace daxia
 			return reflectBase;
 		}
 
-		std::shared_ptr<daxia::database::Recordset> Orm::Excute(const daxia::string& sql)
+		std::shared_ptr<Orm::Recordset> Orm::Excute(const daxia::string& sql)
 		{
 			return command_->Excute(sql);
 		}

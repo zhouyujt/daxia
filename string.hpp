@@ -221,6 +221,7 @@ namespace daxia
 		}
 	private:
 		size_t strlen(size_t maxCount = -1) const;
+		void cast(char& v);
 		void cast(int& v);
 		void cast(long& v);
 		void cast(unsigned long& v);
@@ -677,6 +678,12 @@ namespace daxia
 		}
 
 		return length - 1;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(char& v)
+	{
+		v = static_cast<char>(std::stoi(v_));
 	}
 
 	template<class Elem, class Traits, class Alloc>

@@ -13,8 +13,8 @@
 #ifndef __DAXIA_DATABASE_DATA_TYPE_H
 #define __DAXIA_DATABASE_DATA_TYPE_H
 #include <string>
-#include "../string.hpp"
-#include "../system/datetime.h"
+#include "../../string.hpp"
+#include "../../system/datetime.h"
 
 namespace daxia
 {
@@ -34,7 +34,7 @@ namespace daxia
 			{
 				init_ = true;
 				v_ = v;
-				return v_;
+				return *this;
 			}
 
 			operator ValueType&()

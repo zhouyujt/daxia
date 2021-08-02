@@ -16,9 +16,10 @@
 #define __DAXIA_DATABASE_ORM_H
 #include <memory>
 #include <set>
+#include "driver/basic_driver.h"
+#include "driver/basic_recordset.h"
 #include "../string.hpp"
 #include "../reflect/reflect.hpp"
-#include "data_type.h"
 
 #define DATABASE_ORM_TABLE_FIELD				__tableName__
 #define DATABASE_ORM_TABLE_TAG					"tableName"
@@ -29,46 +30,6 @@ namespace daxia
 {
 	namespace database
 	{
-		// 数据集接口
-		class Recordset
-		{
-		public:
-			Recordset();
-			~Recordset();
-		public:
-			virtual bool Eof() = 0;
-			virtual bool Bof() = 0;
-			virtual void Next() = 0;
-			virtual daxia::string GetLastError() = 0;
-			virtual long long  ScopeIdentity() = 0;
-			template<class ValueType>
-			ValueType Get(const char* field)
-			{
-				ValueType v;
-				GetField(field,v);
-				return v;
-			}
-		protected:
-			virtual void GetField(const char* field, db_tinyint& v) = 0;
-			virtual void GetField(const char* field, db_int& v) = 0;
-			virtual void GetField(const char* field, db_bigint& v) = 0;
-			virtual void GetField(const char* field, db_float& v) = 0;
-			virtual void GetField(const char* field, db_double& v) = 0;
-			virtual void GetField(const char* field, db_text& v) = 0;
-			virtual void GetField(const char* field, db_blob& v) = 0;
-			virtual void GetField(const char* field, db_datetime& v) = 0;
-		};
-
-		// 命令接口
-		class Command
-		{
-		protected:
-			Command();
-			virtual ~Command();
-		public:
-			virtual std::shared_ptr<Recordset> Excute(const daxia::string& sql) = 0;
-		};
-
 		// 字段过滤器
 		class FieldFilter
 		{
@@ -106,8 +67,10 @@ namespace daxia
 				sqlite,
 				sqlserver
 			};
+			typedef daxia::database::driver::BasicRecordset Recordset;
+			typedef daxia::database::driver::BasicDriver Command;
 		public:
-			Orm(Driver driver, const daxia::string& host, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
+			Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
 			Orm(Driver driver, const daxia::string& connectString);
 			virtual ~Orm();
 		public:
