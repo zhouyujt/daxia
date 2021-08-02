@@ -23,6 +23,9 @@
 #include "../system/datetime.h"
 #include "../system/threadpool/thread_pool.h"
 
+// orm
+#include "../database/orm.h"
+
 #include "../singleton.hpp"
 #include "../string.hpp"
 
@@ -56,6 +59,8 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,reflect.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,win32.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,system.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database_driver.lib)))
 
 #undef dxPATH
 #undef dxPATH2

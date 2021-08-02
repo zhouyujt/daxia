@@ -31,6 +31,11 @@ namespace daxia
 		{
 		}
 
+		Orm::~Orm()
+		{
+
+		}
+
 		daxia::string Orm::insert(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;
@@ -47,9 +52,9 @@ namespace daxia
 				daxia::string tag = reflectBase->Tag(ORM);
 				if (tag.IsEmpty()) continue;
 
-				if (tag == DATABASE_ORM_TABLE_TAG)
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = tag;
+					tableName = reflectBase->TagAttribute(ORM);
 					continue;
 				}
 				
@@ -93,9 +98,9 @@ namespace daxia
 				daxia::string tag = reflectBase->Tag(ORM);
 				if (tag.IsEmpty()) continue;
 
-				if (tag == DATABASE_ORM_TABLE_TAG)
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = tag;
+					tableName = reflectBase->TagAttribute(ORM);
 					continue;
 				}
 
@@ -137,9 +142,9 @@ namespace daxia
 				daxia::string tag = reflectBase->Tag(ORM);
 				if (tag.IsEmpty()) continue;
 
-				if (tag == DATABASE_ORM_TABLE_TAG)
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = tag;
+					tableName = reflectBase->TagAttribute(ORM);
 					continue;
 				}
 
@@ -180,9 +185,9 @@ namespace daxia
 				daxia::string tag = reflectBase->Tag(ORM);
 				if (tag.IsEmpty()) continue;
 
-				if (tag == DATABASE_ORM_TABLE_TAG)
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = tag;
+					tableName = reflectBase->TagAttribute(ORM);
 					continue;
 				}
 

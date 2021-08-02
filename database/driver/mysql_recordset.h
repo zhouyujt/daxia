@@ -47,6 +47,7 @@ namespace daxia
 				MYSQL* mysql_;
 				MYSQL_ROW row_;
 				MYSQL_FIELD* fields_;
+				bool isEof_;
 			};
 		}
 	}

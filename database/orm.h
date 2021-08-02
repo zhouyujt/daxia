@@ -21,10 +21,13 @@
 #include "../string.hpp"
 #include "../reflect/reflect.hpp"
 
+#define DATABASE_ORM_STRING_HELP(s) #s
+#define DATABASE_ORM_STRING(s) DATABASE_ORM_STRING_HELP(s)
+
 #define DATABASE_ORM_TABLE_FIELD				__tableName__
-#define DATABASE_ORM_TABLE_TAG					"tableName"
-#define DATABASE_ORM_MAKE_TABLE_TAG(name)		"orm:" ## DATABASE_ORM_TABLE_TAG ## "(" ###name##")"
-#define DATABASE_ORM_DECLARE_TABLE_FIELD(name)	daxia::string DATABASE_ORM_TABLE_FIELD = DATABASE_ORM_TABLE_TAG(name);
+#define DATABASE_ORM_TABLE_TAG					tableName
+#define DATABASE_ORM_MAKE_TABLE_TAG(name)		orm: ## DATABASE_ORM_TABLE_TAG ## ( ##name ##)
+#define DECLARE_ORM_TABLE(name)					daxia::reflect::Reflect<daxia::string> DATABASE_ORM_TABLE_FIELD = DATABASE_ORM_STRING(DATABASE_ORM_MAKE_TABLE_TAG(name));
 
 namespace daxia
 {
@@ -108,7 +111,7 @@ namespace daxia
 				auto recordset = query(layout, &helper, fields, suffix, prefix);
 
 				// 读取结果
-				while (!recordset->Eof())
+				while (recordset && !recordset->Eof())
 				{
 					ValueType obj;
 					for (auto iter = layout.begin(); iter != layout.end(); ++iter)
@@ -119,21 +122,21 @@ namespace daxia
 						daxia::string tag = reflectBase->Tag("orm");
 						if (tag.IsEmpty()) continue;
 
-						if (tag == DATABASE_ORM_TABLE_TAG) continue;
+						if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG)) continue;
 
 						if (fields == nullptr || fields->HasField(tag))
 						{
-							ValueType* p = static_cast<ValueType*>(const_cast<void*>(reflectBase->ValueAddr()));
+							void* p = const_cast<void*>(reflectBase->ValueAddr());
 
 							const auto& typeinfo = reflectBase->Type();
-							if (typeinfo == typeid(db_tinyint)) *p = recordset->Get<db_tinyint>(tag.GetString());
-							else if (typeinfo == typeid(db_int))  *p = recordset->Get<db_int>(tag.GetString());
-							else if (typeinfo == typeid(db_bigint)) *p = recordset->Get<db_bigint>(tag.GetString());
-							else if (typeinfo == typeid(db_float)) *p = recordset->Get<db_float>(tag.GetString());
-							else if (typeinfo == typeid(db_double)) *p = recordset->Get<db_double>(tag.GetString());
-							else if (typeinfo == typeid(db_text)) *p = recordset->Get<db_text>(tag.GetString());
-							else if (typeinfo == typeid(db_blob)) *p = recordset->Get<db_blob>(tag.GetString());
-							else if (typeinfo == typeid(db_datetime)) *p = recordset->Get<db_datetime>(tag.GetString());
+							if (typeinfo == typeid(db_tinyint)) *reinterpret_cast<db_tinyint*>(p) = recordset->Get<db_tinyint>(tag.GetString());
+							else if (typeinfo == typeid(db_int))  *reinterpret_cast<db_int*>(p) = recordset->Get<db_int>(tag.GetString());
+							else if (typeinfo == typeid(db_bigint)) *reinterpret_cast<db_bigint*>(p) = recordset->Get<db_bigint>(tag.GetString());
+							else if (typeinfo == typeid(db_float)) *reinterpret_cast<db_float*>(p) = recordset->Get<db_float>(tag.GetString());
+							else if (typeinfo == typeid(db_double)) *reinterpret_cast<db_double*>(p) = recordset->Get<db_double>(tag.GetString());
+							else if (typeinfo == typeid(db_text)) *reinterpret_cast<db_text*>(p) = recordset->Get<db_text>(tag.GetString());
+							else if (typeinfo == typeid(db_blob)) *reinterpret_cast<db_blob*>(p) = recordset->Get<db_blob>(tag.GetString());
+							else if (typeinfo == typeid(db_datetime)) *reinterpret_cast<db_datetime*>(p) = recordset->Get<db_datetime>(tag.GetString());
 						}
 					}
 
@@ -141,6 +144,8 @@ namespace daxia
 
 					recordset->Next();
 				}
+
+				return command_->GetLastError();
 			}
 
 			// 更新

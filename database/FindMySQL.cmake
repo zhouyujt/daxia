@@ -74,6 +74,7 @@ if(MYSQL_FOUND)
   set( MYSQL_LIBRARIES ${MYSQL_LIBRARY} )
   
   include_directories(${MYSQL_INCLUDE_DIRS})
+  link_directories(${MYSQL_LIBRARY})
 
   MESSAGE(STATUS "Found MYSQL INCLUDE: ${MYSQL_INCLUDE_DIRS} (found version \"${MYSQL_VERSION_STRING}\")")
 endif()

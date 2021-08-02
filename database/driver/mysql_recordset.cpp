@@ -10,6 +10,7 @@ namespace daxia
 				: recordset_(recordset)
 				, mysql_(mysql)
 				, fields_(nullptr)
+				, isEof_(false)
 			{
 				Next();
 			}
@@ -24,12 +25,16 @@ namespace daxia
 
 			bool MySQLRecordset::Eof()
 			{
-				return mysql_eof(recordset_);
+				return isEof_;
 			}
 
 			void MySQLRecordset::Next()
 			{
 				row_ = mysql_fetch_row(recordset_);
+				if (row_ == nullptr)
+				{
+					isEof_ = true;
+				}
 			}
 
 			size_t MySQLRecordset::Count()

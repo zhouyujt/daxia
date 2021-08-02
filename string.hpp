@@ -567,7 +567,7 @@ namespace daxia
 		{
 			size_t newLength = oldLength - count;
 			Elem* buff = GetBuffer();
-			int copied = oldLength - (start + count) + 1;
+			int copied = oldLength - (start + count);
 			memmove(buff + start, buff + start + count, copied * sizeof(Elem));
 			ReleaseBuffer(newLength);
 		}
@@ -669,7 +669,7 @@ namespace daxia
 		size_t length = 0;
 
 		const Elem* start = v_.c_str();
-		while (maxCount < 0 || length < maxCount)
+		while (maxCount < 0 || length <= maxCount)
 		{
 			if (!start[length++])
 			{

@@ -24,8 +24,8 @@ namespace daxia
 			class BasicRecordset
 			{
 			public:
-				BasicRecordset();
-				virtual ~BasicRecordset();
+				BasicRecordset(){}
+				virtual ~BasicRecordset(){}
 			public:
 				virtual bool Eof() = 0;
 				virtual void Next() = 0;

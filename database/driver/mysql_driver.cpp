@@ -10,11 +10,12 @@ namespace daxia
 			MySQLDriver::MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
 				: BasicDriver(host, port, db, user, psw)
 			{
-
+				memset(&mysql_, 0, sizeof(mysql_));
 			}
 
 			MySQLDriver::~MySQLDriver()
 			{
+				mysql_close(&mysql_);
 			}
 
 			void MySQLDriver::Init()

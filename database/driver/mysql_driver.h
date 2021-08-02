@@ -35,11 +35,6 @@ namespace daxia
 				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
 				virtual daxia::string GetLastError() const override;
 			private:
-				daxia::string host_;
-				daxia::string db_;
-				daxia::string user_;
-				daxia::string psw_;
-				unsigned short port_;
 				MYSQL mysql_;
 			};
 		}
