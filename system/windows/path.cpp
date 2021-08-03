@@ -62,6 +62,24 @@ namespace daxia
 				return path;
 			}
 
+			daxia::tstring Path::GetTempPath()
+			{
+				daxia::tstring path;
+				::GetTempPath(MAX_PATH, path.GetBuffer(MAX_PATH));
+				path.ReleaseBuffer();
+
+				return path;
+			}
+
+			daxia::tstring Path::GetTempFilePath()
+			{
+				daxia::tstring path;
+				::GetTempFileName(GetTempPath().GetString(), NULL, 0, path.GetBuffer(MAX_PATH));
+				path.ReleaseBuffer();
+				
+				return path;
+			}
+
 			daxia::tstring Path::FindFileName(const daxia::tstring& dir)
 			{
 				return daxia::tstring(::PathFindFileName(dir.GetString()));

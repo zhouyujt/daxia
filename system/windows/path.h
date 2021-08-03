@@ -33,10 +33,12 @@ namespace daxia
 			public:
 				// 创建多级目录
 				static bool CreateDirectory(const daxia::tstring& dir);
-
 				// 根据csidl(https://docs.microsoft.com/en-us/windows/win32/shell/csidl)获得指定的路径
 				static daxia::tstring GetSpecialPath(int csidl/*例如： CSIDL_APPDATA*/, bool create = false);
-
+				// 获取临时目录
+				static daxia::tstring GetTempPath();
+				// 获取一个可用的临时文件路径
+				static daxia::tstring GetTempFilePath();
 				// 查找文件名
 				static daxia::tstring FindFileName(const daxia::tstring& dir);
 				// 查找扩展名	
