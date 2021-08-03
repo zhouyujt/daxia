@@ -58,7 +58,7 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,win32.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,system.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database.lib)))
-#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database_driver.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,sqlite3.lib)))
 
 #undef dxPATH
 #undef dxPATH2

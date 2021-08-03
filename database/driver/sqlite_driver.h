@@ -22,11 +22,11 @@ namespace daxia
 	{
 		namespace driver
 		{
-			class Sqlite3Driver : public BasicDriver
+			class SqliteDriver : public BasicDriver
 			{
 			public:
-				Sqlite3Driver(const daxia::string& db);
-				~Sqlite3Driver();
+				SqliteDriver(const daxia::string& db);
+				~SqliteDriver();
 			public:
 				virtual void Init() override;
 				virtual void Uninit() override;
@@ -37,6 +37,22 @@ namespace daxia
 				virtual daxia::string GetLastError() const override;
 			private:
 				sqlite3* sqlite_;
+			};
+
+			class InitHelperSqliteDriver : private SqliteDriver
+			{
+				friend SqliteDriver;
+			private:
+				InitHelperSqliteDriver()
+					: SqliteDriver("")
+				{
+					Init();
+				}
+			protected:
+				~InitHelperSqliteDriver()
+				{
+					Uninit();
+				}
 			};
 		}
 	}

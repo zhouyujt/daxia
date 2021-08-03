@@ -13,7 +13,6 @@ namespace daxia
 				, user_(user)
 				, psw_(psw)
 			{
-
 			}
 
 			BasicDriver::~BasicDriver()

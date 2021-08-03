@@ -37,6 +37,22 @@ namespace daxia
 			private:
 				MYSQL mysql_;
 			};
+
+			class InitHelperMySQL : private MySQLDriver
+			{
+				friend MySQLDriver;
+			private:
+				InitHelperMySQL()
+					: MySQLDriver("",0,"","","")
+				{
+					Init();
+				}
+			protected:
+				~InitHelperMySQL()
+				{
+					Uninit();
+				}
+			};
 		}
 	}
 }

@@ -9,14 +9,14 @@ namespace daxia
 		namespace driver
 		{
 
-			Sqlite3Driver::Sqlite3Driver(const daxia::string& db)
+			SqliteDriver::SqliteDriver(const daxia::string& db)
 				: BasicDriver("",0,db,"","")
 				, sqlite_(nullptr)
 			{
-
+				static InitHelperSqliteDriver initHelper;
 			}
 
-			Sqlite3Driver::~Sqlite3Driver()
+			SqliteDriver::~SqliteDriver()
 			{
 				if (sqlite_)
 				{
@@ -25,7 +25,7 @@ namespace daxia
 				}
 			}
 
-			void Sqlite3Driver::Init()
+			void SqliteDriver::Init()
 			{
 				// windows 需设置临时目录
 #ifdef _MSC_VER
@@ -38,7 +38,7 @@ namespace daxia
 #endif
 			}
 
-			void Sqlite3Driver::Uninit()
+			void SqliteDriver::Uninit()
 			{
 #ifdef _MSC_VER
 				if (sqlite3_temp_directory)
@@ -49,7 +49,7 @@ namespace daxia
 #endif
 			}
 
-			bool Sqlite3Driver::Connnect()
+			bool SqliteDriver::Connnect()
 			{
 #ifdef _MSC_VER
 				return sqlite3_open(db_.Ansi2Utf8().GetString(), &sqlite_) == SQLITE_OK;
@@ -58,13 +58,18 @@ namespace daxia
 #endif
 			}
 
-			void Sqlite3Driver::ConnnectAsync(connect_callback cb)
+			void SqliteDriver::ConnnectAsync(connect_callback cb)
 			{
 
 			}
 
-			std::shared_ptr<daxia::database::driver::BasicRecordset> Sqlite3Driver::Excute(const daxia::string& sql)
+			std::shared_ptr<daxia::database::driver::BasicRecordset> SqliteDriver::Excute(const daxia::string& sql)
 			{
+				if (sqlite_ == nullptr)
+				{
+					if (!Connnect()) return std::shared_ptr<BasicRecordset>();
+				}
+
 #ifdef _MSC_VER
 				daxia::string temp = sql.Ansi2Utf8();
 #else
@@ -94,12 +99,12 @@ namespace daxia
 				}
 			}
 
-			void Sqlite3Driver::ExcuteAsync(const daxia::string& sql, excute_callback cb)
+			void SqliteDriver::ExcuteAsync(const daxia::string& sql, excute_callback cb)
 			{
 
 			}
 
-			daxia::string Sqlite3Driver::GetLastError() const
+			daxia::string SqliteDriver::GetLastError() const
 			{
 				daxia::string err;
 				err = sqlite3_errmsg(sqlite_);

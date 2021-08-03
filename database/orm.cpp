@@ -20,6 +20,7 @@ namespace daxia
 				command_ = std::shared_ptr<MySQLDriver>(new MySQLDriver(host, port, db, user, psw));
 				break;
 			case daxia::database::Orm::sqlite:
+				command_ = std::shared_ptr<SqliteDriver>(new SqliteDriver(db));
 				break;
 			case daxia::database::Orm::sqlserver:
 				break;

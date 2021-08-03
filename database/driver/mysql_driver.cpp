@@ -11,6 +11,7 @@ namespace daxia
 				: BasicDriver(host, port, db, user, psw)
 			{
 				memset(&mysql_, 0, sizeof(mysql_));
+				static InitHelperMySQL initHelper;
 			}
 
 			MySQLDriver::~MySQLDriver()

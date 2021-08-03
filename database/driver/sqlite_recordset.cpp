@@ -95,7 +95,13 @@ namespace daxia
 				int index = GetFieldIndex(field);
 				if (index != -1)
 				{
-					v = reinterpret_cast<const char*>(sqlite3_column_text(stmt_, index));
+					const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt_, index));
+					int size = sqlite3_column_bytes(stmt_, index);
+#ifdef _MSC_VER
+					v = daxia::string(text, size).Utf82Ansi();
+#else
+					v = daxia::string(text, size);
+#endif
 				}
 			}
 
