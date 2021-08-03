@@ -12,7 +12,8 @@ file(GLOB local_source
 )
 
 add_subdirectory(driver)
-add_library(database STATIC  ${local_source} )
+add_library(database STATIC  ${local_source} ${driver_source} )
+source_group(driver FILES ${driver_source})
 
 
 

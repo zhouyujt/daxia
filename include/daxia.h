@@ -15,13 +15,11 @@
 // reflect
 #include "../reflect/reflect.hpp"
 
-// win32
-#include "../win32/processes_manager.h"
-#include "../win32/path.h"
-
 // system
 #include "../system/datetime.h"
 #include "../system/threadpool/thread_pool.h"
+#include "../system/windows/processes_manager.h"
+#include "../system/windows/path.h"
 
 // orm
 #include "../database/orm.h"
