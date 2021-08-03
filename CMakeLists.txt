@@ -38,7 +38,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_subdirectory(net)
 add_subdirectory(encode)
 add_subdirectory(reflect)
-add_subdirectory(win32)
 add_subdirectory(database)
 add_subdirectory(system)
 

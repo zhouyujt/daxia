@@ -9,8 +9,10 @@ file(GLOB local_source
 )
 
 add_subdirectory(threadpool)
-add_library(system STATIC  ${local_source} ${threadpool_source})
+add_subdirectory(windows)
+add_library(system STATIC  ${local_source} ${threadpool_source} ${windows_source})
 source_group(threadpool FILES ${threadpool_source})
+source_group(windows FILES ${windows_source})
 
 
 
