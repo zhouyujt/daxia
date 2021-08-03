@@ -29,6 +29,8 @@
 #define DATABASE_ORM_MAKE_TABLE_TAG(name)		orm: ## DATABASE_ORM_TABLE_TAG ## ( ##name ##)
 #define DECLARE_ORM_TABLE(name)					daxia::reflect::Reflect<daxia::string> DATABASE_ORM_TABLE_FIELD = DATABASE_ORM_STRING(DATABASE_ORM_MAKE_TABLE_TAG(name));
 
+#define ORM "orm"
+
 namespace daxia
 {
 	namespace database
@@ -37,13 +39,17 @@ namespace daxia
 		class FieldFilter
 		{
 		public:
-			FieldFilter();
-			~FieldFilter();
+			template<class ValueType>
+			FieldFilter(const ValueType& v)
+			{
+				fields_.insert(v.Tag(ORM));
+			}
+			~FieldFilter(){}
 		public:
 			template<class ValueType>
 			FieldFilter& operator()(const ValueType& v)
 			{
-				fields_.push_back(v.Tag());
+				fields_.insert(v.Tag(ORM));
 				return *this;
 			}
 
@@ -56,7 +62,7 @@ namespace daxia
 			{
 				return fields_.find(field) != fields_.end();
 			}
-		private:
+		protected:
 			std::set<daxia::string> fields_;
 		};
 
@@ -119,7 +125,7 @@ namespace daxia
 						const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
 						if (reflectBase == nullptr) continue;
 
-						daxia::string tag = reflectBase->Tag("orm");
+						daxia::string tag = reflectBase->Tag(ORM);
 						if (tag.IsEmpty()) continue;
 
 						if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG)) continue;
@@ -174,5 +180,7 @@ namespace daxia
 		};
 	}
 }
+
+#undef ORM
 
 #endif	// !__DAXIA_DATABASE_ORM_H
