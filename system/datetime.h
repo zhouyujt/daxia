@@ -32,7 +32,7 @@ namespace daxia
 		public:
 			static DateTime Now();
 		public:
-			daxia::string ToString(const char* format = nullptr);
+			daxia::string ToString(const char* format = nullptr) const;
 		private:
 			std::chrono::system_clock::time_point tp_;
 		};

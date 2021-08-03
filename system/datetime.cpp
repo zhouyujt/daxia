@@ -41,7 +41,7 @@ namespace daxia
 			return dt;
 		}
 
-		daxia::string DateTime::ToString(const char* format)
+		daxia::string DateTime::ToString(const char* format) const
 		{
 			std::time_t t = std::chrono::system_clock::to_time_t(tp_);
 			std::tm tm = *std::localtime(&t);

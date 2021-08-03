@@ -4,6 +4,7 @@
 #include "driver/sqlserver_driver.h"
 
 #define ORM "orm"
+#define IDENTITY "identity"
 
 namespace daxia
 {
@@ -61,6 +62,13 @@ namespace daxia
 				// 构造字段列表及值列表
 				if (fields == nullptr || fields->HasField(tag))
 				{
+					// 排除identity字段
+					if (fields == nullptr	// 手动指定的identity不排除
+						&& reflectBase->TagAttribute(ORM) == IDENTITY)
+					{
+						continue;
+					}
+
 					if (!fieldList.IsEmpty())  fieldList += ',';
 					fieldList += tag;
 
@@ -240,28 +248,33 @@ namespace daxia
 
 		daxia::string Orm::tostring(const daxia::reflect::Reflect_base* reflectBase)
 		{
+			using namespace daxia::database::driver;
+
 			daxia::string str;
 
-			if (reflectBase->Type() == typeid(daxia::string))
+			const auto& typeinfo = reflectBase->Type();
+			if (typeinfo == typeid(db_text))
 			{
 				str += '\'';
 				str += reinterpret_cast<const daxia::string*>(reflectBase->ValueAddr())->GetString();
 				str += '\'';
 			}
+			else if (typeinfo == typeid(db_datetime))
+			{
+				str += '\'';
+				str += reinterpret_cast<const daxia::system::DateTime*>(reflectBase->ValueAddr())->ToString();
+				str += '\'';
+			}
 			else
 			{
-				const auto& typeinfo = reflectBase->Type();
-				if (typeinfo == typeid(bool)){ str += daxia::string::ToString(*reinterpret_cast<const bool*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(char)){ str += daxia::string::ToString(*reinterpret_cast<const char*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(unsigned char)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned char*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(short)){ str += daxia::string::ToString(*reinterpret_cast<const short*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(unsigned short)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned short*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(int)){ str += daxia::string::ToString(*reinterpret_cast<const int*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(unsigned int)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned int*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(long)){ str += daxia::string::ToString(*reinterpret_cast<const long*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(unsigned long)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned long*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(long long)){ str += daxia::string::ToString(*reinterpret_cast<const long long*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(unsigned long long)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned long long*>(reflectBase->ValueAddr())); }
+				if (typeinfo == typeid(db_tinyint)){ str += daxia::string::ToString(*reinterpret_cast<const char*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_int)){ str += daxia::string::ToString(*reinterpret_cast<const int*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_bigint)){ str += daxia::string::ToString(*reinterpret_cast<const long long*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_float)){ str += daxia::string::ToString(*reinterpret_cast<const float*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_double)){ str += daxia::string::ToString(*reinterpret_cast<const double*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_text)){ str += daxia::string::ToString(*reinterpret_cast<const int*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_blob)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned int*>(reflectBase->ValueAddr())); }
+				else if (typeinfo == typeid(db_datetime)){ str += daxia::string::ToString(*reinterpret_cast<const long*>(reflectBase->ValueAddr())); }
 			}
 
 			return str;
@@ -281,7 +294,7 @@ namespace daxia
 				catch (const std::exception&){}
 				if (reflectBase == nullptr) continue;
 
-				if (reflectBase->TagAttribute(ORM) == "identify")
+				if (reflectBase->TagAttribute(ORM) == IDENTITY)
 				{
 					condition = reflectBase->Tag(ORM);
 					condition += "=";
