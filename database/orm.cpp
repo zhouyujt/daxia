@@ -220,7 +220,7 @@ namespace daxia
 
 			// Æ´½Ó
 			daxia::string sql;
-			sql.Format("UPDATE %s SET %s WHERE ", 
+			sql.Format("UPDATE %s SET %s WHERE %s", 
 				tableName.GetString(),
 				valueList.GetString(), 
 				conditionList.IsEmpty() ? makeConditionByIdentityField(layout,baseaddr).GetString() : conditionList.GetString());

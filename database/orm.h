@@ -177,7 +177,7 @@ namespace daxia
 			daxia::string Update(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
 				auto layout = Reflect<ValueType>().Layout();
-				return update(layout, &obj, fields);
+				return update(layout, &obj, fields, condition);
 			}
 
 			// Ö´ĞĞ¸ü¸´ÔÓµÄÃüÁî
