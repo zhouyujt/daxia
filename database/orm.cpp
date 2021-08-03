@@ -115,6 +115,13 @@ namespace daxia
 				// 构造条件语句
 				if (condition == nullptr || condition->HasField(tag))
 				{
+					// 默认只用identity字段做删除条件
+					if (condition == nullptr
+						&& reflectBase->TagAttribute(ORM) != IDENTITY)
+					{
+						continue;
+					}
+
 					if (!conditionList.IsEmpty())  conditionList += " AND ";
 					conditionList += tag;
 					conditionList += '=';
@@ -125,7 +132,7 @@ namespace daxia
 
 			// 拼接
 			daxia::string sql;
-			sql.Format("DELETE %s WHERE %s",
+			sql.Format("DELETE FROM %s WHERE %s",
 				tableName.GetString(),
 				conditionList.IsEmpty() ? makeConditionByIdentityField(layout, baseaddr).GetString() : conditionList.GetString()
 				);
