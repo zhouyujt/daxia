@@ -41,16 +41,29 @@ namespace daxia
 		public:
 			template<class ValueType>
 			FieldFilter(const ValueType& v)
+				: exlude_(false)
 			{
 				fields_.insert(v.Tag(ORM));
 			}
+
 			~FieldFilter(){}
+		private:
+			FieldFilter() : exlude_(false){}
 		public:
 			template<class ValueType>
 			FieldFilter& operator()(const ValueType& v)
 			{
 				fields_.insert(v.Tag(ORM));
 				return *this;
+			}
+
+			// 取反操作符表示排除指定的字段，默认为包含指定的字段
+			FieldFilter operator!()
+			{
+				FieldFilter filter(*this);
+				filter.exlude_ = !exlude_;
+
+				return filter;
 			}
 
 			const std::set<daxia::string>& GetFields() const
@@ -60,10 +73,13 @@ namespace daxia
 
 			bool HasField(const daxia::string field) const
 			{
-				return fields_.find(field) != fields_.end();
+				bool has = fields_.find(field) != fields_.end();
+				return exlude_ ? !has : has;
 			}
 		protected:
 			std::set<daxia::string> fields_;
+		private:
+			bool exlude_;
 		};
 
 		// C++对象 <==> 数据库记录
