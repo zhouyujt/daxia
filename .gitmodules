@@ -1,0 +1,3 @@
+[submodule "database/driver/sqlite3"]
+	path = database/driver/sqlite3
+	url = https://github.com/zhouyujt/sqlite3
