@@ -134,46 +134,12 @@ namespace daxia
 				)
 			{
 				using namespace daxia::reflect;
-				using namespace daxia::database::driver;
 
 				ValueType helper;
 				auto layout = Reflect<ValueType>().Layout();
 				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
 
-				// 读取结果
-				while (recordset && !recordset->Eof())
-				{
-					ValueType obj;
-					for (boost::property_tree::ptree::iterator iter = layout.begin(); iter != layout.end(); ++iter)
-					{
-						const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
-						if (reflectBase == nullptr) continue;
-
-						daxia::string tag = reflectBase->Tag(ORM);
-						if (tag.IsEmpty()) continue;
-
-						if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG)) continue;
-
-						if (fields == nullptr || fields->HasField(tag))
-						{
-							void* p = const_cast<void*>(reflectBase->ValueAddr());
-
-							const auto& typeinfo = reflectBase->Type();
-							if (typeinfo == typeid(db_tinyint)) *reinterpret_cast<db_tinyint*>(p) = recordset->Get<db_tinyint>(tag.GetString());
-							else if (typeinfo == typeid(db_int))  *reinterpret_cast<db_int*>(p) = recordset->Get<db_int>(tag.GetString());
-							else if (typeinfo == typeid(db_bigint)) *reinterpret_cast<db_bigint*>(p) = recordset->Get<db_bigint>(tag.GetString());
-							else if (typeinfo == typeid(db_float)) *reinterpret_cast<db_float*>(p) = recordset->Get<db_float>(tag.GetString());
-							else if (typeinfo == typeid(db_double)) *reinterpret_cast<db_double*>(p) = recordset->Get<db_double>(tag.GetString());
-							else if (typeinfo == typeid(db_text)) *reinterpret_cast<db_text*>(p) = recordset->Get<db_text>(tag.GetString());
-							else if (typeinfo == typeid(db_blob)) *reinterpret_cast<db_blob*>(p) = recordset->Get<db_blob>(tag.GetString());
-							else if (typeinfo == typeid(db_datetime)) *reinterpret_cast<db_datetime*>(p) = recordset->Get<db_datetime>(tag.GetString());
-						}
-					}
-
-					objs.push_back(obj);
-
-					recordset->Next();
-				}
+				ReadRecordset(recordset, objs);
 
 				return command_->GetLastError();
 			}
@@ -190,6 +156,40 @@ namespace daxia
 				return update(layout, &obj, fields, condition);
 			}
 
+			// 建表
+			template<class ValueType>
+			daxia::string Create(const ValueType& obj)
+			{
+				using namespace daxia::reflect;
+
+				auto layout = Reflect<ValueType>().Layout();
+				return create(layout, &obj);
+			}
+
+			// 删表
+			template<class ValueType>
+			daxia::string Drop(const ValueType& obj)
+			{
+				using namespace daxia::reflect;
+
+				auto layout = Reflect<ValueType>().Layout();
+				return drop(layout, &obj);
+			}
+
+			template<class ValueType>
+			void ReadRecordset(std::shared_ptr<Recordset> recordset, std::vector<ValueType>& objs, const FieldFilter* fields = nullptr)
+			{
+				auto layout = Reflect<ValueType>().Layout();
+				while (recordset && !recordset->Eof())
+				{
+					ValueType obj;
+					record2obj(recordset, layout, &obj, fields);
+					objs.push_back(obj);
+
+					recordset->Next();
+				}
+			}
+
 			// 执行更复杂的命令
 			std::shared_ptr<Recordset> Excute(const daxia::string& sql);
 		private:
@@ -197,10 +197,13 @@ namespace daxia
 			daxia::string delette(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* condition);
 			std::shared_ptr<Recordset> query(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix);
 			daxia::string update(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition);
+			daxia::string create(const boost::property_tree::ptree& layout, const void* baseaddr);
+			daxia::string drop(const boost::property_tree::ptree& layout, const void* baseaddr);
 		private:
 			static const daxia::reflect::Reflect_base* cast(const void* baseaddr, unsigned long offset);
 			static daxia::string tostring(const daxia::reflect::Reflect_base* reflectBase);
 			static daxia::string makeConditionByIdentityField(const boost::property_tree::ptree& layout, const void* baseaddr);
+			static void record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* obj, const FieldFilter* fields = nullptr);
 		private:
 			std::shared_ptr<Command> command_;
 		};

@@ -256,6 +256,16 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
+		daxia::string Orm::create(const boost::property_tree::ptree& layout, const void* baseaddr)
+		{
+			throw "尚未实现";
+		}
+
+		daxia::string Orm::drop(const boost::property_tree::ptree& layout, const void* baseaddr)
+		{
+			throw "尚未实现";
+		}
+
 		const daxia::reflect::Reflect_base* Orm::cast(const void* baseaddr, unsigned long offset)
 		{
 			using namespace daxia::reflect;
@@ -329,6 +339,38 @@ namespace daxia
 			}
 
 			return condition;
+		}
+
+		void Orm::record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* obj, const FieldFilter* fields)
+		{
+			using namespace daxia::reflect;
+			using namespace daxia::database::driver;
+
+			for (boost::property_tree::ptree::const_iterator iter = layout.begin(); iter != layout.end(); ++iter)
+			{
+				const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				if (reflectBase == nullptr) continue;
+
+				daxia::string tag = reflectBase->Tag(ORM);
+				if (tag.IsEmpty()) continue;
+
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG)) continue;
+
+				if (fields == nullptr || fields->HasField(tag))
+				{
+					void* p = const_cast<void*>(reflectBase->ValueAddr());
+
+					const auto& typeinfo = reflectBase->Type();
+					if (typeinfo == typeid(db_tinyint)) *reinterpret_cast<db_tinyint*>(p) = recordset->Get<db_tinyint>(tag.GetString());
+					else if (typeinfo == typeid(db_int))  *reinterpret_cast<db_int*>(p) = recordset->Get<db_int>(tag.GetString());
+					else if (typeinfo == typeid(db_bigint)) *reinterpret_cast<db_bigint*>(p) = recordset->Get<db_bigint>(tag.GetString());
+					else if (typeinfo == typeid(db_float)) *reinterpret_cast<db_float*>(p) = recordset->Get<db_float>(tag.GetString());
+					else if (typeinfo == typeid(db_double)) *reinterpret_cast<db_double*>(p) = recordset->Get<db_double>(tag.GetString());
+					else if (typeinfo == typeid(db_text)) *reinterpret_cast<db_text*>(p) = recordset->Get<db_text>(tag.GetString());
+					else if (typeinfo == typeid(db_blob)) *reinterpret_cast<db_blob*>(p) = recordset->Get<db_blob>(tag.GetString());
+					else if (typeinfo == typeid(db_datetime)) *reinterpret_cast<db_datetime*>(p) = recordset->Get<db_datetime>(tag.GetString());
+				}
+			}
 		}
 
 	}
