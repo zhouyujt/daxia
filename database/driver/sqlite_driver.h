@@ -36,7 +36,10 @@ namespace daxia
 				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
 				virtual daxia::string GetLastError() const override;
 			private:
+				void setLastError(bool clean = false);
+			private:
 				sqlite3* sqlite_;
+				daxia::string lastError_;
 			};
 
 			class InitHelperSqliteDriver : private SqliteDriver

@@ -59,6 +59,12 @@ namespace daxia
 					tableName = reflectBase->TagAttribute(ORM);
 					continue;
 				}
+
+				// 强制排除未初始化字段
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				{
+					continue;
+				}
 				
 				// 构造字段列表及值列表
 				if (fields == nullptr || fields->HasField(tag))
@@ -66,12 +72,6 @@ namespace daxia
 					// 排除identity字段
 					if (fields == nullptr	// 手动指定的identity不排除
 						&& reflectBase->TagAttribute(ORM) == IDENTITY)
-					{
-						continue;
-					}
-
-					// 排除未初始化字段
-					if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
 					{
 						continue;
 					}
@@ -116,6 +116,12 @@ namespace daxia
 				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
 					tableName = reflectBase->TagAttribute(ORM);
+					continue;
+				}
+
+				// 强制排除未初始化字段
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				{
 					continue;
 				}
 
@@ -213,6 +219,12 @@ namespace daxia
 					continue;
 				}
 
+				// 强制排除未初始化字段
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				{
+					continue;
+				}
+
 				// 构造赋值语句
 				if (fields == nullptr || fields->HasField(tag))
 				{
@@ -307,9 +319,12 @@ namespace daxia
 
 				if (reflectBase->TagAttribute(ORM) == IDENTITY)
 				{
-					condition = reflectBase->Tag(ORM);
-					condition += "=";
-					condition += tostring(reflectBase);
+					if (reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+					{
+						condition = reflectBase->Tag(ORM);
+						condition += "=";
+						condition += tostring(reflectBase);
+					}
 				}
 			}
 

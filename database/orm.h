@@ -101,7 +101,7 @@ namespace daxia
 			virtual ~Orm();
 		public:
 			// 插入
-			// fields: 需要插入的字段。nullptr则插入所有字段。
+			// fields: 需要插入的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则插入所有已经初始化的字段。
 			template<class ValueType>
 			daxia::string Insert(const ValueType& obj, const FieldFilter* fields = nullptr)
 			{
@@ -110,7 +110,7 @@ namespace daxia
 			}
 
 			// 删除
-			// condition: 删除条件，当记录跟指定字段值相同才删除。nullptr则根据具有identify属性的字段删除。
+			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有identify属性且已初始化的字段删除。
 			template<class ValueType>
 			daxia::string Delete(const ValueType& obj, const FieldFilter* condition = nullptr)
 			{
@@ -172,8 +172,8 @@ namespace daxia
 			}
 
 			// 更新
-			// fields:		指定需要更新的字段。nullptr则更新所有字段。
-			// condition:	更新条件，当记录跟指定字段值相同才更新。nullptr则根据具有identify属性的字段更新。
+			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
+			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有identify属性且已初始化的字段更新。
 			template<class ValueType>
 			daxia::string Update(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{

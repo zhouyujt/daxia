@@ -67,7 +67,11 @@ namespace daxia
 			{
 				if (sqlite_ == nullptr)
 				{
-					if (!Connnect()) return std::shared_ptr<BasicRecordset>();
+					if (!Connnect())
+					{
+						setLastError();
+						return std::shared_ptr<BasicRecordset>();
+					}
 				}
 
 #ifdef _MSC_VER
@@ -79,21 +83,28 @@ namespace daxia
 				// ±‡“Îsql”Ôæ‰
 				sqlite3_stmt* stmt = nullptr;
 				const char* tail = nullptr;
-				if (sqlite3_prepare_v2(sqlite_, temp.GetString(), temp.GetLength(), &stmt, &tail) != SQLITE_OK) return std::shared_ptr<BasicRecordset>();
+				if (sqlite3_prepare_v2(sqlite_, temp.GetString(), temp.GetLength(), &stmt, &tail) != SQLITE_OK)
+				{
+					setLastError();
+					return std::shared_ptr<BasicRecordset>();
+				}
 
 				// ÷¥––
 				int rc = sqlite3_step(stmt);
 
 				if (rc == SQLITE_DONE)
 				{
+					setLastError(true);
 					return std::shared_ptr<BasicRecordset>(new SqliteRecordset(sqlite_, nullptr));
 				}
 				else if (rc == SQLITE_ROW)
 				{
+					setLastError(true);
 					return std::shared_ptr<BasicRecordset>(new SqliteRecordset(sqlite_, stmt));
 				}
 				else
 				{
+					setLastError();
 					sqlite3_finalize(stmt);
 					return std::shared_ptr<BasicRecordset>();
 				}
@@ -106,13 +117,22 @@ namespace daxia
 
 			daxia::string SqliteDriver::GetLastError() const
 			{
-				daxia::string err;
-				err = sqlite3_errmsg(sqlite_);
+				return lastError_;
+			}
+
+			void SqliteDriver::setLastError(bool clean /*= false*/)
+			{
+				if (clean)
+				{
+					lastError_.Empty();
+				}
+				else
+				{
+					lastError_ = sqlite3_errmsg(sqlite_);
 #ifdef _MSC_VER
-				return err.Utf82Ansi();
-#else
-				return err;
+					lastError_ = lastError_.Utf82Ansi();
 #endif
+				}
 			}
 
 		}
