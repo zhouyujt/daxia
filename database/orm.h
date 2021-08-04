@@ -129,6 +129,9 @@ namespace daxia
 				const char* prefix = nullptr
 				)
 			{
+				using namespace daxia::reflect:
+				using namespace daxia::database::driver;
+
 				ValueType helper;
 				auto layout = Reflect<ValueType>().Layout();
 				auto recordset = query(layout, &helper, fields, suffix, prefix);
@@ -139,7 +142,7 @@ namespace daxia
 					ValueType obj;
 					for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 					{
-						const daxia::reflect::Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+						const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
 						if (reflectBase == nullptr) continue;
 
 						daxia::string tag = reflectBase->Tag(ORM);
