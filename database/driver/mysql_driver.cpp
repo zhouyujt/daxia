@@ -1,3 +1,4 @@
+#include <memory.h>
 #include "mysql_driver.h"
 #include "mysql_recordset.h"
 
