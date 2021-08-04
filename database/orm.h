@@ -129,7 +129,7 @@ namespace daxia
 				const char* prefix = nullptr
 				)
 			{
-				using namespace daxia::reflect:
+				using namespace daxia::reflect;
 				using namespace daxia::database::driver;
 
 				ValueType helper;
