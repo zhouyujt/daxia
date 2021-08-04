@@ -1,4 +1,4 @@
-#include <memory.h>
+#include <memory.h>	// memset
 #include "mysql_driver.h"
 #include "mysql_recordset.h"
 

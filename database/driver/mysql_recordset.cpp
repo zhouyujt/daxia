@@ -1,3 +1,4 @@
+#include <string.h>	// strcmp
 #include "mysql_recordset.h"
 
 namespace daxia
