@@ -138,13 +138,13 @@ namespace daxia
 
 				ValueType helper;
 				auto layout = Reflect<ValueType>().Layout();
-				auto recordset = query(layout, &helper, fields, suffix, prefix);
+				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
 
 				// ¶ÁÈ¡½á¹û
 				while (recordset && !recordset->Eof())
 				{
 					ValueType obj;
-					for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+					for (boost::property_tree::ptree::iterator iter = layout.begin(); iter != layout.end(); ++iter)
 					{
 						const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
 						if (reflectBase == nullptr) continue;
