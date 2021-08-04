@@ -139,7 +139,7 @@ namespace daxia
 					ValueType obj;
 					for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 					{
-						const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+						const daxia::reflect::Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
 						if (reflectBase == nullptr) continue;
 
 						daxia::string tag = reflectBase->Tag(ORM);
