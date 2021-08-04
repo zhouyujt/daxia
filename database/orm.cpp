@@ -70,6 +70,12 @@ namespace daxia
 						continue;
 					}
 
+					// ÅÅ³ýÎ´³õÊ¼»¯×Ö¶Î
+					if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+					{
+						continue;
+					}
+
 					if (!fieldList.IsEmpty())  fieldList += ',';
 					fieldList += tag;
 
@@ -264,25 +270,22 @@ namespace daxia
 			if (typeinfo == typeid(db_text))
 			{
 				str += '\'';
-				str += reinterpret_cast<const daxia::string*>(reflectBase->ValueAddr())->GetString();
+				str += static_cast<daxia::string>(*reinterpret_cast<const db_text*>(reflectBase->ValueAddr()));
 				str += '\'';
 			}
 			else if (typeinfo == typeid(db_datetime))
 			{
 				str += '\'';
-				str += reinterpret_cast<const daxia::system::DateTime*>(reflectBase->ValueAddr())->ToString();
+				str += static_cast<daxia::system::DateTime>(*reinterpret_cast<const db_datetime*>(reflectBase->ValueAddr())).ToString();
 				str += '\'';
 			}
 			else
 			{
-				if (typeinfo == typeid(db_tinyint)){ str += daxia::string::ToString(*reinterpret_cast<const char*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_int)){ str += daxia::string::ToString(*reinterpret_cast<const int*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_bigint)){ str += daxia::string::ToString(*reinterpret_cast<const long long*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_float)){ str += daxia::string::ToString(*reinterpret_cast<const float*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_double)){ str += daxia::string::ToString(*reinterpret_cast<const double*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_text)){ str += daxia::string::ToString(*reinterpret_cast<const int*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_blob)){ str += daxia::string::ToString(*reinterpret_cast<const unsigned int*>(reflectBase->ValueAddr())); }
-				else if (typeinfo == typeid(db_datetime)){ str += daxia::string::ToString(*reinterpret_cast<const long*>(reflectBase->ValueAddr())); }
+				if (typeinfo == typeid(db_tinyint)){ str += daxia::string::ToString(static_cast<char>(*reinterpret_cast<const db_tinyint*>(reflectBase->ValueAddr()))); }
+				else if (typeinfo == typeid(db_int)){ str += daxia::string::ToString(static_cast<int>(*reinterpret_cast<const db_int*>(reflectBase->ValueAddr()))); }
+				else if (typeinfo == typeid(db_bigint)){ str += daxia::string::ToString(static_cast<long long>(*reinterpret_cast<const db_bigint*>(reflectBase->ValueAddr()))); }
+				else if (typeinfo == typeid(db_float)){ str += daxia::string::ToString(static_cast<float>(*reinterpret_cast<const db_float*>(reflectBase->ValueAddr()))); }
+				else if (typeinfo == typeid(db_double)){ str += daxia::string::ToString(static_cast<double>(*reinterpret_cast<const db_double*>(reflectBase->ValueAddr()))); }
 			}
 
 			return str;

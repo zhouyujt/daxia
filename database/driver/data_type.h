@@ -22,15 +22,28 @@ namespace daxia
 	{
 		namespace driver
 		{
-			template<class ValueType>
-			class DataType
+			class BasicDataType
 			{
-			public:
-				DataType() : init_(false) {}
-				DataType(const DataType& dt){ v_ = dt.v_; }
-				~DataType(){}
+			protected:
+				BasicDataType() : init_(false) {}
+				~BasicDataType() {}
 			public:
 				bool IsInit() const{ return init_; }
+			protected:
+				bool init_;
+			};
+
+			template<class ValueType>
+			class DataType : public BasicDataType
+			{
+			public:
+				DataType(){}
+				DataType(const DataType& dt)
+				{ 
+					v_ = dt.v_; 
+					init_ = dt.init_;
+				}
+				~DataType(){}
 			public:
 				DataType& operator=(ValueType v)
 				{
@@ -39,13 +52,12 @@ namespace daxia
 					return *this;
 				}
 
-				operator ValueType&()
+				operator const ValueType&() const
 				{
 					return v_;
 				}
 			private:
 				ValueType v_;
-				bool init_;
 			};
 
 			typedef DataType<char> db_tinyint;

@@ -18,6 +18,7 @@
 #include <set>
 #include "driver/basic_driver.h"
 #include "driver/basic_recordset.h"
+#include "driver/data_type.h"
 #include "../string.hpp"
 #include "../reflect/reflect.hpp"
 
