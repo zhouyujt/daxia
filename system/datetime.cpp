@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <sstream>
+#include <iomanip>
 #include "datetime.h"
 
 namespace daxia
