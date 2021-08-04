@@ -105,6 +105,8 @@ namespace daxia
 			template<class ValueType>
 			daxia::string Insert(const ValueType& obj, const FieldFilter* fields = nullptr)
 			{
+				using namespace daxia::reflect;
+
 				auto layout = Reflect<ValueType>().Layout();
 				return insert(layout, &obj, fields);
 			}
@@ -114,6 +116,8 @@ namespace daxia
 			template<class ValueType>
 			daxia::string Delete(const ValueType& obj, const FieldFilter* condition = nullptr)
 			{
+				using namespace daxia::reflect;
+
 				auto layout = Reflect<ValueType>().Layout();
 				return delette(layout, &obj, condition);
 			}
@@ -180,6 +184,8 @@ namespace daxia
 			template<class ValueType>
 			daxia::string Update(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
+				using namespace daxia::reflect;
+
 				auto layout = Reflect<ValueType>().Layout();
 				return update(layout, &obj, fields, condition);
 			}

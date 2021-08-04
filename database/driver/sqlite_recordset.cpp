@@ -1,3 +1,4 @@
+#include <string.h>
 #include "sqlite_recordset.h"
 
 namespace daxia

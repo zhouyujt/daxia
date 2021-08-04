@@ -126,7 +126,7 @@ namespace daxia
 			std::string pattern = "\\w+:\\w+(\\s*\\(([\\w=]\\s*)*\\))?";
 			std::regex express(pattern);
 
-			std::string& s = static_cast<std::string>(tagStr);
+			const std::string& s = static_cast<std::string>(tagStr);
 			std::regex_token_iterator<std::string::const_iterator> tokenize(s.begin(), s.end(), express);
 			for (auto iter = tokenize; iter != std::sregex_token_iterator(); iter++)
 			{
