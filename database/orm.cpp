@@ -433,7 +433,39 @@ namespace daxia
 
 		daxia::string Orm::drop(const boost::property_tree::ptree& layout, const void* baseaddr)
 		{
-			throw "尚未实现";
+			using namespace daxia::reflect;
+
+			daxia::string tableName;
+			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			{
+				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				if (reflectBase == nullptr) continue;
+
+				// 构造表名
+				daxia::string tag = reflectBase->Tag(ORM);
+				if (tag.IsEmpty()) continue;
+
+				auto attribute = reflectBase->TagAttribute(ORM);
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
+				{
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
+					break;
+				}
+			}
+
+			// 拼接
+			daxia::string sql;
+			sql.Format("DROP TABLE %s",
+				tableName.GetString()
+				);
+
+			// 执行
+			command_->Excute(sql);
+
+			return command_->GetLastError();
 		}
 
 		const daxia::reflect::Reflect_base* Orm::cast(const void* baseaddr, unsigned long offset)
