@@ -75,7 +75,7 @@ namespace daxia
 				else if (type == typeid(db_float)) return "FLOAT";
 				else if (type == typeid(db_double)) return "DOUBLE";
 				else if (type == typeid(db_text)) return "VARCHAR";
-				else if (type == typeid(db_blob)) return "BLOB";
+				else if (type == typeid(db_blob)) return "LONGBLOB";
 				else if (type == typeid(db_datetime)) return "DATETIME";
 				else return "";
 			}
