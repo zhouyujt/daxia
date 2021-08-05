@@ -97,7 +97,7 @@ namespace daxia
 			template<class ValueType>
 			static bool Unmarshal(const daxia::string& jsonStr, ValueType& v)
 			{
-				return Unmarshal(jsonStr.Ansi2Unicode(), v);
+				return Unmarshal(jsonStr.ToUnicode(), v);
 			}
 
 			// 数组信息
