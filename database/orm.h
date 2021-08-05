@@ -11,6 +11,34 @@
 * 支持快速方便地将C++对象存储至数据库记录
 * 支持快速方便地将数据库记录读取到C++对象
 *
+* 使用示例:
+* struct Account
+* {
+*		DECLARE_ORM_TABLE(account);
+*
+*		Reflect<db_int> id = "orm:id(identity primary_key comment=id)";
+*		Reflect<db_text> user = "orm:user(unique_key comment=用户名)";
+*		Reflect<db_text> password = "orm:psw(not_null comment=密码)";
+*		Reflect<db_text> name = "orm:name(key comment=姓名)";
+*		Reflect<db_int> age = "orm:age(default=18 comment=年龄)";
+* };
+*
+* Account account;
+* Orm orm(...);
+* orm.Query(account);
+* account.id.Value() = 1;
+* orm.Delete(account);
+* 
+* 每个自定struct必须使用DECLARE_ORM_TABLE宏来定义表名。
+* 每个字段的Tag名即为字段名。
+* 支持的Tag属性如下:
+* identity			自动递增1
+* primary_key		主键
+* unique_key		唯一索引
+* key				不唯一索引
+* default			默认值
+* not_null			不能为空
+* comment			注释
 */
 #ifndef __DAXIA_DATABASE_ORM_H
 #define __DAXIA_DATABASE_ORM_H
@@ -112,7 +140,7 @@ namespace daxia
 			}
 
 			// 删除
-			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有identify属性且已初始化的字段删除。
+			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有primary_key属性且已初始化的字段删除。
 			template<class ValueType>
 			daxia::string Delete(const ValueType& obj, const FieldFilter* condition = nullptr)
 			{
@@ -122,7 +150,33 @@ namespace daxia
 				return delette(layout, &obj, condition);
 			}
 
-			// 查询
+
+			// 查询一条
+			// fields: 需要查询的字段。nullptr则查询所有字段。
+			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
+			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
+			template<class ValueType>
+			daxia::string Query(ValueType& obj,
+				const FieldFilter* fields = nullptr,
+				const char* suffix = nullptr,
+				const char* prefix = nullptr
+				)
+			{
+				using namespace daxia::reflect;
+
+				ValueType helper;
+				auto layout = Reflect<ValueType>().Layout();
+				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
+
+				if (recordset && !recordset->Eof())
+				{
+					record2obj(recordset, layout, &obj, fields);
+				}
+
+				return command_->GetLastError();
+			}
+
+			// 查询多条
 			// fields: 需要查询的字段。nullptr则查询所有字段。
 			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
 			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
@@ -146,7 +200,7 @@ namespace daxia
 
 			// 更新
 			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
-			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有identify属性且已初始化的字段更新。
+			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
 			template<class ValueType>
 			daxia::string Update(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
@@ -202,10 +256,11 @@ namespace daxia
 		private:
 			static const daxia::reflect::Reflect_base* cast(const void* baseaddr, unsigned long offset);
 			static daxia::string tostring(const daxia::reflect::Reflect_base* reflectBase);
-			static daxia::string makeConditionByIdentityField(const boost::property_tree::ptree& layout, const void* baseaddr);
+			static daxia::string makeConditionByPrimaryKey(const boost::property_tree::ptree& layout, const void* baseaddr);
 			static void record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* obj, const FieldFilter* fields = nullptr);
 		private:
 			std::shared_ptr<Command> command_;
+			Driver driverType_;
 		};
 	}
 }

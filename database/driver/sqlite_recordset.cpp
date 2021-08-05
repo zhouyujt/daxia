@@ -98,10 +98,11 @@ namespace daxia
 				{
 					const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt_, index));
 					int size = sqlite3_column_bytes(stmt_, index);
-#ifdef _MSC_VER
-					v = daxia::string(text, size).Utf82Ansi();
-#else
 					v = daxia::string(text, size);
+					static_cast<daxia::string>(v).Utf8() = true;
+
+#ifdef _MSC_VER
+					v = static_cast<daxia::string>(v).ToAnsi();
 #endif
 				}
 			}

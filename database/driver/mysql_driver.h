@@ -34,6 +34,7 @@ namespace daxia
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) override;
 				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
 				virtual daxia::string GetLastError() const override;
+				virtual daxia::string TypeName(const std::type_info& type) const override;
 			private:
 				MYSQL mysql_;
 			};

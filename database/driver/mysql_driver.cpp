@@ -67,6 +67,19 @@ namespace daxia
 				return mysql_error(const_cast<MYSQL*>(&mysql_));
 			}
 
+			daxia::string MySQLDriver::TypeName(const std::type_info& type) const
+			{
+				if (type == typeid(db_tinyint)) return "TINYINT";
+				else if (type == typeid(db_int)) return "INT";
+				else if (type == typeid(db_bigint)) return "BIGINT";
+				else if (type == typeid(db_float)) return "FLOAT";
+				else if (type == typeid(db_double)) return "DOUBLE";
+				else if (type == typeid(db_text)) return "VARCHAR";
+				else if (type == typeid(db_blob)) return "BLOB";
+				else if (type == typeid(db_datetime)) return "DATETIME";
+				else return "";
+			}
+
 		}
 	}
 }

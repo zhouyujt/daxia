@@ -5,12 +5,19 @@
 
 #define ORM "orm"
 #define IDENTITY "identity"
+#define PRIMARY_KEY "primary_key"
+#define UNIQUE_KEY "unique_key"
+#define KEY "key"
+#define DEFAULT "default"
+#define NOT_NULL "not_null"
+#define COMMENT "comment"
 
 namespace daxia
 {
 	namespace database
 	{
 		Orm::Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
+			: driverType_(driver)
 		{
 			using namespace daxia::database::driver;
 
@@ -30,6 +37,7 @@ namespace daxia
 		}
 
 		Orm::Orm(Driver driver, const daxia::string& connectString)
+			: driverType_(driver)
 		{
 		}
 
@@ -56,7 +64,11 @@ namespace daxia
 
 				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = reflectBase->TagAttribute(ORM);
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
 					continue;
 				}
 
@@ -69,9 +81,10 @@ namespace daxia
 				// 构造字段列表及值列表
 				if (fields == nullptr || fields->HasField(tag))
 				{
-					// 排除identity字段
-					if (fields == nullptr	// 手动指定的identity不排除
-						&& reflectBase->TagAttribute(ORM) == IDENTITY)
+					// 排除主键
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (fields == nullptr	// 手动指定的主键不排除
+						&& attribute.find(PRIMARY_KEY) != attribute.end())
 					{
 						continue;
 					}
@@ -115,7 +128,11 @@ namespace daxia
 
 				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = reflectBase->TagAttribute(ORM);
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
 					continue;
 				}
 
@@ -128,9 +145,10 @@ namespace daxia
 				// 构造条件语句
 				if (condition == nullptr || condition->HasField(tag))
 				{
-					// 默认只用identity字段做删除条件
+					// 默认只用主键做删除条件
+					auto attribute = reflectBase->TagAttribute(ORM);
 					if (condition == nullptr
-						&& reflectBase->TagAttribute(ORM) != IDENTITY)
+						&& attribute.find(PRIMARY_KEY) == attribute.end())
 					{
 						continue;
 					}
@@ -147,7 +165,7 @@ namespace daxia
 			daxia::string sql;
 			sql.Format("DELETE FROM %s WHERE %s",
 				tableName.GetString(),
-				conditionList.IsEmpty() ? makeConditionByIdentityField(layout, baseaddr).GetString() : conditionList.GetString()
+				conditionList.IsEmpty() ? makeConditionByPrimaryKey(layout, baseaddr).GetString() : conditionList.GetString()
 				);
 
 			// 执行
@@ -172,7 +190,11 @@ namespace daxia
 
 				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = reflectBase->TagAttribute(ORM);
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
 					continue;
 				}
 
@@ -215,7 +237,11 @@ namespace daxia
 
 				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
 				{
-					tableName = reflectBase->TagAttribute(ORM);
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
 					continue;
 				}
 
@@ -249,7 +275,7 @@ namespace daxia
 			sql.Format("UPDATE %s SET %s WHERE %s", 
 				tableName.GetString(),
 				valueList.GetString(), 
-				conditionList.IsEmpty() ? makeConditionByIdentityField(layout,baseaddr).GetString() : conditionList.GetString());
+				conditionList.IsEmpty() ? makeConditionByPrimaryKey(layout,baseaddr).GetString() : conditionList.GetString());
 
 			// 执行
 			auto recodset = command_->Excute(sql);
@@ -258,7 +284,151 @@ namespace daxia
 
 		daxia::string Orm::create(const boost::property_tree::ptree& layout, const void* baseaddr)
 		{
-			throw "尚未实现";
+			using namespace daxia::reflect;
+
+			daxia::string tableName;
+			daxia::string fieldList;
+			daxia::string valueList;
+			std::vector<daxia::string> createIndex;
+			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			{
+				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				if (reflectBase == nullptr) continue;
+
+				// 构造表名
+				daxia::string tag = reflectBase->Tag(ORM);
+				if (tag.IsEmpty()) continue;
+
+				auto attribute = reflectBase->TagAttribute(ORM);
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
+				{
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
+					continue;
+				}
+
+				// 构造字段列表
+				if (!fieldList.IsEmpty())  fieldList += ',';
+				fieldList += tag;
+				fieldList += ' ';
+				fieldList += command_->TypeName(reflectBase->Type());
+				if (driverType_ == sqlserver)
+				{
+
+				}
+				else if (driverType_ == mysql)
+				{
+					if (attribute.find(PRIMARY_KEY) != attribute.end())
+					{
+						fieldList += " PRIMARY KEY";
+					}
+
+					if (attribute.find(IDENTITY) != attribute.end())
+					{
+						fieldList += " AUTO_INCREMENT";
+					}
+
+					if (attribute.find(UNIQUE_KEY) != attribute.end())
+					{
+						fieldList += " UNIQUE KEY";
+					}
+
+					if (attribute.find(KEY) != attribute.end())
+					{
+						fieldList += " KEY";
+					}
+
+					if (attribute.find(DEFAULT) != attribute.end())
+					{
+						fieldList += " DEFAULT ";
+						fieldList += attribute.find(DEFAULT)->second;
+					}
+
+					if (attribute.find(NOT_NULL) != attribute.end())
+					{
+						fieldList += " NOT NULL";
+					}
+
+					if (attribute.find(COMMENT) != attribute.end())
+					{
+						fieldList += " COMMENT ";
+						fieldList += "'";
+						fieldList += attribute.find(COMMENT)->second;
+						fieldList += "'";
+					}
+				}
+				else if (driverType_ == sqlite)
+				{
+					if (attribute.find(PRIMARY_KEY) != attribute.end())
+					{
+						fieldList += " PRIMARY KEY";
+					}
+
+					if (attribute.find(IDENTITY) != attribute.end())
+					{
+						fieldList += " AUTOINCREMENT";
+					}
+
+					if (attribute.find(UNIQUE_KEY) != attribute.end())
+					{
+						daxia::string sql;
+						sql.Format("CREATE UNIQUE INDEX index_%s_%s ON %s(%s)", tableName.GetString(), tag.GetString(), tableName.GetString(), tag.GetString());
+						createIndex.push_back(sql);
+					}
+
+					if (attribute.find(KEY) != attribute.end())
+					{
+						daxia::string sql;
+						sql.Format("CREATE INDEX index_%s_%s ON %s(%s)", tableName.GetString(), tag.GetString(), tableName.GetString(), tag.GetString());
+						createIndex.push_back(sql);
+					}
+
+					if (attribute.find(DEFAULT) != attribute.end())
+					{
+						fieldList += " DEFAULT ";
+						fieldList += attribute.find(DEFAULT)->second;
+					}
+
+					if (attribute.find(NOT_NULL) != attribute.end())
+					{
+						fieldList += " NOT NULL";
+					}
+
+					//if (attribute.find(COMMENT) != attribute.end())
+					//{
+					//	fieldList += " /*";
+					//	fieldList += attribute.find(COMMENT)->second;
+					//	fieldList += " */";
+					//}
+				}
+			}
+
+			// 拼接
+			daxia::string sql;
+			sql.Format("CREATE TABLE %s(%s)",
+				tableName.GetString(),
+				fieldList.GetString()
+				);
+
+			// 执行
+			command_->Excute(sql);
+
+			// 创建索引
+			if (command_->GetLastError().IsEmpty())
+			{
+				for (const daxia::string& sql : createIndex)
+				{
+					command_->Excute(sql);
+					if (!command_->GetLastError().IsEmpty())
+					{
+						break;
+					}
+				}
+			}
+
+			return command_->GetLastError();
 		}
 
 		daxia::string Orm::drop(const boost::property_tree::ptree& layout, const void* baseaddr)
@@ -313,7 +483,7 @@ namespace daxia
 			return str;
 		}
 
-		daxia::string Orm::makeConditionByIdentityField(const boost::property_tree::ptree& layout, const void* baseaddr)
+		daxia::string Orm::makeConditionByPrimaryKey(const boost::property_tree::ptree& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
 
@@ -327,7 +497,8 @@ namespace daxia
 				catch (const std::exception&){}
 				if (reflectBase == nullptr) continue;
 
-				if (reflectBase->TagAttribute(ORM) == IDENTITY)
+				auto attribute = reflectBase->TagAttribute(ORM);
+				if (attribute.find(PRIMARY_KEY) != attribute.end())
 				{
 					if (reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
 					{

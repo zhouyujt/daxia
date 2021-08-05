@@ -39,6 +39,7 @@ namespace daxia
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) = 0;
 				virtual	void ExcuteAsync(const daxia::string& sql, excute_callback cb) = 0;
 				virtual daxia::string GetLastError() const = 0;
+				virtual daxia::string TypeName(const std::type_info& type) const = 0;
 			protected:
 				daxia::string host_;
 				daxia::string db_;

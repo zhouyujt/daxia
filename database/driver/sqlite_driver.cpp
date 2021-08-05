@@ -30,11 +30,7 @@ namespace daxia
 				// windows –Ë…Ë÷√¡Ÿ ±ƒø¬º
 #ifdef _MSC_VER
 				daxia::tstring path = daxia::system::windows::Path::GetTempPath();
-#	ifdef UNICODE
-				sqlite3_temp_directory = sqlite3_mprintf("%s", path.Unicode2Utf8().GetString());
-#	else
-				sqlite3_temp_directory = sqlite3_mprintf("%s", path.Ansi2Utf8().GetString());
-#	endif
+				sqlite3_temp_directory = sqlite3_mprintf("%s", path.ToUtf8().GetString());
 #endif
 			}
 
@@ -51,11 +47,7 @@ namespace daxia
 
 			bool SqliteDriver::Connnect()
 			{
-#ifdef _MSC_VER
-				return sqlite3_open(db_.Ansi2Utf8().GetString(), &sqlite_) == SQLITE_OK;
-#else
-				return sqlite3_open(db_.GetString(), &sqlite_) == SQLITE_OK;
-#endif
+				return sqlite3_open(db_.ToUtf8().GetString(), &sqlite_) == SQLITE_OK;
 			}
 
 			void SqliteDriver::ConnnectAsync(connect_callback cb)
@@ -74,11 +66,7 @@ namespace daxia
 					}
 				}
 
-#ifdef _MSC_VER
-				daxia::string temp = sql.Ansi2Utf8();
-#else
-				const daxia::string& temp = sql;
-#endif
+				daxia::string temp = sql.ToUtf8();
 
 				// ±‡“Îsql”Ôæ‰
 				sqlite3_stmt* stmt = nullptr;
@@ -120,6 +108,19 @@ namespace daxia
 				return lastError_;
 			}
 
+			daxia::string SqliteDriver::TypeName(const std::type_info& type) const
+			{
+				if (type == typeid(db_tinyint)) return "INTEGER";
+				else if (type == typeid(db_int)) return "INTEGER";
+				else if (type == typeid(db_bigint)) return "INTEGER";
+				else if (type == typeid(db_float)) return "REAL";
+				else if (type == typeid(db_double)) return "REAL";
+				else if (type == typeid(db_text)) return "TEXT";
+				else if (type == typeid(db_blob)) return "BLOB";
+				else if (type == typeid(db_datetime)) return "NUMERIC";
+				else return "";
+			}
+
 			void SqliteDriver::setLastError(bool clean /*= false*/)
 			{
 				if (clean)
@@ -129,8 +130,9 @@ namespace daxia
 				else
 				{
 					lastError_ = sqlite3_errmsg(sqlite_);
+					lastError_.Utf8() = true;
 #ifdef _MSC_VER
-					lastError_ = lastError_.Utf82Ansi();
+					lastError_ = lastError_.ToAnsi();
 #endif
 				}
 			}
