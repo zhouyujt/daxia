@@ -234,7 +234,7 @@ namespace daxia
 
 					if (layout_.empty())
 					{
-						// vector类型仅仅保存元素的布局
+						// vector 类型仅仅保存元素的布局
 						layout_ = Reflect<ValueType>().Layout();
 
 						// 每个元素的大小

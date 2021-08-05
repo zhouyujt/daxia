@@ -65,7 +65,7 @@ namespace daxia
 			const std::type_info& Type() const { return typeInfo_; }
 			const daxia::string& Tags() const { return tagsStr_; }
 			daxia::string Tag(const daxia::string& prefix) const;
-			daxia::string TagAttribute(const daxia::string& prefix) const;
+			std::map<daxia::string,daxia::string> TagAttribute(const daxia::string& prefix) const;
 		private:
 			void parseTag(const daxia::string& str);
 		private:

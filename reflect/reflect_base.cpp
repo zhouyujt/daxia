@@ -101,58 +101,69 @@ namespace daxia
 			return tag;
 		};
 
-		daxia::string Reflect_base::TagAttribute(const daxia::string& prefix) const
+		std::map<daxia::string, daxia::string> Reflect_base::TagAttribute(const daxia::string& prefix) const
 		{
 			daxia::string tag;
-			daxia::string attribute;
+			daxia::string attributeString;
 
 			auto iter = tags_.find(prefix);
 			if (iter != tags_.end())
 			{
 				size_t pos = 0;
 				tag = iter->second.Tokenize(" ", pos);
-				attribute = iter->second.Mid(pos, -1);
+				attributeString = iter->second.Mid(pos, -1);
+			}
+			
+			std::vector<daxia::string> attributes;
+			attributeString.Split(" ", attributes);
+			std::map<daxia::string, daxia::string> result;
+			for (size_t i = 0; i < attributes.size(); ++i)
+			{
+				size_t pos = 0;
+				daxia::string key = attributes[i].Tokenize("=", pos);
+				daxia::string value = attributes[i].Mid(pos, -1);
+				result[key] = value;
 			}
 
-			return attribute;
+			return result;
 		}
 
 		void Reflect_base::parseTag(const daxia::string& str)
 		{
-			daxia::string tagStr(str);
+			daxia::wstring tagStr = str.ToUnicode();
 			tagStr.Trim();
 
 			// ÕýÔòÆ¥ÅäÔÊÐí"orm:id(identity) json:id other:id(attribute1 attribute2=param attribute3)"
-			std::string pattern = "\\w+:\\w+(\\s*\\(([\\w=]\\s*)*\\))?";
-			std::regex express(pattern);
+			std::wstring pattern = L"\\w+:\\w+(\\s*\\(([\\w=]\\s*)*\\))?";
+			std::wregex express(pattern);
 
-			const std::string& s = static_cast<std::string>(tagStr);
-			std::regex_token_iterator<std::string::const_iterator> tokenize(s.begin(), s.end(), express);
-			for (auto iter = tokenize; iter != std::sregex_token_iterator(); iter++)
+			const std::wstring& s = static_cast<std::wstring>(tagStr);
+			std::regex_token_iterator<std::wstring::const_iterator> tokenize(s.begin(), s.end(), express);
+			for (auto iter = tokenize; iter != std::wsregex_token_iterator(); iter++)
 			{
-				daxia::string tag = iter->str();
+				daxia::wstring tag = iter->str();
 
 				size_t pos = 0;
-				daxia::string prefix = tag.Tokenize(":", pos).Trim();
-				daxia::string suffix = tag.Mid(pos, -1).Trim();
+				daxia::wstring prefix = tag.Tokenize(L":", pos).Trim();
+				daxia::wstring suffix = tag.Mid(pos, -1).Trim();
 
 				pos = 0;
-				daxia::string name = suffix.Tokenize("(", pos).Trim();
-				daxia::string attribute = suffix.Mid(pos, -1).Trim();
+				daxia::wstring name = suffix.Tokenize(L"(", pos).Trim();
+				daxia::wstring attribute = suffix.Mid(pos, -1).Trim();
 
 				if (!attribute.IsEmpty())
 				{
 					// È¥³ýattribute ×óÓÒÁ½²àÀ¨ºÅ
-					if (attribute[attribute.GetLength() - 1] == ')')
+					if (attribute[attribute.GetLength() - 1] == L')')
 					{
 						attribute.Delete(attribute.GetLength() - 1);
 					}
 
-					tags_[prefix] = name + " " + attribute;
+					tags_[prefix.ToAnsi()] = (name + L" " + attribute).ToAnsi();
 				}
 				else
 				{
-					tags_[prefix] = name;
+					tags_[prefix.ToAnsi()] = name.ToAnsi();
 				}
 			}
 		}
