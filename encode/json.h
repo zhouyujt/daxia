@@ -202,6 +202,11 @@ namespace daxia
 				boost::property_tree::ptree& root,
 				ArrayInfo* parentArray);
 
+			static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root, ArrayInfo* parentArray);
+			static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const boost::property_tree::ptree& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
+			static void putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
+			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
+
 			// 使用内存布局缓存进行解码
 			static void ummarshal(char* baseaddr,
 				const boost::property_tree::ptree& layout,
@@ -209,13 +214,6 @@ namespace daxia
 				ArrayInfo* parentArray);
 
 			static void wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree);
-
-			static void putArray(const daxia::reflect::Reflect_base* reflectBase,
-				const std::string& tag,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
-
-
 			static void getArray(daxia::reflect::Reflect_base* reflectBase,
 				const boost::property_tree::ptree& root);
 
