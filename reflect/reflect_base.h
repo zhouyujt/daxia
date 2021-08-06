@@ -48,10 +48,7 @@ namespace daxia
 		class Reflect_base : public Reflect_helper
 		{
 		protected:
-			Reflect_base();
-			Reflect_base(size_t size, const std::type_info& typeinfo);
-			Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags);
-			Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags);
+			Reflect_base(const char* tags);
 			virtual ~Reflect_base();
 		protected:
 			Reflect_base& Swap(Reflect_base& r);
@@ -60,18 +57,19 @@ namespace daxia
 			virtual const void* ValueAddr() const = 0;
 			virtual void ResizeArray(size_t count) = 0;
 			virtual bool IsArray() const = 0;
+			virtual size_t Size() const = 0;
+			virtual const std::type_info& Type() const = 0;
 			virtual daxia::string ToString() const = 0;
+			virtual size_t SizeOfElement() const = 0;
+			virtual const std::type_info& TypeOfElement() const = 0;
+			virtual daxia::string ToStringOfElement(size_t index) const = 0;
 		public:
-			size_t Size() const{ return size_; }
-			const std::type_info& Type() const { return typeInfo_; }
 			const daxia::string& Tags() const { return tagsStr_; }
 			daxia::string Tag(const daxia::string& prefix) const;
 			std::map<daxia::string,daxia::string> TagAttribute(const daxia::string& prefix) const;
 		private:
 			void parseTag(const daxia::string& str);
 		private:
-			size_t size_;
-			const std::type_info& typeInfo_;
 			daxia::string tagsStr_;
 			std::map<daxia::string, daxia::string> tags_;
 		};// class reflect_base

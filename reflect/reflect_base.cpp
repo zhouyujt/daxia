@@ -39,51 +39,23 @@ namespace daxia
 			return false;
 		}
 
-		Reflect_base::Reflect_base()
-			: size_(0)
-			, typeInfo_(typeid(void))
-		{
-		}
 
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
-		{
-		}
-
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
-		{
-			if (!tags.IsEmpty())
-			{
-				tagsStr_ = tags;
-			}
-			parseTag(tags);
-		}
-
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
+		Reflect_base::Reflect_base(const char* tags)
+			 : tagsStr_("-")
 		{
 			if (tags != nullptr)
 			{
 				tagsStr_ = tags;
+				parseTag(tags);
 			}
-			parseTag(tags);
 		}
 
 		Reflect_base::~Reflect_base(){}
 
 		Reflect_base& Reflect_base::Swap(Reflect_base& r)
 		{
-			std::swap(size_, r.size_);
-			//std::swap(typeinfo_, r.typeinfo_);
+			std::swap(tagsStr_, r.tagsStr_);
 			std::swap(tags_, r.tags_);
-
 			return *this;
 		}
 

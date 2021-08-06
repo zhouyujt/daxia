@@ -98,20 +98,16 @@ namespace daxia
 							}
 							else
 							{
-								for (const unknow* iter = reinterpret_cast<const char*>(&(*(array->Value().begin())));
-									iter != iter + array->Value().size();
-									)
+								int index = 0;
+								const unknow* begin = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+								const unknow* end = begin + array->Value().size();
+								for (const unknow* iter = begin;
+									iter != end;
+									iter += reflectBase->SizeOfElement(),++index)
 								{
 									boost::property_tree::ptree tr;
 
-									const  Reflect_base* element = nullptr;
-									try{ element = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(iter)); }
-									catch (const std::exception&){}
-									if (element == nullptr) break;
-
-									iter += element->Size();
-							
-									tr.put_value(static_cast<std::string>(element->ToString()));
+									tr.put_value(static_cast<std::string>(reflectBase->ToStringOfElement(index)));
 
 									child.push_back(make_pair("", tr));
 								}

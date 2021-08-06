@@ -34,19 +34,13 @@ namespace daxia
 		{
 		public:
 			Reflect()
-				: Reflect_base(sizeof(*this), typeid(ValueType))
-			{
-				init();
-			}
-
-			Reflect(const std::string& tags)
-				: Reflect_base(sizeof(*this), typeid(ValueType), tags)
+				: Reflect_base(nullptr)
 			{
 				init();
 			}
 
 			Reflect(const char* tags)
-				: Reflect_base(sizeof(*this), typeid(ValueType), tags)
+				: Reflect_base(tags)
 			{
 				init();
 			}
@@ -85,7 +79,13 @@ namespace daxia
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual bool IsArray() const override { return false; }
 			virtual void ResizeArray(size_t count) override {/*do nothing*/ }
+			virtual size_t Size() const override { return sizeof(*this); }
+			virtual const std::type_info& Type() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToString() const override;
+			virtual size_t SizeOfElement() const override { throw "don't call this method!"; }
+			virtual const std::type_info& TypeOfElement() const override { throw "don't call this method!"; }
+			virtual daxia::string ToStringOfElement(size_t index) const override { throw "don't call this method!"; }
+
 			ValueType& Value(){ return v_; }
 			const ValueType& Value() const { return v_; }
 		private:
@@ -195,19 +195,13 @@ namespace daxia
 		{
 		public:
 			Reflect()
-				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>))
-			{
-				init();
-			}
-
-			Reflect(const std::string& tags)
-				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>), tags)
+				: Reflect_base(nullptr)
 			{
 				init();
 			}
 
 			Reflect(const char* tags)
-				: Reflect_base(sizeof(*this), typeid(std::vector<ValueType>), tags)
+				: Reflect_base(tags)
 			{
 				init();
 			}
@@ -251,7 +245,12 @@ namespace daxia
 				std::vector<ValueType> temp(count, tempValue);
 				std::swap(temp, v_);
 			}
-			virtual daxia::string ToString() const override { return daxia::string(); }
+			virtual size_t Size() const override { return sizeof(*this); }
+			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
+			virtual daxia::string ToString() const override { throw "don't call this method!"; }
+			virtual size_t SizeOfElement() const override { return sizeof(ValueType); }
+			virtual const std::type_info& TypeOfElement() const override { return typeid(ValueType); }
+			inline virtual daxia::string ToStringOfElement(size_t index) const override;
 			std::vector<ValueType>& Value(){ return v_; }
 			const std::vector<ValueType>& Value() const { return v_; }
 		private:
@@ -262,31 +261,7 @@ namespace daxia
 				boost::property_tree::ptree layout;
 			};
 
-			void init()
-			{
-				// buildLayout
-				if (std::is_class<ValueType>::value 
-					&& !std::is_same<ValueType, std::string>::value
-					&& !std::is_same<ValueType, std::wstring>::value
-					&& !std::is_same<ValueType, daxia::string>::value
-					&& !std::is_same<ValueType, daxia::wstring>::value
-					)
-				{
-					layoutLocker_.lock();
-
-					if (layout_.empty())
-					{
-						// vector 类型仅仅保存元素的布局
-						layout_ = Reflect<ValueType>().Layout();
-
-						// 每个元素的大小
-						if (!layout_.empty()) layout_.put(REFLECT_LAYOUT_FIELD_SIZE, sizeof(ValueType));
-					}
-
-					layoutLocker_.unlock();
-				}
-			}
-
+			void init();
 		private:
 			std::vector<ValueType> v_;
 			static boost::property_tree::ptree layout_;
@@ -297,6 +272,50 @@ namespace daxia
 		boost::property_tree::ptree Reflect<std::vector<ValueType>>::layout_;
 		template<class ValueType>
 		std::mutex Reflect<std::vector<ValueType>>::layoutLocker_;
+
+		template<class ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToStringOfElement(size_t index) const { return daxia::string(); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<char>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(static_cast<int>(v_[index])); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned char>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(static_cast<unsigned int>(v_[index])); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<int>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned int>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<long long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned long long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<long double>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<double>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<float>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<bool>>::ToStringOfElement(size_t index) const { return v_[index] ? "true" : "false"; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<std::string>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].c_str()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_[index]).ToAnsi().GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].ToAnsi().GetString()); return str; }
+
+		template<class ValueType>
+		void Reflect<std::vector<ValueType>>::init()
+		{
+			// buildLayout
+			if (std::is_class<ValueType>::value
+				&& !std::is_same<ValueType, std::string>::value
+				&& !std::is_same<ValueType, std::wstring>::value
+				&& !std::is_same<ValueType, daxia::string>::value
+				&& !std::is_same<ValueType, daxia::wstring>::value
+				)
+			{
+				layoutLocker_.lock();
+
+				if (layout_.empty())
+				{
+					// vector 类型仅仅保存元素的布局
+					layout_ = Reflect<ValueType>().Layout();
+
+					// 每个元素的大小
+					if (!layout_.empty()) layout_.put(REFLECT_LAYOUT_FIELD_SIZE, sizeof(ValueType));
+				}
+
+				layoutLocker_.unlock();
+			}
+		}
 
 		typedef Reflect<bool> Bool;
 		typedef Reflect<char> Char;
