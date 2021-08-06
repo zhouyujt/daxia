@@ -30,7 +30,8 @@ namespace daxia
 				if (hashcode == 0) continue;
 
 				const Reflect_base* reflectBase = nullptr;
-				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + offset)); } catch (const std::exception&){}
+				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + offset)); }
+				catch (const std::exception&){}
 				if (reflectBase == nullptr) continue;
 
 				daxia::string tag = reflectBase->Tag(JSON);
@@ -42,32 +43,27 @@ namespace daxia
 					if (layout.empty())
 					// value
 					{
-						try
+						// 设置数组辅助信息
+						if (parentArray)
 						{
-							// 设置数组辅助信息
-							if (parentArray)
+							if (parentArray->firstTag.IsEmpty())
 							{
-								if (parentArray->firstTag.IsEmpty())
-								{
-									// 设置元素第一个字段的tag
-									parentArray->firstTag = tag;
-								}
-								else if (parentArray->firstTag == tag)
-								{
-									// 保存已经解析完毕的元素
-									root.push_back(std::make_pair("", parentArray->ptree));
-
-									// 清空元素
-									parentArray->ptree.clear();
-								}
+								// 设置元素第一个字段的tag
+								parentArray->firstTag = tag;
 							}
+							else if (parentArray->firstTag == tag)
+							{
+								// 保存已经解析完毕的元素
+								root.push_back(std::make_pair("", parentArray->ptree));
 
-							boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-							ptree.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
+								// 清空元素
+								parentArray->ptree.clear();
+							}
 						}
-						catch (const boost::property_tree::ptree_error&)
-						{
-						}
+
+						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
+						ptree.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
+
 					}
 					else
 					// object
@@ -89,32 +85,26 @@ namespace daxia
 						const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 
 						boost::property_tree::ptree child;
-						try
+						if (array->Value().empty())
 						{
-							if (array->Value().empty())
+							boost::property_tree::ptree tr;
+							child.push_back(make_pair("", tr));
+						}
+						else
+						{
+							int index = 0;
+							const unknow* begin = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+							const unknow* end = begin + array->Value().size();
+							for (const unknow* iter = begin;
+								iter != end;
+								iter += reflectBase->SizeOfElement(), ++index)
 							{
 								boost::property_tree::ptree tr;
+
+								tr.put_value(static_cast<std::string>(reflectBase->ToStringOfElement(index)));
+
 								child.push_back(make_pair("", tr));
 							}
-							else
-							{
-								int index = 0;
-								const unknow* begin = reinterpret_cast<const char*>(&(*(array->Value().begin())));
-								const unknow* end = begin + array->Value().size();
-								for (const unknow* iter = begin;
-									iter != end;
-									iter += reflectBase->SizeOfElement(),++index)
-								{
-									boost::property_tree::ptree tr;
-
-									tr.put_value(static_cast<std::string>(reflectBase->ToStringOfElement(index)));
-
-									child.push_back(make_pair("", tr));
-								}
-							}
-						}
-						catch (const boost::property_tree::ptree_error&)
-						{
 						}
 
 						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
