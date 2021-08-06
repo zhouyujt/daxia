@@ -65,7 +65,7 @@ namespace daxia
 				return *this;
 			};
 
-			operator ValueType()
+			operator ValueType&()
 			{
 				return v_;
 			}
@@ -73,6 +73,12 @@ namespace daxia
 			operator const ValueType&() const
 			{
 				return v_;
+			}
+
+			Reflect& operator=(const Reflect& v)
+			{
+				v_ = v.v_;
+				return *this;
 			}
 		public:
 			virtual const boost::property_tree::ptree& Layout() const override { return layout_; }
@@ -220,11 +226,6 @@ namespace daxia
 				return *this;
 			};
 
-			operator std::vector<ValueType>()
-			{
-				return v_;
-			}
-
 			operator std::vector<ValueType>&()
 			{
 				return v_;
@@ -233,6 +234,12 @@ namespace daxia
 			operator const std::vector<ValueType>&() const
 			{
 				return v_;
+			}
+
+			Reflect& operator=(const Reflect& v)
+			{
+				v_ = v.v_;
+				return *this;
 			}
 		public:
 			virtual const boost::property_tree::ptree& Layout() const override { return layout_; }
