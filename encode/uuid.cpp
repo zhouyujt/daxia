@@ -7,6 +7,7 @@
 #pragma warning(default:4996)
 #endif
 #include <boost/uuid/uuid_io.hpp>
+#include "../encode/hex.h"
 #include "uuid.h"
 
 namespace daxia
@@ -30,6 +31,12 @@ namespace daxia
 
 		Uuid& Uuid::FromString(const daxia::string& str)
 		{
+			daxia::buffer buff = daxia::encode::Hex::FromString(str);
+			if (buff.GetLength() == sizeof(data))
+			{
+				memcpy(data, buff.GetBuffer(), sizeof(data));
+			}
+
 			return *this;
 		}
 

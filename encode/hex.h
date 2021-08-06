@@ -24,7 +24,7 @@ namespace daxia
 			~Hex();
 		public:
 			static daxia::string ToString(const void* data, size_t size);
-			static daxia::string FromString(const daxia::string& str);
+			static daxia::buffer FromString(const daxia::string& str);
 		private:
 			static daxia::string table_;
 		};
