@@ -15,6 +15,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <ostream>
 #include "../string.hpp"
 
 namespace daxia
@@ -33,6 +34,12 @@ namespace daxia
 			static DateTime Now();
 		public:
 			daxia::string ToString(const char* format = nullptr) const;
+		public:
+			friend std::ostream& operator<<(std::ostream& os, const DateTime& dt)
+			{
+				os << dt.ToString();
+				return os;
+			}
 		private:
 			std::chrono::system_clock::time_point tp_;
 		};

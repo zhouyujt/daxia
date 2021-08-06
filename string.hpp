@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <stdarg.h>
+#include <ostream>
 #include "encode/strconv.h"
 
 #ifndef _T
@@ -216,6 +217,12 @@ namespace daxia
 		operator const std::basic_string<Elem, Traits, Alloc>&() const
 		{
 			return v_;
+		}
+
+		friend std::ostream& operator<<(std::ostream& os, const String_base& s)
+		{
+			os << s.v_;
+			return os;
 		}
 	private:
 		size_t strlen(size_t maxCount = -1) const;
