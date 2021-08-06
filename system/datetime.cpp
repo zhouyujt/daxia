@@ -19,10 +19,13 @@ namespace daxia
 
 		DateTime::DateTime(const char* time)
 		{
-			std::tm tm;
-			std::stringstream ss(time);
-			ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-			tp_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+			if (time)
+			{
+				std::tm tm;
+				std::stringstream ss(time);
+				ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+				tp_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+			}
 		}
 
 		DateTime::DateTime(const DateTime& dt)
