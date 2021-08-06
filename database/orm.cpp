@@ -544,14 +544,14 @@ namespace daxia
 			return condition;
 		}
 
-		void Orm::record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* obj, const FieldFilter* fields)
+		void Orm::record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;
 			using namespace daxia::database::driver;
 
 			for (boost::property_tree::ptree::const_iterator iter = layout.begin(); iter != layout.end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(&obj, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
 				if (reflectBase == nullptr) continue;
 
 				daxia::string tag = reflectBase->Tag(ORM);
