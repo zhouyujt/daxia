@@ -1,7 +1,7 @@
 #ifndef __DAXIA_INCLUDE_DAXIA_H
 #define __DAXIA_INCLUDE_DAXIA_H
 
-// dxg
+// net
 #include "../net/client.h"
 #include "../net/server.h"
 #include "../net/common/byte_order.hpp"
@@ -11,6 +11,8 @@
 #include "../encode/strconv.h"
 #include "../encode/base64.h"
 #include "../encode/md5.h"
+#include "../encode/uuid.h"
+#include "../encode/hex.h"
 
 // reflect
 #include "../reflect/reflect.hpp"
