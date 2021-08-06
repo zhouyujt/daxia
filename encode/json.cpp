@@ -16,12 +16,6 @@ namespace daxia
 			boost::property_tree::ptree& root,
 			ArrayInfo* parentArray)
 		{
-			//std::stringstream ss1;
-			//std::string s1;
-			//write_json(ss1, layout, true);
-			//s1 = ss1.str();
-			//std::cout << s1;
-
 			using namespace std;
 			using namespace boost::property_tree;
 			using daxia::reflect::Reflect_helper;
@@ -31,64 +25,109 @@ namespace daxia
 			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
 			{
 				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
+				size_t offset = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
 
 				if (hashcode == 0) continue;
 
 				const Reflect_base* reflectBase = nullptr;
-				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + offset)); }
-				catch (const std::exception&){}
-
+				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + offset)); } catch (const std::exception&){}
 				if (reflectBase == nullptr) continue;
 
-				// value
-				if (tryPutValue<bool>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<char>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned char>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<short>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned short>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<int>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned int>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<long long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned long long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<std::string>(baseaddr, reflectBase, root, parentArray)) continue;
+				daxia::string tag = reflectBase->Tag(JSON);
+				if (tag.IsEmpty()) continue;
 
-				// object or array
-				std::string tag = reflectBase->Tag(JSON);
-				if (!tag.empty())
+				auto layout = reflectBase->Layout();
+				if (!reflectBase->IsArray())
 				{
-					if (reflectBase->IsArray())	// array
+					if (layout.empty())
+					// value
 					{
-						if (reflectBase->Layout().empty())
+						try
 						{
-							// array's element
-							if (tryPutElement<bool>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<char>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned char>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<short>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned short>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<int>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned int>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<std::string>(baseaddr, reflectBase, tag, root, parentArray)) continue;
+							// 设置数组辅助信息
+							if (parentArray)
+							{
+								if (parentArray->firstTag.IsEmpty())
+								{
+									// 设置元素第一个字段的tag
+									parentArray->firstTag = tag;
+								}
+								else if (parentArray->firstTag == tag)
+								{
+									// 保存已经解析完毕的元素
+									root.push_back(std::make_pair("", parentArray->ptree));
+
+									// 清空元素
+									parentArray->ptree.clear();
+								}
+							}
+
+							boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
+							ptree.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
 						}
-						else
+						catch (const boost::property_tree::ptree_error&)
 						{
-							putArray(reflectBase, tag, root, parentArray);
 						}
 					}
-					else // object
+					else
+					// object
 					{
 						ptree child;
-						marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), reflectBase->Layout(), child, nullptr);
+						marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), layout, child, nullptr);
 
 						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-						ptree.put_child(tag, child);
+						ptree.put_child(static_cast<std::string>(tag), child);
+					}
+				}
+				else
+				{
+					if (layout.empty())
+					// value
+					{
+						using daxia::reflect::Reflect;
+						typedef char unknow;
+						const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
+
+						boost::property_tree::ptree child;
+						try
+						{
+							if (array->Value().empty())
+							{
+								boost::property_tree::ptree tr;
+								child.push_back(make_pair("", tr));
+							}
+							else
+							{
+								for (const unknow* iter = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+									iter != iter + array->Value().size();
+									)
+								{
+									boost::property_tree::ptree tr;
+
+									const  Reflect_base* element = nullptr;
+									try{ element = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(iter)); }
+									catch (const std::exception&){}
+									if (element == nullptr) break;
+
+									iter += element->Size();
+							
+									tr.put_value(static_cast<std::string>(element->ToString()));
+
+									child.push_back(make_pair("", tr));
+								}
+							}
+						}
+						catch (const boost::property_tree::ptree_error&)
+						{
+						}
+
+						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
+						ptree.put_child(static_cast<std::string>(tag), child);
+					}
+					else
+					// object
+					{
+						putArray(reflectBase, tag, root, parentArray);
 					}
 				}
 			}
@@ -118,7 +157,7 @@ namespace daxia
 				//std::cout << s2;
 
 				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
+				size_t offset = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
 
 				if (hashcode == 0) continue;
 
@@ -308,7 +347,7 @@ namespace daxia
 					boost::property_tree::ptree child;
 
 					size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-					unsigned long offset = static_cast<unsigned long>(iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0) + size * i);
+					size_t offset = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_OFFSET, 0) + size * i;
 
 					child.put(REFLECT_LAYOUT_FIELD_HASH, hashcode);
 					child.put(REFLECT_LAYOUT_FIELD_OFFSET, offset);

@@ -18,6 +18,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 #include "reflect_base.h" 
 
 #define REFLECT_LAYOUT_FIELD_HASH "hash_reflect_layout_field"
@@ -78,6 +79,7 @@ namespace daxia
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual bool IsArray() const override { return false; }
 			virtual void ResizeArray(size_t count) override {/*do nothing*/ }
+			inline virtual daxia::string ToString() const override;
 			ValueType& Value(){ return v_; }
 			const ValueType& Value() const { return v_; }
 		private:
@@ -88,70 +90,97 @@ namespace daxia
 				boost::property_tree::ptree layout;
 			};
 
-			void init()
-			{
-				// buildLayout
-				if (std::is_class<ValueType>::value && !std::is_same<ValueType, std::string>::value)
-				{
-					layoutLocker_.lock();
-
-					if (layout_.empty())
-					{
-						const char* start = reinterpret_cast<const char*>(&this->v_);
-						const char* end = reinterpret_cast<const char*>(&this->v_) + sizeof(ValueType);
-						buildLayout(start, start, end, layout_, nullptr);
-					}
-
-					layoutLocker_.unlock();
-				}
-			}
-
+			void init();
 			void buildLayout(const char* baseaddr,
 				const char* start,
 				const char* end,
 				boost::property_tree::ptree& rootLayout,
-				ArrayInfo* parentArray) const
-			{
-				try
-				{
-					for (; start < end; ++start)
-					{
-						const Reflect_base* reflectBase = nullptr;
-
-						// 根据前4个字节判断是不是Reflect_helper
-						// 如果省略这一步，MSVC编译器工作正常
-						// gcc dynamic_cast 会报segmentation fault
-						if (!Reflect_helper::IsValidReflect(start)) continue;
-				
-						try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
-						catch (const std::exception&){}
-
-						if (reflectBase == nullptr) continue;
-
-						boost::property_tree::ptree childLayout;
-						childLayout.put(REFLECT_LAYOUT_FIELD_HASH, reflectBase->Type().hash_code());
-						childLayout.put(REFLECT_LAYOUT_FIELD_OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
-						rootLayout.put_child(reflectBase->Tags().GetString(), childLayout);
-
-						start += reflectBase->Size() - 1;
-					}
-				}
-				catch (boost::property_tree::ptree_error)
-				{
-
-				}
-			}
-
+				ArrayInfo* parentArray) const;
 		private:
 			ValueType v_;
 			static boost::property_tree::ptree layout_;
 			static std::mutex layoutLocker_;
-		};// class reflect
+		};// class Reflect
 
 		template<class ValueType>
 		boost::property_tree::ptree Reflect<ValueType>::layout_;
 		template<class ValueType>
 		std::mutex Reflect<ValueType>::layoutLocker_;
+
+		template<class ValueType> daxia::string daxia::reflect::Reflect<ValueType>::ToString() const { return daxia::string(); }
+		template<> daxia::string daxia::reflect::Reflect<char>::ToString() const { return daxia::string::ToString(static_cast<int>(v_)); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned char>::ToString() const { return daxia::string::ToString(static_cast<unsigned int>(v_)); }
+		template<> daxia::string daxia::reflect::Reflect<int>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned int>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned long>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long long>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned long long>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long double>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<double>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<float>::ToString() const { return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<bool>::ToString() const { return v_ ? "true" : "false"; }
+		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.c_str()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_).ToAnsi().GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.ToAnsi().GetString()); return str; }
+
+		template<class ValueType>
+		void daxia::reflect::Reflect<ValueType>::init()
+		{
+			// buildLayout
+			if (std::is_class<ValueType>::value 
+				&& !std::is_same<ValueType, std::string>::value
+				&& !std::is_same<ValueType, std::wstring>::value
+				&& !std::is_same<ValueType, daxia::string>::value
+				&& !std::is_same<ValueType, daxia::wstring>::value
+				)
+			{
+				layoutLocker_.lock();
+
+				if (layout_.empty())
+				{
+					const char* start = reinterpret_cast<const char*>(&this->v_);
+					const char* end = reinterpret_cast<const char*>(&this->v_) + sizeof(ValueType);
+					buildLayout(start, start, end, layout_, nullptr);
+				}
+
+				layoutLocker_.unlock();
+			}
+		}
+
+		template<class ValueType>
+		void daxia::reflect::Reflect<ValueType>::buildLayout(const char* baseaddr, const char* start, const char* end, boost::property_tree::ptree& rootLayout, ArrayInfo* parentArray) const
+		{
+			try
+			{
+				for (; start < end; ++start)
+				{
+					const Reflect_base* reflectBase = nullptr;
+
+					// 根据前4个字节判断是不是Reflect_helper
+					// 如果省略这一步，MSVC编译器工作正常
+					// gcc dynamic_cast 会报segmentation fault
+					if (!Reflect_helper::IsValidReflect(start)) continue;
+
+					try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
+					catch (const std::exception&){}
+
+					if (reflectBase == nullptr) continue;
+
+					boost::property_tree::ptree childLayout;
+					childLayout.put(REFLECT_LAYOUT_FIELD_HASH, reflectBase->Type().hash_code());
+					childLayout.put(REFLECT_LAYOUT_FIELD_OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
+					rootLayout.put_child(reflectBase->Tags().GetString(), childLayout);
+
+					start += reflectBase->Size() - 1;
+				}
+			}
+			catch (boost::property_tree::ptree_error)
+			{
+
+			}
+		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// 针对std::vector<ValueType>进行特化
@@ -215,20 +244,26 @@ namespace daxia
 				std::vector<ValueType> temp(count, tempValue);
 				std::swap(temp, v_);
 			}
+			virtual daxia::string ToString() const override { return daxia::string(); }
 			std::vector<ValueType>& Value(){ return v_; }
 			const std::vector<ValueType>& Value() const { return v_; }
 		private:
 			// 数组信息
 			struct ArrayInfo
 			{
-				std::string firstTag;
+				daxia::string firstTag;
 				boost::property_tree::ptree layout;
 			};
 
 			void init()
 			{
 				// buildLayout
-				if (std::is_class<ValueType>::value && !std::is_same<ValueType, std::string>::value)
+				if (std::is_class<ValueType>::value 
+					&& !std::is_same<ValueType, std::string>::value
+					&& !std::is_same<ValueType, std::wstring>::value
+					&& !std::is_same<ValueType, daxia::string>::value
+					&& !std::is_same<ValueType, daxia::wstring>::value
+					)
 				{
 					layoutLocker_.lock();
 

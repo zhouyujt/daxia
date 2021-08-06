@@ -60,6 +60,7 @@ namespace daxia
 			virtual const void* ValueAddr() const = 0;
 			virtual void ResizeArray(size_t count) = 0;
 			virtual bool IsArray() const = 0;
+			virtual daxia::string ToString() const = 0;
 		public:
 			size_t Size() const{ return size_; }
 			const std::type_info& Type() const { return typeInfo_; }
