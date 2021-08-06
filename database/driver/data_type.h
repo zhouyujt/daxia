@@ -56,6 +56,16 @@ namespace daxia
 				{
 					return v_;
 				}
+			public:
+				ValueType& Value()
+				{
+					return v_;
+				}
+
+				const ValueType& Value() const
+				{
+					return v_;
+				}
 			private:
 				ValueType v_;
 			};
