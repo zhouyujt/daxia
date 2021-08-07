@@ -18,7 +18,6 @@
 
 #include <string>
 #include <vector>
-#include <mutex>
 #include <sstream>
 #include "reflect_base.h" 
 
@@ -33,13 +32,13 @@ namespace daxia
 			Reflect()
 				: Reflect_base(nullptr)
 			{
-				init();
+				static InitHelper initHelper(&this->v_);
 			}
 
 			Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
-				init();
+				static InitHelper initHelper(&this->v_);
 			}
 
 			~Reflect(){}
@@ -91,18 +90,44 @@ namespace daxia
 				Layout layout;
 			};
 
-			void init();
-			void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields) const;
+			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
 		private:
 			ValueType v_;
 			static reflect::Layout layout_;
-			static std::mutex layoutLocker_;
+			class InitHelper
+			{
+			public:
+				InitHelper(const void* baseaddr)
+				{
+					if (!std::is_class<ValueType>::value
+						|| std::is_same<ValueType, std::string>::value
+						|| std::is_same<ValueType, std::wstring>::value
+						|| std::is_same<ValueType, daxia::string>::value
+						|| std::is_same<ValueType, daxia::wstring>::value
+						)
+						// value
+					{
+						layout_.Type() = reflect::Layout::value;
+						layout_.Size() = sizeof(ValueType);
+					}
+					else
+						// object
+					{
+						layout_.Type() = reflect::Layout::object;
+						layout_.Size() = sizeof(ValueType);
+						const char* start = reinterpret_cast<const char*>(baseaddr);
+						const char* end = start + sizeof(ValueType);
+						makeObjectFields(start, start, end, layout_.Fields());
+					}
+
+					// vector
+					// 特化处理
+				}
+			};
 		};// class Reflect
 
 		template<class ValueType>
 		reflect::Layout Reflect<ValueType>::layout_;
-		template<class ValueType>
-		std::mutex Reflect<ValueType>::layoutLocker_;
 
 		template<class ValueType> daxia::string daxia::reflect::Reflect<ValueType>::ToString() const { return daxia::string(); }
 		template<> daxia::string daxia::reflect::Reflect<char>::ToString() const { return daxia::string::ToString(static_cast<int>(v_)); }
@@ -123,41 +148,7 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.ToAnsi().GetString()); return str; }
 
 		template<class ValueType>
-		void daxia::reflect::Reflect<ValueType>::init()
-		{
-			layoutLocker_.lock();
-			if (layout_.Type() == reflect::Layout::unset)
-			{
-				if (!std::is_class<ValueType>::value
-					|| std::is_same<ValueType, std::string>::value
-					|| std::is_same<ValueType, std::wstring>::value
-					|| std::is_same<ValueType, daxia::string>::value
-					|| std::is_same<ValueType, daxia::wstring>::value
-					)
-					// value
-				{
-					layout_.Type() = reflect::Layout::value;
-					layout_.Size() = sizeof(ValueType);
-				}
-				else
-					// object
-				{
-					layout_.Type() = reflect::Layout::object;
-					layout_.Size() = sizeof(ValueType);
-					const char* start = reinterpret_cast<const char*>(&this->v_);
-					const char* end = reinterpret_cast<const char*>(&this->v_) + sizeof(ValueType);
-					makeObjectFields(start, start, end, layout_.Fields());
-				}
-
-				// vector
-				// 特化处理
-
-			}
-			layoutLocker_.unlock();
-		}
-
-		template<class ValueType>
-		void daxia::reflect::Reflect<ValueType>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields) const
+		void daxia::reflect::Reflect<ValueType>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields)
 		{
 			fields.clear();
 			for (; start < end; ++start)
@@ -193,13 +184,13 @@ namespace daxia
 			Reflect()
 				: Reflect_base(nullptr)
 			{
-				init();
+				static InitHelper initHelper;
 			}
 
 			Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
-				init();
+				static InitHelper initHelper;
 			}
 
 			~Reflect(){}
@@ -249,18 +240,28 @@ namespace daxia
 				daxia::string firstTag;
 				reflect::Layout layout;
 			};
-
-			void init();
 		private:
 			std::vector<ValueType> v_;
 			static reflect::Layout layout_;
-			static std::mutex layoutLocker_;
+			class InitHelper
+			{
+			public:
+				InitHelper()
+				{
+					// vector 类型保存元素的布局
+					layout_ = Reflect<ValueType>().GetLayout();
+
+					// 每个元素的大小
+					layout_.ElementSize() = sizeof(ValueType);
+
+					layout_.Type() = daxia::reflect::Layout::vecotr;
+					layout_.Size() = sizeof(std::vector<ValueType>);
+				}
+			};
 		};
 
 		template<class ValueType>
 		reflect::Layout Reflect<std::vector<ValueType>>::layout_;
-		template<class ValueType>
-		std::mutex Reflect<std::vector<ValueType>>::layoutLocker_;
 
 		template<class ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToStringOfElement(size_t index) const { return daxia::string(); }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<char>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(static_cast<int>(v_[index])); }
@@ -279,24 +280,6 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_[index]).ToAnsi().GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].ToAnsi().GetString()); return str; }
-
-		template<class ValueType>
-		void Reflect<std::vector<ValueType>>::init()
-		{
-			layoutLocker_.lock();
-			if (layout_.Type() == daxia::reflect::Layout::unset)
-			{
-				// vector 类型保存元素的布局
-				layout_ = Reflect<ValueType>().GetLayout();
-
-				// 每个元素的大小
-				layout_.ElementSize() = sizeof(ValueType);
-
-				layout_.Type() = daxia::reflect::Layout::vecotr;
-				layout_.Size() = sizeof(std::vector<ValueType>);
-			}
-			layoutLocker_.unlock();
-		}
 
 		typedef Reflect<bool> Bool;
 		typedef Reflect<char> Char;
