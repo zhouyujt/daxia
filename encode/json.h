@@ -17,7 +17,6 @@
 #define BOOST_SPIRIT_THREADSAFE
 
 #include <string>
-#include <functional>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/lexical_cast.hpp>
 #include "../reflect/reflect.hpp"
@@ -48,7 +47,7 @@ namespace daxia
 				ptree root;
 				stringstream ss;
 				const char* baseaddr = reinterpret_cast<const char*>(&v);
-				marshal(baseaddr, layout, root, nullptr);
+				marshal(baseaddr, layout, root);
 				write_json(ss, root, pretty);
 
 				return ss.str();
@@ -193,11 +192,11 @@ namespace daxia
 
 		private:
 			// 使用内存布局缓存进行编码
-			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
-			static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root, ArrayInfo* parentArray);
-			static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
-			static void putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
-			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
+			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
+			static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root);
+			static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
+			static void putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root);
+			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root);
 
 			// 使用内存布局缓存进行解码
 			static void ummarshal(char* baseaddr,

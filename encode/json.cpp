@@ -1,7 +1,7 @@
 #define BOOST_SPIRIT_THREADSAFE
 
 #include <string>
-#include <functional>
+#include <memory>
 #include "json.h"
 
 #define JSON "json"
@@ -11,13 +11,19 @@ namespace daxia
 	namespace encode
 	{
 		// 使用内存布局缓存进行编码
-		void Json::marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray)
+		void Json::marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
 		{
 			using namespace std;
 			using namespace boost::property_tree;
 			using namespace daxia::reflect;
 
-			for (size_t elementIndex = 0; layout.ElementCount() ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
+			std::shared_ptr<boost::property_tree::ptree> arrayRoot;
+			if (layout.ElementCount() > 0)
+			{
+				arrayRoot = std::shared_ptr<boost::property_tree::ptree>(new boost::property_tree::ptree);
+			}
+			
+			for (size_t elementIndex = 0; arrayRoot ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
 			{
 				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 				{
@@ -34,63 +40,52 @@ namespace daxia
 					auto layout = reflectBase->GetLayout();
 					if (layout.Type() == Layout::value)
 					{
-						// 设置数组辅助信息
-						if (parentArray)
-						{
-							if (parentArray->firstTag.IsEmpty())
-							{
-								// 设置元素第一个字段的tag
-								parentArray->firstTag = tag;
-							}
-							else if (parentArray->firstTag == tag)
-							{
-								// 保存已经解析完毕的元素
-								root.push_back(std::make_pair("", parentArray->ptree));
-
-								// 清空元素
-								parentArray->ptree.clear();
-							}
-						}
-
-						putValue(reflectBase, tag, root, parentArray);
+						putValue(reflectBase, tag, arrayRoot ? *arrayRoot : root);
 					}
 					else if (layout.Type() == Layout::object)
 					{
-						putObject(reflectBase, tag, layout, root, parentArray);
+						putObject(reflectBase, tag, layout, arrayRoot ? *arrayRoot : root);
 					}
 					else if (layout.Type() == Layout::vecotr)
 					{
 						if (layout.Fields().empty())
 							// value
 						{
-							putValueElement(reflectBase, tag, root, parentArray);
+							putValueElement(reflectBase, tag, arrayRoot ? *arrayRoot : root);
 						}
 						else
 							// object
 						{
-							putObjectElement(reflectBase, tag, root, parentArray);
+							putObjectElement(reflectBase, tag, arrayRoot ? *arrayRoot : root);
 						}
 					}
+				}
+
+				// 设置数组辅助信息
+				if (arrayRoot)
+				{
+					// 保存已经解析完毕的元素
+					root.push_back(std::make_pair("", *arrayRoot));
+					// 清空元素
+					arrayRoot->clear();
 				}
 			}
 		}
 
-		void Json::putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root, ArrayInfo* parentArray)
+		void Json::putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root)
 		{
-			boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-			ptree.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
+			root.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
 		}
 
-		void Json::putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray)
+		void Json::putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
 		{
 			boost::property_tree::ptree child;
-			marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), layout, child, nullptr);
+			marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), layout, child);
 
-			boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-			ptree.put_child(static_cast<std::string>(tag), child);
+			root.put_child(static_cast<std::string>(tag), child);
 		}
 
-		void Json::putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray)
+		void Json::putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root)
 		{
 			using daxia::reflect::Reflect;
 			typedef char unknow;
@@ -119,11 +114,10 @@ namespace daxia
 				}
 			}
 
-			boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-			ptree.put_child(static_cast<std::string>(tag), child);
+			root.put_child(static_cast<std::string>(tag), child);
 		}
 
-		void Json::putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray)
+		void Json::putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root)
 		{
 			typedef char unknow;
 			using daxia::reflect::Reflect;
@@ -134,23 +128,17 @@ namespace daxia
 			daxia::reflect::Layout layout = reflectBase->GetLayout();
 			makeElementCount(reflectBase, layout);
 
-			ArrayInfo ai;
 			boost::property_tree::ptree child;
 			if (!array->Value().empty())
 			{
 				const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
 				if (baseaddr != nullptr)
 				{
-					marshal(baseaddr, layout, child, &ai);
+					marshal(baseaddr, layout, child);
 				}
 			}
 
-			// 保存解析完毕的元素
-			child.push_back(std::make_pair("", ai.ptree));
-
-			boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-
-			ptree.put_child(tag, child);
+			root.put_child(tag, child);
 		}
 
 		// 使用内存布局缓存进行解码
