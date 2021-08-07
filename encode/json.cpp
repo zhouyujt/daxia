@@ -24,7 +24,7 @@ namespace daxia
 					if (iter->hashcode == 0) continue;
 
 					const Reflect_base* reflectBase = nullptr;
-					try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + iter->offset)); }
+					try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + elementIndex * layout.ElementSize() + iter->offset)); }
 					catch (const std::exception&){}
 					if (reflectBase == nullptr) continue;
 
