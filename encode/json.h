@@ -42,12 +42,7 @@ namespace daxia
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();	// 直接读取静态变量，不走虚函数表，性能提升巨大
-				if (layout.Type() == reflect::Layout::unset)
-				{
-					// 初始化尚未初始化的布局
-					Reflect<ValueType>().GetLayout();
-				}
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				ptree root;
 				stringstream ss;

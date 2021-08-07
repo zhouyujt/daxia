@@ -37,7 +37,7 @@ namespace daxia
 					daxia::string tag = reflectBase->Tag(JSON);
 					if (tag.IsEmpty()) continue;
 
-					auto layout = reflectBase->GetLayout();
+					const Layout& layout = reflectBase->GetLayout();
 					if (layout.Type() == Layout::value)
 					{
 						putValue(reflectBase, tag, arrayRoot ? *arrayRoot : root);
