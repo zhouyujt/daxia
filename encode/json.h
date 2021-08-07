@@ -61,7 +61,7 @@ namespace daxia
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const ptree& layout = Reflect<ValueType>().Layout();
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				try
 				{
@@ -102,95 +102,6 @@ namespace daxia
 				boost::property_tree::ptree ptree;
 			};
 		private:
-			template<class T>
-			static bool tryGetValue(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root,
-				ArrayInfo* parentArray)
-			{
-				using daxia::reflect::Reflect_base;
-				using daxia::reflect::Reflect;
-
-				const Reflect_base* impl = nullptr;
-
-				size_t hash = 0;
-
-				try
-				{
-					impl = dynamic_cast<const Reflect<T>*>(reflectBase);
-				}
-				catch (const std::exception&) {}
-
-				if (impl == nullptr) return false;
-
-				try
-				{
-					daxia::string tag = impl->Tag(JSON);
-					if (!tag.IsEmpty())
-					{
-						T* p = static_cast<T*>(const_cast<void*>(impl->ValueAddr()));
-						if (parentArray)
-						{
-							if (parentArray->firstTag.IsEmpty())
-							{
-								// 设置元素第一个字段的tag
-								parentArray->firstTag = tag;
-							}
-							else if (parentArray->firstTag == tag)
-							{
-								// 删除已经保存过的元素
-								parentArray->ptree.erase(parentArray->ptree.begin());
-							}
-
-							if (!parentArray->ptree.empty())
-							{
-								*p = parentArray->ptree.begin()->second.get<T>(static_cast<std::string>(tag));
-							}
-						}
-						else
-						{
-							*p = root.get<T>(static_cast<std::string>(tag));
-						}
-					}
-				}
-				catch (const boost::property_tree::ptree_error&)
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-			template<class T>
-			static bool tryGetElement(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root)
-			{
-				using daxia::reflect::Reflect;
-
-				Reflect<std::vector<T>>* array = nullptr;
-
-				try
-				{
-					array = dynamic_cast<Reflect<std::vector<T>>*>(reflectBase);
-				}
-				catch (const std::exception&)
-				{
-					return false;
-				}
-
-				if (array == nullptr)
-				{
-					return false;
-				}
-
-				for (auto iter = root.begin(); iter != root.end(); ++iter)
-				{
-					array->Value().push_back(boost::lexical_cast<T>(iter->second.data()));
-				}
-
-				return true;
-			}
-
-		private:
 			// 使用内存布局缓存进行编码
 			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
 			static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root);
@@ -199,13 +110,9 @@ namespace daxia
 			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root);
 
 			// 使用内存布局缓存进行解码
-			static void ummarshal(char* baseaddr,
-				const daxia::reflect::Layout& layout,
-				const boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
-
+			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray); 
 			static void wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree);
-			static void getArray(daxia::reflect::Reflect_base* reflectBase,
+			static void getObjectElement(daxia::reflect::Reflect_base* reflectBase,
 				const boost::property_tree::ptree& root);
 
 			static void makeElementCount(const daxia::reflect::Reflect_base* reflectBase, daxia::reflect::Layout& layout);
