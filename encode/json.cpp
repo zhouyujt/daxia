@@ -104,7 +104,7 @@ namespace daxia
 				const unknow* end = begin + array->Value().size();
 				for (const unknow* iter = begin;
 					iter != end;
-					iter += reflectBase->SizeOfElement(), ++index)
+					iter += reflectBase->GetLayout().ElementSize(), ++index)
 				{
 					boost::property_tree::ptree tr;
 

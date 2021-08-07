@@ -77,8 +77,6 @@ namespace daxia
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToString() const override;
-			virtual size_t SizeOfElement() const override { throw "don't call this method!"; }
-			virtual const std::type_info& TypeOfElement() const override { throw "don't call this method!"; }
 			virtual daxia::string ToStringOfElement(size_t index) const override { throw "don't call this method!"; }
 
 			ValueType& Value(){ return v_; }
@@ -237,8 +235,6 @@ namespace daxia
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			virtual daxia::string ToString() const override { throw "don't call this method!"; }
-			virtual size_t SizeOfElement() const override { return sizeof(ValueType); }
-			virtual const std::type_info& TypeOfElement() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToStringOfElement(size_t index) const override;
 			std::vector<ValueType>& Value(){ return v_; }
 			const std::vector<ValueType>& Value() const { return v_; }

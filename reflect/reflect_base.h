@@ -100,8 +100,6 @@ namespace daxia
 			virtual size_t Size() const = 0;
 			virtual const std::type_info& Type() const = 0;
 			virtual daxia::string ToString() const = 0;
-			virtual size_t SizeOfElement() const = 0;
-			virtual const std::type_info& TypeOfElement() const = 0;
 			virtual daxia::string ToStringOfElement(size_t index) const = 0;
 		public:
 			const daxia::string& Tags() const { return tagsStr_; }
