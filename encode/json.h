@@ -25,10 +25,6 @@
 #include "../string.hpp"
 
 #define JSON "json"
-#define HASH "hash"
-#define OFFSET "offset"
-#define SIZE "size"
-
 namespace daxia
 {
 	namespace encode
@@ -47,7 +43,7 @@ namespace daxia
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const ptree& layout = Reflect<ValueType>().Layout();
+				const reflect::Layout& layout = Reflect<ValueType>().GetLayout();
 
 				ptree root;
 				stringstream ss;
@@ -197,19 +193,15 @@ namespace daxia
 
 		private:
 			// 使用内存布局缓存进行编码
-			static void marshal(const char* baseaddr,
-				const boost::property_tree::ptree& layout,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
-
+			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
 			static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root, ArrayInfo* parentArray);
-			static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const boost::property_tree::ptree& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
+			static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root, ArrayInfo* parentArray);
 			static void putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
 			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root, ArrayInfo* parentArray);
 
 			// 使用内存布局缓存进行解码
 			static void ummarshal(char* baseaddr,
-				const boost::property_tree::ptree& layout,
+				const daxia::reflect::Layout& layout,
 				const boost::property_tree::ptree& root,
 				ArrayInfo* parentArray);
 
@@ -217,7 +209,7 @@ namespace daxia
 			static void getArray(daxia::reflect::Reflect_base* reflectBase,
 				const boost::property_tree::ptree& root);
 
-			static void extendArrayLayout(const daxia::reflect::Reflect_base* reflectBase, boost::property_tree::ptree& layout);
+			static void makeElementCount(const daxia::reflect::Reflect_base* reflectBase, daxia::reflect::Layout& layout);
 
 			// 由于boost::property_tree::write_json会将所有数据类型视为字符串类型，所以重写相关方法使之能区分不同类型
 		private:
@@ -351,8 +343,5 @@ namespace daxia
 }// namespace daxia
 
 #undef JSON
-#undef HASH
-#undef OFFSET
-#undef SIZE
 
 #endif // !__DAXIA_ENCODE_JSON_H

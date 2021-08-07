@@ -46,16 +46,16 @@ namespace daxia
 
 		}
 
-		daxia::string Orm::insert(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields)
+		daxia::string Orm::insert(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string tableName;
 			daxia::string fieldList;
 			daxia::string valueList;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -111,15 +111,15 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
-		daxia::string Orm::delette(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* condition)
+		daxia::string Orm::delette(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* condition)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string tableName;
 			daxia::string conditionList;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -173,15 +173,15 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
-		std::shared_ptr<Orm::Recordset> Orm::query(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix)
+		std::shared_ptr<Orm::Recordset> Orm::query(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string tableName;
 			daxia::string fieldList;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -219,16 +219,16 @@ namespace daxia
 			return command_->Excute(sql);
 		}
 
-		daxia::string Orm::update(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition)
+		daxia::string Orm::update(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string tableName;
 			daxia::string valueList;
 			daxia::string conditionList;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -282,7 +282,7 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
-		daxia::string Orm::create(const boost::property_tree::ptree& layout, const void* baseaddr)
+		daxia::string Orm::create(const daxia::reflect::Layout& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
 
@@ -290,9 +290,9 @@ namespace daxia
 			daxia::string fieldList;
 			daxia::string valueList;
 			std::vector<daxia::string> createIndex;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -431,14 +431,14 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
-		daxia::string Orm::drop(const boost::property_tree::ptree& layout, const void* baseaddr)
+		daxia::string Orm::drop(const daxia::reflect::Layout& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string tableName;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				// 构造表名
@@ -515,17 +515,15 @@ namespace daxia
 			return str;
 		}
 
-		daxia::string Orm::makeConditionByPrimaryKey(const boost::property_tree::ptree& layout, const void* baseaddr)
+		daxia::string Orm::makeConditionByPrimaryKey(const daxia::reflect::Layout& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
 
 			daxia::string condition;
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
-
 				const Reflect_base* reflectBase = nullptr;
-				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(reinterpret_cast<const char*>(baseaddr)+offset)); }
+				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(reinterpret_cast<const char*>(baseaddr)+iter->offset)); }
 				catch (const std::exception&){}
 				if (reflectBase == nullptr) continue;
 
@@ -544,14 +542,14 @@ namespace daxia
 			return condition;
 		}
 
-		void Orm::record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* baseaddr, const FieldFilter* fields)
+		void Orm::record2obj(std::shared_ptr<Recordset> recordset, const daxia::reflect::Layout& layout, void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;
 			using namespace daxia::database::driver;
 
-			for (boost::property_tree::ptree::const_iterator iter = layout.begin(); iter != layout.end(); ++iter)
+			for (std::vector<daxia::reflect::Field>::const_iterator iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0));
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
 				if (reflectBase == nullptr) continue;
 
 				daxia::string tag = reflectBase->Tag(ORM);

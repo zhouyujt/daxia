@@ -16,8 +16,7 @@
 #define __DAXIA_REFLECT_REFLECT_BASE_H
 
 #include <map>
-#include <mutex>
-#include <boost/property_tree/ptree.hpp>
+#include <vector>
 #include "../string.hpp"
 
 namespace daxia
@@ -31,6 +30,49 @@ namespace daxia
 			TypeFlag1 = 0xf56eb5c0,
 			TypeFlag2 = 0x17cced95,
 			TypeFlag3 = 0x4d1c97a9
+		};
+
+		struct Field
+		{
+			size_t hashcode;
+			size_t offset;
+			size_t size;
+			Field() : hashcode(0), offset(0), size(0){}
+		};
+
+		class Layout
+		{
+		public:
+			enum type
+			{
+				value,
+				object,
+				vecotr,
+				unset
+			};
+		public:
+			Layout() : type_(unset), size_(0), elementSize_(0){}
+			~Layout(){}
+		private:
+			std::vector<Field> fields_;
+			type type_;
+			size_t size_;
+
+			// 数组信息
+		private:
+			size_t elementSize_;	// 元素大小
+			size_t elementCount_;	// 元素个数
+		public:
+			const std::vector<Field>& Fields() const { return fields_; }
+			std::vector<Field>& Fields() { return fields_; }
+			type Type() const { return type_; }
+			type& Type() { return type_; }
+			size_t Size() const { return size_; }
+			size_t& Size() { return size_; }
+			size_t ElementSize() const { return elementSize_; }
+			size_t& ElementSize() { return elementSize_; }
+			size_t ElementCount() const { return elementCount_; }
+			size_t& ElementCount() { return elementCount_; }
 		};
 
 		class Reflect_helper
@@ -53,10 +95,8 @@ namespace daxia
 		protected:
 			Reflect_base& Swap(Reflect_base& r);
 		public:
-			virtual const boost::property_tree::ptree& Layout() const = 0;
+			virtual const Layout& GetLayout() const = 0;
 			virtual const void* ValueAddr() const = 0;
-			virtual void ResizeArray(size_t count) = 0;
-			virtual bool IsArray() const = 0;
 			virtual size_t Size() const = 0;
 			virtual const std::type_info& Type() const = 0;
 			virtual daxia::string ToString() const = 0;

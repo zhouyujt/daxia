@@ -18,12 +18,9 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 #include <sstream>
 #include "reflect_base.h" 
-
-#define REFLECT_LAYOUT_FIELD_HASH "hash_reflect_layout_field"
-#define REFLECT_LAYOUT_FIELD_OFFSET "offset_reflect_layout_field"
-#define REFLECT_LAYOUT_FIELD_SIZE "size_reflect_layout_field"
 
 namespace daxia
 {
@@ -75,10 +72,8 @@ namespace daxia
 				return *this;
 			}
 		public:
-			virtual const boost::property_tree::ptree& Layout() const override { return layout_; }
+			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			virtual const void* ValueAddr() const override { return &v_; }
-			virtual bool IsArray() const override { return false; }
-			virtual void ResizeArray(size_t count) override {/*do nothing*/ }
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToString() const override;
@@ -93,23 +88,19 @@ namespace daxia
 			struct ArrayInfo
 			{
 				std::string firstTag;
-				boost::property_tree::ptree layout;
+				Layout layout;
 			};
 
 			void init();
-			void buildLayout(const char* baseaddr,
-				const char* start,
-				const char* end,
-				boost::property_tree::ptree& rootLayout,
-				ArrayInfo* parentArray) const;
+			void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields) const;
 		private:
 			ValueType v_;
-			static boost::property_tree::ptree layout_;
+			static reflect::Layout layout_;
 			static std::mutex layoutLocker_;
 		};// class Reflect
 
 		template<class ValueType>
-		boost::property_tree::ptree Reflect<ValueType>::layout_;
+		reflect::Layout Reflect<ValueType>::layout_;
 		template<class ValueType>
 		std::mutex Reflect<ValueType>::layoutLocker_;
 
@@ -134,57 +125,62 @@ namespace daxia
 		template<class ValueType>
 		void daxia::reflect::Reflect<ValueType>::init()
 		{
-			// buildLayout
-			if (std::is_class<ValueType>::value 
-				&& !std::is_same<ValueType, std::string>::value
-				&& !std::is_same<ValueType, std::wstring>::value
-				&& !std::is_same<ValueType, daxia::string>::value
-				&& !std::is_same<ValueType, daxia::wstring>::value
-				)
+			layoutLocker_.lock();
+			if (layout_.Type() == reflect::Layout::unset)
 			{
-				layoutLocker_.lock();
-
-				if (layout_.empty())
+				if (!std::is_class<ValueType>::value
+					|| std::is_same<ValueType, std::string>::value
+					|| std::is_same<ValueType, std::wstring>::value
+					|| std::is_same<ValueType, daxia::string>::value
+					|| std::is_same<ValueType, daxia::wstring>::value
+					)
+					// value
 				{
+					layout_.Type() = reflect::Layout::value;
+					layout_.Size() = sizeof(ValueType);
+				}
+				else
+					// object
+				{
+					layout_.Type() = reflect::Layout::object;
+					layout_.Size() = sizeof(ValueType);
 					const char* start = reinterpret_cast<const char*>(&this->v_);
 					const char* end = reinterpret_cast<const char*>(&this->v_) + sizeof(ValueType);
-					buildLayout(start, start, end, layout_, nullptr);
+					makeObjectFields(start, start, end, layout_.Fields());
 				}
 
-				layoutLocker_.unlock();
+				// vector
+				// 特化处理
+
 			}
+			layoutLocker_.unlock();
 		}
 
 		template<class ValueType>
-		void daxia::reflect::Reflect<ValueType>::buildLayout(const char* baseaddr, const char* start, const char* end, boost::property_tree::ptree& rootLayout, ArrayInfo* parentArray) const
+		void daxia::reflect::Reflect<ValueType>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields) const
 		{
-			try
+			fields.clear();
+			for (; start < end; ++start)
 			{
-				for (; start < end; ++start)
-				{
-					const Reflect_base* reflectBase = nullptr;
+				const Reflect_base* reflectBase = nullptr;
 
-					// 根据前4个字节判断是不是Reflect_helper
-					// 如果省略这一步，MSVC编译器工作正常
-					// gcc dynamic_cast 会报segmentation fault
-					if (!Reflect_helper::IsValidReflect(start)) continue;
+				// 根据前4个字节判断是不是Reflect_helper
+				// 如果省略这一步，MSVC编译器工作正常
+				// gcc dynamic_cast 会报segmentation fault
+				if (!Reflect_helper::IsValidReflect(start)) continue;
 
-					try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
-					catch (const std::exception&){}
+				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
+				catch (const std::exception&){}
 
-					if (reflectBase == nullptr) continue;
+				if (reflectBase == nullptr) continue;
 
-					boost::property_tree::ptree childLayout;
-					childLayout.put(REFLECT_LAYOUT_FIELD_HASH, reflectBase->Type().hash_code());
-					childLayout.put(REFLECT_LAYOUT_FIELD_OFFSET, reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr));
-					rootLayout.put_child(reflectBase->Tags().GetString(), childLayout);
+				Field field;
+				field.hashcode = reflectBase->Type().hash_code();
+				field.offset = reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr);
+				field.size = reflectBase->Size();
+				fields.push_back(field);
 
-					start += reflectBase->Size() - 1;
-				}
-			}
-			catch (boost::property_tree::ptree_error)
-			{
-
+				start += reflectBase->Size() - 1;
 			}
 		}
 
@@ -236,15 +232,8 @@ namespace daxia
 				return *this;
 			}
 		public:
-			virtual const boost::property_tree::ptree& Layout() const override { return layout_; }
+			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			virtual const void* ValueAddr() const override { return &v_; }
-			virtual bool IsArray() const override { return true; }
-			virtual void ResizeArray(size_t count) override
-			{
-				ValueType tempValue;
-				std::vector<ValueType> temp(count, tempValue);
-				std::swap(temp, v_);
-			}
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			virtual daxia::string ToString() const override { throw "don't call this method!"; }
@@ -258,18 +247,18 @@ namespace daxia
 			struct ArrayInfo
 			{
 				daxia::string firstTag;
-				boost::property_tree::ptree layout;
+				reflect::Layout layout;
 			};
 
 			void init();
 		private:
 			std::vector<ValueType> v_;
-			static boost::property_tree::ptree layout_;
+			static reflect::Layout layout_;
 			static std::mutex layoutLocker_;
 		};
 
 		template<class ValueType>
-		boost::property_tree::ptree Reflect<std::vector<ValueType>>::layout_;
+		reflect::Layout Reflect<std::vector<ValueType>>::layout_;
 		template<class ValueType>
 		std::mutex Reflect<std::vector<ValueType>>::layoutLocker_;
 
@@ -294,27 +283,19 @@ namespace daxia
 		template<class ValueType>
 		void Reflect<std::vector<ValueType>>::init()
 		{
-			// buildLayout
-			if (std::is_class<ValueType>::value
-				&& !std::is_same<ValueType, std::string>::value
-				&& !std::is_same<ValueType, std::wstring>::value
-				&& !std::is_same<ValueType, daxia::string>::value
-				&& !std::is_same<ValueType, daxia::wstring>::value
-				)
+			layoutLocker_.lock();
+			if (layout_.Type() == daxia::reflect::Layout::unset)
 			{
-				layoutLocker_.lock();
+				// vector 类型保存元素的布局
+				layout_ = Reflect<ValueType>().GetLayout();
 
-				if (layout_.empty())
-				{
-					// vector 类型仅仅保存元素的布局
-					layout_ = Reflect<ValueType>().Layout();
+				// 每个元素的大小
+				layout_.ElementSize() = sizeof(ValueType);
 
-					// 每个元素的大小
-					if (!layout_.empty()) layout_.put(REFLECT_LAYOUT_FIELD_SIZE, sizeof(ValueType));
-				}
-
-				layoutLocker_.unlock();
+				layout_.Type() = daxia::reflect::Layout::vecotr;
+				layout_.Size() = sizeof(std::vector<ValueType>);
 			}
+			layoutLocker_.unlock();
 		}
 
 		typedef Reflect<bool> Bool;

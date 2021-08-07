@@ -23,8 +23,6 @@
 
 using  daxia::reflect::Reflect;
 
-#define OFFSET "offset"
-
 #define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpRequestHeaderIndex)
 #define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpResponseHeaderIndex)
 #define HTTP_STATUS_MAP(XX)						\
@@ -389,16 +387,15 @@ namespace daxia
 					template<class T>
 					void InitIndex(T& obj)
 					{
-						auto layout = obj.Layout();
-						for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+						auto layout = obj.GetLayout();
+						for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 						{
-							unsigned long offset = iter->second.get(OFFSET, 0);
 							const reflect::String* field = nullptr;
-							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(&obj.Value()) + offset)); }
+							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(&obj.Value()) + iter->offset)); }
 							catch (const std::exception&){}
 							if (field == nullptr) continue;
 
-							obj.Value().index_[daxia::string(field->Tag("http")).MakeLower()] = offset;
+							obj.Value().index_[daxia::string(field->Tag("http")).MakeLower()] = iter->offset;
 						}
 					}
 				public:

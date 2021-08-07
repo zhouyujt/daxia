@@ -247,17 +247,17 @@ namespace daxia
 			// Ö´ÐÐ¸ü¸´ÔÓµÄÃüÁî
 			std::shared_ptr<Recordset> Excute(const daxia::string& sql);
 		private:
-			daxia::string insert(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields);
-			daxia::string delette(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* condition);
-			std::shared_ptr<Recordset> query(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix);
-			daxia::string update(const boost::property_tree::ptree& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition);
-			daxia::string create(const boost::property_tree::ptree& layout, const void* baseaddr);
-			daxia::string drop(const boost::property_tree::ptree& layout, const void* baseaddr);
+			daxia::string insert(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields);
+			daxia::string delette(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* condition);
+			std::shared_ptr<Recordset> query(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix);
+			daxia::string update(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition);
+			daxia::string create(const daxia::reflect::Layout& layout, const void* baseaddr);
+			daxia::string drop(const daxia::reflect::Layout& layout, const void* baseaddr);
 		private:
 			static const daxia::reflect::Reflect_base* cast(const void* baseaddr, unsigned long offset);
 			static daxia::string tostring(const daxia::reflect::Reflect_base* reflectBase);
-			static daxia::string makeConditionByPrimaryKey(const boost::property_tree::ptree& layout, const void* baseaddr);
-			static void record2obj(std::shared_ptr<Recordset> recordset, const boost::property_tree::ptree& layout, void* baseaddr, const FieldFilter* fields = nullptr);
+			static daxia::string makeConditionByPrimaryKey(const daxia::reflect::Layout& layout, const void* baseaddr);
+			static void record2obj(std::shared_ptr<Recordset> recordset, const daxia::reflect::Layout& layout, void* baseaddr, const FieldFilter* fields = nullptr);
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
