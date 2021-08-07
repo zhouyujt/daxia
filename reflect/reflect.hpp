@@ -32,13 +32,13 @@ namespace daxia
 			Reflect()
 				: Reflect_base(nullptr)
 			{
-				static InitHelper initHelper(&this->v_);
+				init(&this->v_);
 			}
 
 			Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
-				static InitHelper initHelper(&this->v_);
+				init(&this->v_);
 			}
 
 			~Reflect(){}
@@ -72,6 +72,7 @@ namespace daxia
 			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
+			static reflect::Layout& GetLayoutFast() { return layout_; }
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
@@ -90,6 +91,7 @@ namespace daxia
 				Layout layout;
 			};
 
+			static void init(const void* baseaddr);
 			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
 		private:
 			ValueType v_;
@@ -147,6 +149,13 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.ToAnsi().GetString()); return str; }
 
+
+		template<class ValueType>
+		void daxia::reflect::Reflect<ValueType>::init(const void* baseaddr)
+		{
+			static InitHelper initHelper(baseaddr);
+		}
+
 		template<class ValueType>
 		void daxia::reflect::Reflect<ValueType>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields)
 		{
@@ -184,13 +193,13 @@ namespace daxia
 			Reflect()
 				: Reflect_base(nullptr)
 			{
-				static InitHelper initHelper;
+				init();
 			}
 
 			Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
-				static InitHelper initHelper;
+				init();
 			}
 
 			~Reflect(){}
@@ -240,6 +249,8 @@ namespace daxia
 				daxia::string firstTag;
 				reflect::Layout layout;
 			};
+
+			static void init();
 		private:
 			std::vector<ValueType> v_;
 			static reflect::Layout layout_;
@@ -280,6 +291,12 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_[index]).ToAnsi().GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].ToAnsi().GetString()); return str; }
+
+		template<class ValueType>
+		void daxia::reflect::Reflect<std::vector<ValueType>>::init()
+		{
+			static InitHelper initHelper;
+		}
 
 		typedef Reflect<bool> Bool;
 		typedef Reflect<char> Char;
