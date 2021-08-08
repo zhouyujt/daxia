@@ -142,7 +142,7 @@ namespace daxia
 		}
 
 		// 使用内存布局缓存进行解码
-		void Json::ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray)
+		void Json::ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray, bool utf8)
 		{
 			using namespace daxia::reflect;
 
@@ -185,24 +185,30 @@ namespace daxia
 
 							if (!parentArray->ptree.empty())
 							{
-								reflectBase->FromString(parentArray->ptree.begin()->second.get<std::string>(static_cast<std::string>(tag)));
+								daxia::string str(parentArray->ptree.begin()->second.get<std::string>(static_cast<std::string>(tag)));
+								str.Utf8() = true;
+								if (!utf8) str = str.ToAnsi();
+								reflectBase->FromString(str);
 							}
 						}
 						else
 						{
-							reflectBase->FromString(root.get<std::string>(static_cast<std::string>(tag)));
+							daxia::string str(root.get<std::string>(static_cast<std::string>(tag)));
+							str.Utf8() = true;
+							if (!utf8) str = str.ToAnsi();
+							reflectBase->FromString(str);
 						}
 					}
 					else if (layout.Type() == Layout::object)
 					{
 						if (parentArray == nullptr)
 						{
-							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), nullptr);
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), nullptr,utf8);
 						}
 						else
 						{
 							auto elemetIter = parentArray->ptree.begin();
-							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), elemetIter->second.get_child(static_cast<std::string>(tag)), nullptr);
+							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), elemetIter->second.get_child(static_cast<std::string>(tag)), nullptr,utf8);
 						}
 					}
 					else if (layout.Type() == Layout::vecotr)
@@ -227,13 +233,16 @@ namespace daxia
 
 							for (auto iter = child.begin(); iter != child.end(); ++iter)
 							{
-								reflectBase->FromStringOfElement(iter->second.data());
+								daxia::string str(iter->second.data());
+								str.Utf8() = true;
+								if (!utf8) str = str.ToAnsi();
+								reflectBase->FromStringOfElement(str);
 							}
 						}
 						else
 							// object
 						{
-							getObjectElement(reflectBase, child);
+							getObjectElement(reflectBase, child, utf8);
 						}
 					}
 
@@ -241,44 +250,7 @@ namespace daxia
 			}
 		}
 
-		void Json::wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree)
-		{
-			for (auto iter = wptree.begin(); iter != wptree.end(); ++iter)
-			{
-				std::string first = Strconv::Unicode2Ansi(iter->first.c_str());
-				if (iter->second.empty()) // value
-				{
-					const std::wstring& val = iter->second.get_value<std::wstring>();
-					std::string val2 = Strconv::Unicode2Ansi(val.c_str());
-					if (first.empty())
-					{
-						boost::property_tree::ptree child;
-						child.put_value(val2);
-						ptree.push_back(make_pair("", child));
-					}
-					else
-					{
-						ptree.put(first, val2);
-					}
-				}
-				else // object or array
-				{
-					boost::property_tree::ptree child;
-					wptree2ptree(iter->second, child);
-					if (!first.empty())
-					{
-						ptree.put_child(first, child);
-					}
-					else
-					{
-						ptree.push_back(make_pair("", child));
-					}
-				}
-			}
-		}
-
-		void Json::getObjectElement(daxia::reflect::Reflect_base* reflectBase,
-			const boost::property_tree::ptree& root)
+		void Json::getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
 		{
 			if (root.empty()) return;
 
@@ -295,7 +267,7 @@ namespace daxia
 			ArrayInfo ai;
 			ai.ptree = root;
 
-			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, &ai);
+			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, &ai, utf8);
 		}
 
 		void Json::makeElementCount(const daxia::reflect::Reflect_base* reflectBase, daxia::reflect::Layout& layout)

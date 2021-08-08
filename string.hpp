@@ -76,6 +76,7 @@ namespace daxia
 
 		// ±àÂë×ª»»
 		bool& Utf8() { return utf8_; }
+		bool Utf8() const { return utf8_; }
 		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > ToUnicode() const;
 		inline String_base< char, std::char_traits<char>, std::allocator<char> > ToAnsi() const;
 		inline String_base< char, std::char_traits<char>, std::allocator<char> > ToUtf8() const;

@@ -34,8 +34,10 @@ namespace daxia
 			Json() = delete;
 			~Json(){}
 		public:
+			// 将指定的对象编码为json字符串
+			// 字符串编码类型（ utf8 或 ansi ）跟对象内部使用的编码一致
 			template<class ValueType>
-			static daxia::string Marshal(const ValueType& v, bool pretty = false)
+			static daxia::string Marshal(const ValueType& v, bool pretty = false/*是否换行*/)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
@@ -53,8 +55,10 @@ namespace daxia
 				return ss.str();
 			}
 
+			// 将json字符串解码到对象
+			// 对象内字符串编码跟json字符串编码一致
 			template<class ValueType>
-			static bool Unmarshal(const daxia::wstring& jsonStr, ValueType& v)
+			static bool Unmarshal(const daxia::string& json, ValueType& v)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
@@ -65,21 +69,11 @@ namespace daxia
 
 				try
 				{
-					wptree root;
-					wstringstream ss(jsonStr.GetString());
+					ptree root;
+					stringstream ss(json.Utf8() ? static_cast<std::string>(json) : static_cast<std::string>(json.ToUtf8()));
 					json_parser::read_json(ss, root);
 
-					// wptree => ptree
-					ptree root2;
-					wptree2ptree(root, root2);
-
-					//std::stringstream ss1;
-					//std::string s;
-					//write_json(ss1, root2, true);
-					//s = ss1.str();
-					//std::cout << s;
-
-					ummarshal(reinterpret_cast<char*>(&v), layout, root2, nullptr);
+					ummarshal(reinterpret_cast<char*>(&v), layout, root, nullptr, json.Utf8());
 				}
 				catch (const boost::property_tree::ptree_error&)
 				{
@@ -87,12 +81,6 @@ namespace daxia
 				}
 
 				return true;
-			}
-
-			template<class ValueType>
-			static bool Unmarshal(const daxia::string& jsonStr, ValueType& v)
-			{
-				return Unmarshal(jsonStr.ToUnicode(), v);
 			}
 
 			// 数组信息
@@ -110,10 +98,8 @@ namespace daxia
 			static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root);
 
 			// 使用内存布局缓存进行解码
-			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray); 
-			static void wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree);
-			static void getObjectElement(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root);
+			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray, bool utf8);
+			static void getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
 
 			static void makeElementCount(const daxia::reflect::Reflect_base* reflectBase, daxia::reflect::Layout& layout);
 
