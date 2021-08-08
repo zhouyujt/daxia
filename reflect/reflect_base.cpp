@@ -35,85 +35,44 @@ namespace daxia
 					return true;
 				}
 			}
-			
+
 			return false;
 		}
 
+
 		Reflect_base::Reflect_base()
-			: size_(0)
-			, typeInfo_(typeid(void))
 		{
-		}
-
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
-		{
-		}
-
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
-		{
-			if (!tags.IsEmpty())
-			{
-				tagsStr_ = tags;
-			}
-			parseTag(tags);
-		}
-
-		Reflect_base::Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags)
-			: size_(size)
-			, typeInfo_(typeinfo)
-			, tagsStr_("-")
-		{
-			if (tags != nullptr)
-			{
-				tagsStr_ = tags;
-			}
-			parseTag(tags);
 		}
 
 		Reflect_base::~Reflect_base(){}
 
-		Reflect_base& Reflect_base::Swap(Reflect_base& r)
+		daxia::string Reflect_base::tag(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags)
 		{
-			std::swap(size_, r.size_);
-			//std::swap(typeinfo_, r.typeinfo_);
-			std::swap(tags_, r.tags_);
+			daxia::string result;
 
-			return *this;
-		}
-
-		daxia::string Reflect_base::Tag(const daxia::string& prefix) const
-		{
-			daxia::string tag;
-
-			auto iter = tags_.find(prefix);
-			if (iter != tags_.end())
+			auto iter = tags.find(prefix);
+			if (iter != tags.end())
 			{
 				size_t pos = 0;
-				tag = iter->second.Tokenize(" ",pos);
+				result = iter->second.Tokenize(" ", pos);
 			}
 
-			return tag;
-		};
+			return result;
+		}
 
-		std::map<daxia::string, daxia::string> Reflect_base::TagAttribute(const daxia::string& prefix) const
+		std::map<daxia::string, daxia::string> Reflect_base::tagAttribute(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags)
 		{
 			daxia::string tag;
 			daxia::string attributeString;
 
-			auto iter = tags_.find(prefix);
-			if (iter != tags_.end())
+			auto iter = tags.find(prefix);
+			if (iter != tags.end())
 			{
 				size_t pos = 0;
 				tag = iter->second.Tokenize(" ", pos);
 				attributeString = iter->second.Mid(pos, -1);
 			}
-			
+
 			std::vector<daxia::string> attributes;
 			attributeString.Split(" ", attributes);
 			std::map<daxia::string, daxia::string> result;
@@ -128,8 +87,10 @@ namespace daxia
 			return result;
 		}
 
-		void Reflect_base::parseTag(const daxia::string& str)
+		std::map<daxia::string, daxia::string> Reflect_base::parseTag(const daxia::string& str)
 		{
+			std::map<daxia::string, daxia::string> result;
+
 			daxia::wstring tagStr = str.ToUnicode();
 			tagStr.Trim();
 
@@ -159,13 +120,15 @@ namespace daxia
 						attribute.Delete(attribute.GetLength() - 1);
 					}
 
-					tags_[prefix.ToAnsi()] = (name + L" " + attribute).ToAnsi();
+					result[prefix.ToAnsi()] = (name + L" " + attribute).ToAnsi();
 				}
 				else
 				{
-					tags_[prefix.ToAnsi()] = name.ToAnsi();
+					result[prefix.ToAnsi()] = name.ToAnsi();
 				}
 			}
+
+			return result;
 		}
 	}// namespace reflect
 }// namespace daxia

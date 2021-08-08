@@ -16,8 +16,7 @@
 #define __DAXIA_REFLECT_REFLECT_BASE_H
 
 #include <map>
-#include <mutex>
-#include <boost/property_tree/ptree.hpp>
+#include <vector>
 #include "../string.hpp"
 
 namespace daxia
@@ -31,6 +30,49 @@ namespace daxia
 			TypeFlag1 = 0xf56eb5c0,
 			TypeFlag2 = 0x17cced95,
 			TypeFlag3 = 0x4d1c97a9
+		};
+
+		struct Field
+		{
+			size_t hashcode;
+			size_t offset;
+			size_t size;
+			Field() : hashcode(0), offset(0), size(0){}
+		};
+
+		class Layout
+		{
+		public:
+			enum type
+			{
+				value,
+				object,
+				vecotr,
+				unset
+			};
+		public:
+			Layout() : type_(unset), size_(0), elementSize_(0){}
+			~Layout(){}
+		private:
+			std::vector<Field> fields_;
+			type type_;
+			size_t size_;
+
+			// 数组信息
+		private:
+			size_t elementSize_;	// 元素大小
+			size_t elementCount_;	// 元素个数
+		public:
+			const std::vector<Field>& Fields() const { return fields_; }
+			std::vector<Field>& Fields() { return fields_; }
+			type Type() const { return type_; }
+			type& Type() { return type_; }
+			size_t Size() const { return size_; }
+			size_t& Size() { return size_; }
+			size_t ElementSize() const { return elementSize_; }
+			size_t& ElementSize() { return elementSize_; }
+			size_t ElementCount() const { return elementCount_; }
+			size_t& ElementCount() { return elementCount_; }
 		};
 
 		class Reflect_helper
@@ -49,30 +91,24 @@ namespace daxia
 		{
 		protected:
 			Reflect_base();
-			Reflect_base(size_t size, const std::type_info& typeinfo);
-			Reflect_base(size_t size, const std::type_info& typeinfo, const daxia::string& tags);
-			Reflect_base(size_t size, const std::type_info& typeinfo, const char* tags);
 			virtual ~Reflect_base();
 		protected:
-			Reflect_base& Swap(Reflect_base& r);
+			static daxia::string tag(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags);
+			static std::map<daxia::string, daxia::string> tagAttribute(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags);
+			static std::map<daxia::string, daxia::string> parseTag(const daxia::string& str);
 		public:
-			virtual const boost::property_tree::ptree& Layout() const = 0;
+			virtual const Layout& GetLayout() const = 0;
 			virtual const void* ValueAddr() const = 0;
 			virtual void ResizeArray(size_t count) = 0;
-			virtual bool IsArray() const = 0;
-		public:
-			size_t Size() const{ return size_; }
-			const std::type_info& Type() const { return typeInfo_; }
-			const daxia::string& Tags() const { return tagsStr_; }
-			daxia::string Tag(const daxia::string& prefix) const;
-			std::map<daxia::string,daxia::string> TagAttribute(const daxia::string& prefix) const;
-		private:
-			void parseTag(const daxia::string& str);
-		private:
-			size_t size_;
-			const std::type_info& typeInfo_;
-			daxia::string tagsStr_;
-			std::map<daxia::string, daxia::string> tags_;
+			virtual size_t Size() const = 0;
+			virtual const std::type_info& Type() const = 0;
+			virtual daxia::string ToString() const = 0;
+			virtual daxia::string ToStringOfElement(size_t index) const = 0;
+			virtual void FromString(const daxia::string& str) = 0;
+			virtual void FromStringOfElement(const daxia::string&str) = 0;
+			virtual const daxia::string& Tags() const = 0;
+			virtual daxia::string Tag(const char* prefix) const = 0;
+			virtual std::map<daxia::string, daxia::string> TagAttribute(const char* prefix) const = 0;
 		};// class reflect_base
 	}// namespace reflect
 }// namespace daxia

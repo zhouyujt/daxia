@@ -231,7 +231,7 @@ namespace daxia
 					html += "<html>\r\n";
 					html += "<body>\r\n";
 					html += "hello world!<br/>\r\n";
-					html += "powered by net<br/>\r\n";
+					html += "powered by daxia<br/>\r\n";
 					html += "<a href=\"https://github.com/zhouyujt/daxia\">https://github.com/zhouyujt/daxia</a>\r\n";
 					html += "</body>\r\n";
 					html += "</html>\r\n";

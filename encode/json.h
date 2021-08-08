@@ -17,7 +17,6 @@
 #define BOOST_SPIRIT_THREADSAFE
 
 #include <string>
-#include <functional>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/lexical_cast.hpp>
 #include "../reflect/reflect.hpp"
@@ -25,10 +24,6 @@
 #include "../string.hpp"
 
 #define JSON "json"
-#define HASH "hash"
-#define OFFSET "offset"
-#define SIZE "size"
-
 namespace daxia
 {
 	namespace encode
@@ -39,52 +34,46 @@ namespace daxia
 			Json() = delete;
 			~Json(){}
 		public:
+			// 将指定的对象编码为json字符串
+			// 字符串编码类型（ utf8 或 ansi ）跟对象内部使用的编码一致
 			template<class ValueType>
-			static daxia::string Marshal(const ValueType& v, bool pretty = false)
+			static daxia::string Marshal(const ValueType& v, bool pretty = false/*是否换行*/)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const ptree& layout = Reflect<ValueType>().Layout();
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				ptree root;
 				stringstream ss;
 				const char* baseaddr = reinterpret_cast<const char*>(&v);
-				marshal(baseaddr, layout, root, nullptr);
+				marshal(baseaddr, layout, root);
 				write_json(ss, root, pretty);
 
 				return ss.str();
 			}
 
+			// 将json字符串解码到对象
+			// 对象内字符串编码跟json字符串编码一致
 			template<class ValueType>
-			static bool Unmarshal(const daxia::wstring& jsonStr, ValueType& v)
+			static bool Unmarshal(const daxia::string& json, ValueType& v)
 			{
 				using namespace std;
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const ptree& layout = Reflect<ValueType>().Layout();
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				try
 				{
-					wptree root;
-					wstringstream ss(jsonStr.GetString());
+					ptree root;
+					stringstream ss(json.Utf8() ? static_cast<std::string>(json) : static_cast<std::string>(json.ToUtf8()));
 					json_parser::read_json(ss, root);
 
-					// wptree => ptree
-					ptree root2;
-					wptree2ptree(root, root2);
-
-					//std::stringstream ss1;
-					//std::string s;
-					//write_json(ss1, root2, true);
-					//s = ss1.str();
-					//std::cout << s;
-
-					ummarshal(reinterpret_cast<char*>(&v), layout, root2, nullptr);
+					ummarshal(reinterpret_cast<char*>(&v), layout, root, json.Utf8());
 				}
 				catch (const boost::property_tree::ptree_error&)
 				{
@@ -93,274 +82,20 @@ namespace daxia
 
 				return true;
 			}
-
-			template<class ValueType>
-			static bool Unmarshal(const daxia::string& jsonStr, ValueType& v)
-			{
-				return Unmarshal(jsonStr.ToUnicode(), v);
-			}
-
-			// 数组信息
-			struct ArrayInfo
-			{
-				std::string firstTag;	// 数组元素第一个变量名称，用于判断一个元素填充完毕
-				boost::property_tree::ptree ptree;
-			};
-		private:
-			template<class T>
-			static bool tryPutValue(const char* baseaddr,
-				const daxia::reflect::Reflect_base* reflectBase,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray)
-			{
-				using daxia::reflect::Reflect_base;
-				using daxia::reflect::Reflect;
-
-				const Reflect_base* impl = nullptr;
-
-				size_t hash = 0;
-
-				try
-				{
-					impl = dynamic_cast<const Reflect<T>*>(reflectBase);
-				}
-				catch (const std::exception&) {}
-
-				if (impl == nullptr) return false;
-
-				try
-				{
-					const Reflect<T>& r = *(dynamic_cast<const Reflect<T>*>(impl));
-					std::string tag = r.Tag(JSON);
-					if (!tag.empty())
-					{
-						// 设置数组辅助信息
-						if (parentArray)
-						{
-							if (parentArray->firstTag.empty())
-							{
-								// 设置元素第一个字段的tag
-								parentArray->firstTag = tag;
-							}
-							else if (parentArray->firstTag == tag)
-							{
-								// 保存已经解析完毕的元素
-								root.push_back(std::make_pair("", parentArray->ptree));
-
-								// 清空元素
-								parentArray->ptree.clear();
-							}
-						}
-
-						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-
-						if (typeid(T) == typeid(std::string))
-						{
-							daxia::string temp(reinterpret_cast<const std::string&>(r.Value()));
-							temp.Replace("\\", "\\\\");
-							temp.Replace("\"", "\\\"");
-
-							std::string str = "\"";
-							str += temp.GetString();
-							str += "\"";
-							ptree.put(tag, str);
-						}
-						else
-						{
-							ptree.put(tag, r.Value());
-						}
-					}
-				}
-				catch (const boost::property_tree::ptree_error&)
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-			template<class T>
-			static bool tryGetValue(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root,
-				ArrayInfo* parentArray)
-			{
-				using daxia::reflect::Reflect_base;
-				using daxia::reflect::Reflect;
-
-				const Reflect_base* impl = nullptr;
-
-				size_t hash = 0;
-
-				try
-				{
-					impl = dynamic_cast<const Reflect<T>*>(reflectBase);
-				}
-				catch (const std::exception&) {}
-
-				if (impl == nullptr) return false;
-
-				try
-				{
-					std::string tag = impl->Tag(JSON);
-					if (!tag.empty())
-					{
-						T* p = static_cast<T*>(const_cast<void*>(impl->ValueAddr()));
-						if (parentArray)
-						{
-							if (parentArray->firstTag.empty())
-							{
-								// 设置元素第一个字段的tag
-								parentArray->firstTag = tag;
-							}
-							else if (parentArray->firstTag == tag)
-							{
-								// 删除已经保存过的元素
-								parentArray->ptree.erase(parentArray->ptree.begin());
-							}
-
-							if (!parentArray->ptree.empty())
-							{
-								*p = parentArray->ptree.begin()->second.get<T>(tag);
-							}
-						}
-						else
-						{
-							*p = root.get<T>(tag);
-						}
-					}
-				}
-				catch (const boost::property_tree::ptree_error&)
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-			template<class T>
-			static bool tryPutElement(const void* baseaddr,
-				const daxia::reflect::Reflect_base* reflectBase,
-				const std::string& tag,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray)
-			{
-				using daxia::reflect::Reflect;
-
-				const Reflect<std::vector<T>>* array = nullptr;
-
-				try
-				{
-					array = dynamic_cast<const Reflect<std::vector<T>>*>(reflectBase);
-				}
-				catch (const std::exception&)
-				{
-					return false;
-				}
-
-				if (array == nullptr)
-				{
-					return false;
-				}
-
-				boost::property_tree::ptree child;
-
-				try
-				{
-					if (array->Value().empty())
-					{
-						boost::property_tree::ptree tr;
-						child.push_back(make_pair("", tr));
-					}
-					else
-					{
-						for (auto iter = array->Value().begin(); iter != array->Value().end(); ++iter)
-						{
-							boost::property_tree::ptree tr;
-
-							if (typeid(T) == typeid(std::string))
-							{
-								std::string str = "\"";
-								const T& v = *iter;
-								str += reinterpret_cast<const std::string&>(v);
-								str += "\"";
-								tr.put_value(str);
-							}
-							else
-							{
-								tr.put_value(*iter);
-							}
-
-							child.push_back(make_pair("", tr));
-						}
-					}
-				}
-				catch (const boost::property_tree::ptree_error&)
-				{
-					return false;
-				}
-
-				boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-				ptree.put_child(tag, child);
-
-				return true;
-			}
-
-			template<class T>
-			static bool tryGetElement(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root)
-			{
-				using daxia::reflect::Reflect;
-
-				Reflect<std::vector<T>>* array = nullptr;
-
-				try
-				{
-					array = dynamic_cast<Reflect<std::vector<T>>*>(reflectBase);
-				}
-				catch (const std::exception&)
-				{
-					return false;
-				}
-
-				if (array == nullptr)
-				{
-					return false;
-				}
-
-				for (auto iter = root.begin(); iter != root.end(); ++iter)
-				{
-					array->Value().push_back(boost::lexical_cast<T>(iter->second.data()));
-				}
-
-				return true;
-			}
-
 		private:
 			// 使用内存布局缓存进行编码
-			static void marshal(const char* baseaddr,
-				const boost::property_tree::ptree& layout,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
+			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
+			inline static void putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root);
+			inline static void putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
+			inline static void putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root);
+			inline static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root);
 
 			// 使用内存布局缓存进行解码
-			static void ummarshal(char* baseaddr,
-				const boost::property_tree::ptree& layout,
-				const boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
-
-			static void wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree);
-
-			static void putArray(const daxia::reflect::Reflect_base* reflectBase,
-				const std::string& tag,
-				boost::property_tree::ptree& root,
-				ArrayInfo* parentArray);
-
-
-			static void getArray(daxia::reflect::Reflect_base* reflectBase,
-				const boost::property_tree::ptree& root);
-
-			static void extendArrayLayout(const daxia::reflect::Reflect_base* reflectBase, boost::property_tree::ptree& layout);
-
+			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, bool utf8);
+			inline static void getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
+			inline static void getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
+			inline static void getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
+			inline static void getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
 			// 由于boost::property_tree::write_json会将所有数据类型视为字符串类型，所以重写相关方法使之能区分不同类型
 		private:
 			template<class Ptree>
@@ -493,8 +228,5 @@ namespace daxia
 }// namespace daxia
 
 #undef JSON
-#undef HASH
-#undef OFFSET
-#undef SIZE
 
 #endif // !__DAXIA_ENCODE_JSON_H

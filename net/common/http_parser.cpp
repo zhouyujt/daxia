@@ -162,15 +162,14 @@ namespace daxia
 				}
 
 				// 设置Server
-				if (response->Server.Value().empty()) response->Server.Value() = "powered by net";
+				if (response->Server.Value().empty()) response->Server.Value() = "powered by daxia";
 
 				// 设置所有响应头
-				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.Layout();
-				for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayoutFast();
+				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 				{
-					unsigned long offset = iter->second.get<unsigned long>(OFFSET, 0);
 					const reflect::String* field = nullptr;
-					try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+offset)); }
+					try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+iter->offset)); }
 					catch (const std::exception&){}
 					if (field == nullptr) continue;
 

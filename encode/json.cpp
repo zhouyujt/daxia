@@ -1,7 +1,7 @@
 #define BOOST_SPIRIT_THREADSAFE
 
 #include <string>
-#include <functional>
+#include <memory>
 #include "json.h"
 
 #define JSON "json"
@@ -11,232 +11,113 @@ namespace daxia
 	namespace encode
 	{
 		// 使用内存布局缓存进行编码
-		void Json::marshal(const char* baseaddr,
-			const boost::property_tree::ptree& layout,
-			boost::property_tree::ptree& root,
-			ArrayInfo* parentArray)
+		void Json::marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
 		{
-			//std::stringstream ss1;
-			//std::string s1;
-			//write_json(ss1, layout, true);
-			//s1 = ss1.str();
-			//std::cout << s1;
-
 			using namespace std;
 			using namespace boost::property_tree;
-			using daxia::reflect::Reflect_helper;
-			using daxia::reflect::Reflect_base;
+			using namespace daxia::reflect;
+
+			std::shared_ptr<boost::property_tree::ptree> arrayRoot;
+			if (layout.ElementCount() > 0)
+			{
+				arrayRoot = std::shared_ptr<boost::property_tree::ptree>(new boost::property_tree::ptree);
+			}
+
+			for (size_t elementIndex = 0; arrayRoot ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
+			{
+				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
+				{
+					if (iter->hashcode == 0) continue;
+
+					const Reflect_base* reflectBase = nullptr;
+					try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + elementIndex * layout.ElementSize() + iter->offset)); }
+					catch (const std::exception&){}
+					if (reflectBase == nullptr) continue;
+
+					daxia::string tag = reflectBase->Tag(JSON);
+					if (tag.IsEmpty()) continue;
+
+					const Layout& layout = reflectBase->GetLayout();
+					if (layout.Type() == Layout::value)
+					{
+						putValue(reflectBase, tag, arrayRoot ? *arrayRoot : root);
+					}
+					else if (layout.Type() == Layout::object)
+					{
+						putObject(reflectBase, tag, layout, arrayRoot ? *arrayRoot : root);
+					}
+					else if (layout.Type() == Layout::vecotr)
+					{
+						if (layout.Fields().empty())
+							// value
+						{
+							putValueElement(reflectBase, tag, arrayRoot ? *arrayRoot : root);
+						}
+						else
+							// object
+						{
+							putObjectElement(reflectBase, tag, arrayRoot ? *arrayRoot : root);
+						}
+					}
+				}
+
+				// 设置数组辅助信息
+				if (arrayRoot)
+				{
+					// 保存已经解析完毕的元素
+					root.push_back(std::make_pair("", *arrayRoot));
+					// 清空元素
+					arrayRoot->clear();
+				}
+			}
+		}
+
+		void Json::putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root)
+		{
+			root.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString()));
+		}
+
+		void Json::putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
+		{
+			boost::property_tree::ptree child;
+			marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), layout, child);
+
+			root.put_child(static_cast<std::string>(tag), child);
+		}
+
+		void Json::putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root)
+		{
 			using daxia::reflect::Reflect;
+			typedef char unknow;
+			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
+			boost::property_tree::ptree child;
+			if (array->Value().empty())
 			{
-				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
-
-				if (hashcode == 0) continue;
-
-				const Reflect_base* reflectBase = nullptr;
-				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(baseaddr + offset)); }
-				catch (const std::exception&){}
-
-				if (reflectBase == nullptr) continue;
-
-				// value
-				if (tryPutValue<bool>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<char>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned char>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<short>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned short>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<int>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned int>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<long long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<unsigned long long>(baseaddr, reflectBase, root, parentArray)) continue;
-				if (tryPutValue<std::string>(baseaddr, reflectBase, root, parentArray)) continue;
-
-				// object or array
-				std::string tag = reflectBase->Tag(JSON);
-				if (!tag.empty())
+				boost::property_tree::ptree tr;
+				child.push_back(make_pair("", tr));
+			}
+			else
+			{
+				int index = 0;
+				const unknow* begin = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+				const unknow* end = begin + array->Value().size();
+				for (const unknow* iter = begin;
+					iter != end;
+					iter += reflectBase->GetLayout().ElementSize(), ++index)
 				{
-					if (reflectBase->IsArray())	// array
-					{
-						if (reflectBase->Layout().empty())
-						{
-							// array's element
-							if (tryPutElement<bool>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<char>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned char>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<short>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned short>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<int>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned int>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<unsigned long long>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-							if (tryPutElement<std::string>(baseaddr, reflectBase, tag, root, parentArray)) continue;
-						}
-						else
-						{
-							putArray(reflectBase, tag, root, parentArray);
-						}
-					}
-					else // object
-					{
-						ptree child;
-						marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), reflectBase->Layout(), child, nullptr);
+					boost::property_tree::ptree tr;
 
-						boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-						ptree.put_child(tag, child);
-					}
+					tr.put_value(static_cast<std::string>(reflectBase->ToStringOfElement(index)));
+
+					child.push_back(make_pair("", tr));
 				}
 			}
+
+			root.put_child(static_cast<std::string>(tag), child);
 		}
 
-		// 使用内存布局缓存进行解码
-		void Json::ummarshal(char* baseaddr,
-			const boost::property_tree::ptree& layout,
-			const boost::property_tree::ptree& root,
-			ArrayInfo* parentArray)
-		{
-			//std::stringstream ss1;
-			//std::string s1;
-			//write_json(ss1, layout, true);
-			//s1 = ss1.str();
-			//std::cout << s1;
-
-			using daxia::reflect::Reflect_helper;
-			using daxia::reflect::Reflect_base;
-
-			for (auto iter = layout.begin(); iter != layout.end(); ++iter)
-			{
-				//std::stringstream ss2;
-				//std::string s2;
-				//write_json(ss2, root, true);
-				//s2 = ss2.str();
-				//std::cout << s2;
-
-				size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-				unsigned long offset = iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0);
-
-				if (hashcode == 0) continue;
-
-				Reflect_base* reflectBase = nullptr;
-				try{ reflectBase = dynamic_cast<Reflect_base*>(reinterpret_cast<Reflect_helper*>(baseaddr + offset)); }
-				catch (const std::exception&){}
-
-				if (reflectBase == nullptr) continue;
-
-				if (tryGetValue<bool>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<char>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<unsigned char>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<short>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<unsigned short>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<int>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<unsigned int>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<long>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<unsigned long>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<long long>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<unsigned long long>(reflectBase, root, parentArray)) continue;
-				if (tryGetValue<std::string>(reflectBase, root, parentArray)) continue;
-
-				// object or array
-				std::string tag = reflectBase->Tag(JSON);
-				if (!tag.empty())
-				{
-					if (reflectBase->IsArray())	// array
-					{
-						const boost::property_tree::ptree* ptree = nullptr;
-						if (parentArray == nullptr)
-						{
-							ptree = &root.get_child(tag);
-						}
-						else
-						{
-							auto elemetIter = parentArray->ptree.begin();
-							ptree = &elemetIter->second.get_child(tag);
-						}
-
-						const boost::property_tree::ptree& child = *ptree;
-						if (reflectBase->Layout().empty())
-						{
-							// array's element
-							if (tryGetElement<bool>(reflectBase, child)) continue;
-							if (tryGetElement<char>(reflectBase, child)) continue;
-							if (tryGetElement<unsigned char>(reflectBase, child)) continue;
-							if (tryGetElement<short>(reflectBase, child)) continue;
-							if (tryGetElement<unsigned short>(reflectBase, child)) continue;
-							if (tryGetElement<int>(reflectBase, child)) continue;
-							if (tryGetElement<unsigned int>(reflectBase, child)) continue;
-							if (tryGetElement<long>(reflectBase, child)) continue;
-							if (tryGetElement<unsigned long>(reflectBase, child)) continue;
-							if (tryGetElement<long long>(reflectBase, child)) continue;
-							if (tryGetElement<unsigned long long>(reflectBase, child)) continue;
-							if (tryGetElement<std::string>(reflectBase, child)) continue;
-						}
-						else
-						{
-							getArray(reflectBase, child);
-						}
-					}
-					else // object
-					{
-						if (parentArray == nullptr)
-						{
-							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), root.get_child(tag), nullptr);
-						}
-						else
-						{
-							auto elemetIter = parentArray->ptree.begin();
-							ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->Layout(), elemetIter->second.get_child(tag), nullptr);
-						}
-					}
-				}
-
-			}
-		}
-
-		void Json::wptree2ptree(const boost::property_tree::wptree& wptree, boost::property_tree::ptree& ptree)
-		{
-			for (auto iter = wptree.begin(); iter != wptree.end(); ++iter)
-			{
-				std::string first = Strconv::Unicode2Ansi(iter->first.c_str());
-				if (iter->second.empty()) // value
-				{
-					const std::wstring& val = iter->second.get_value<std::wstring>();
-					std::string val2 = Strconv::Unicode2Ansi(val.c_str());
-					if (first.empty())
-					{
-						boost::property_tree::ptree child;
-						child.put_value(val2);
-						ptree.push_back(make_pair("", child));
-					}
-					else
-					{
-						ptree.put(first, val2);
-					}
-				}
-				else // object or array
-				{
-					boost::property_tree::ptree child;
-					wptree2ptree(iter->second, child);
-					if (!first.empty())
-					{
-						ptree.put_child(first, child);
-					}
-					else
-					{
-						ptree.push_back(make_pair("", child));
-					}
-				}
-			}
-		}
-
-		void Json::putArray(const daxia::reflect::Reflect_base* reflectBase,
-			const std::string& tag,
-			boost::property_tree::ptree& root,
-			ArrayInfo* parentArray)
+		void Json::putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root)
 		{
 			typedef char unknow;
 			using daxia::reflect::Reflect;
@@ -244,80 +125,137 @@ namespace daxia
 			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 
 			// 获取数组布局
-			boost::property_tree::ptree layout = reflectBase->Layout();
-			extendArrayLayout(reflectBase, layout);
+			daxia::reflect::Layout layout = reflectBase->GetLayout();
 
-			ArrayInfo ai;
+			// 计算元素个数
+			if (layout.ElementSize())
+			{
+				typedef char unknow;
+				using daxia::reflect::Reflect;
+				const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
+				layout.ElementCount() = array->Value().size() / layout.ElementSize();
+			}
+
 			boost::property_tree::ptree child;
 			if (!array->Value().empty())
 			{
 				const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
 				if (baseaddr != nullptr)
 				{
-					marshal(baseaddr, layout, child, &ai);
+					marshal(baseaddr, layout, child);
 				}
 			}
 
-			// 保存解析完毕的元素
-			child.push_back(std::make_pair("", ai.ptree));
-
-			boost::property_tree::ptree& ptree = parentArray ? parentArray->ptree : root;
-
-			ptree.put_child(tag, child);
+			root.put_child(tag, child);
 		}
 
-		void Json::getArray(daxia::reflect::Reflect_base* reflectBase,
-			const boost::property_tree::ptree& root)
+		// 使用内存布局缓存进行解码
+		void Json::ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, bool utf8)
+		{
+			using namespace daxia::reflect;
+
+			bool isVector = layout.ElementCount() > 0;
+
+			boost::property_tree::ptree::const_iterator rootIter = root.begin();
+			for (size_t elementIndex = 0; isVector ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
+			{
+				if (elementIndex) ++rootIter;
+				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
+				{
+					if (iter->hashcode == 0) continue;
+
+					Reflect_base* reflectBase = nullptr;
+					try{ reflectBase = dynamic_cast<Reflect_base*>(reinterpret_cast<Reflect_helper*>(baseaddr + elementIndex * layout.ElementSize() + iter->offset)); }
+					catch (const std::exception&){}
+
+					if (reflectBase == nullptr) continue;
+
+					daxia::string tag = reflectBase->Tag(JSON);
+					if (tag.IsEmpty()) continue;
+
+					const Layout& layout = reflectBase->GetLayout();
+					if (layout.Type() == Layout::value)
+					{
+						if (!isVector)
+						{
+							getValue(reflectBase, tag, root, utf8);
+						}
+						else
+						{
+							if (!root.empty())
+							{
+								daxia::string str(rootIter->second.get<std::string>(static_cast<std::string>(tag)));
+								str.Utf8() = true;
+								if (!utf8) str = str.ToAnsi();
+								reflectBase->FromString(str);
+							}
+						}
+					}
+					else if (layout.Type() == Layout::object)
+					{
+						getObject(reflectBase, tag, isVector ? rootIter->second : root, utf8);
+					}
+					else if (layout.Type() == Layout::vecotr)
+					{
+						if (layout.Fields().empty())
+							// value
+						{
+							getValueElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
+						}
+						else
+							// object
+						{
+							getObjectElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
+						}
+					}
+				}
+			}
+		}
+
+		void Json::getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
+		{
+			daxia::string str(root.get<std::string>(static_cast<std::string>(tag)));
+			str.Utf8() = true;
+			if (!utf8) str = str.ToAnsi();
+			reflectBase->FromString(str);
+		}
+
+		void Json::getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
+		{
+			ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), utf8);
+		}
+
+		void Json::getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
+		{
+			using namespace daxia::reflect;
+			typedef char unknow;
+			Reflect<std::vector<unknow>>* array = reinterpret_cast<Reflect<std::vector<unknow>>*>(reflectBase);
+
+			for (auto iter = root.begin(); iter != root.end(); ++iter)
+			{
+				daxia::string str(iter->second.data());
+				str.Utf8() = true;
+				if (!utf8) str = str.ToAnsi();
+				reflectBase->FromStringOfElement(str);
+			}
+		}
+
+		void Json::getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
 		{
 			if (root.empty()) return;
 
 			typedef char unknow;
-			using daxia::reflect::Reflect;
+			using namespace daxia::reflect;
 
 			Reflect<std::vector<unknow>>* array = reinterpret_cast<Reflect<std::vector<unknow>>*>(reflectBase);
 			reflectBase->ResizeArray(root.size());
 
 			// 获取数组布局
-			boost::property_tree::ptree layout = reflectBase->Layout();
-			extendArrayLayout(reflectBase, layout);
+			Layout layout = reflectBase->GetLayout();
+			layout.ElementCount() = root.size();
 
-			ArrayInfo ai;
-			ai.ptree = root;
-
-			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, &ai);
+			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, utf8);
 		}
-
-		void Json::extendArrayLayout(const daxia::reflect::Reflect_base* reflectBase, boost::property_tree::ptree& layout)
-		{
-			typedef char unknow;
-			using daxia::reflect::Reflect;
-
-			// 计算元素个数
-			size_t size = layout.get<size_t>(REFLECT_LAYOUT_FIELD_SIZE);
-			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
-			size_t count = array->Value().size() / size;
-
-			// 为所有元素扩展布局
-			layout.erase(REFLECT_LAYOUT_FIELD_SIZE);
-			auto attribleCount = layout.size();
-			for (size_t i = 1; i < count; ++i)
-			{
-				auto iter = layout.begin();
-				for (size_t j = 0; j < attribleCount; ++j, ++iter)
-				{
-					boost::property_tree::ptree child;
-
-					size_t hashcode = iter->second.get<size_t>(REFLECT_LAYOUT_FIELD_HASH, 0);
-					unsigned long offset = static_cast<unsigned long>(iter->second.get<unsigned long>(REFLECT_LAYOUT_FIELD_OFFSET, 0) + size * i);
-
-					child.put(REFLECT_LAYOUT_FIELD_HASH, hashcode);
-					child.put(REFLECT_LAYOUT_FIELD_OFFSET, offset);
-
-					layout.add_child(iter->first, child);
-				}
-			}
-		}
-
 	}// namespace encode
 }// namespace daxia
 

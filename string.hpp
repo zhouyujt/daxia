@@ -76,13 +76,14 @@ namespace daxia
 
 		// ±àÂë×ª»»
 		bool& Utf8() { return utf8_; }
+		bool Utf8() const { return utf8_; }
 		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > ToUnicode() const;
 		inline String_base< char, std::char_traits<char>, std::allocator<char> > ToAnsi() const;
 		inline String_base< char, std::char_traits<char>, std::allocator<char> > ToUtf8() const;
 
 		// Êý×Ö×ª»»
 		template<class T> static String_base ToString(T v);
-		template<class T> T NumericCast();
+		template<class T> T NumericCast() const;
 	public:
 		String_base& operator=(Elem ch)
 		{
@@ -226,15 +227,17 @@ namespace daxia
 		}
 	private:
 		size_t strlen(size_t maxCount = -1) const;
-		void cast(char& v);
-		void cast(int& v);
-		void cast(long& v);
-		void cast(unsigned long& v);
-		void cast(long long& v);
-		void cast(unsigned long long& v);
-		void cast(float& v);
-		void cast(double& v);
-		void cast(long double& v);
+		void cast(char& v) const;
+		void cast(unsigned char& v) const;
+		void cast(int& v) const;
+		void cast(unsigned int& v) const;
+		void cast(long& v) const;
+		void cast(unsigned long& v) const;
+		void cast(long long& v) const;
+		void cast(unsigned long long& v) const;
+		void cast(float& v) const;
+		void cast(double& v) const;
+		void cast(long double& v) const;
 		inline void initUtf8();
 	private:
 		std::basic_string<Elem, Traits, Alloc> v_;
@@ -688,7 +691,7 @@ namespace daxia
 
 	template<class Elem, class Traits, class Alloc>
 	template<class T>
-	T daxia::String_base<Elem, Traits, Alloc>::NumericCast()
+	T daxia::String_base<Elem, Traits, Alloc>::NumericCast() const
 	{
 		if (v_.empty())
 		{
@@ -720,55 +723,67 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(char& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(char& v) const
 	{
 		v = static_cast<char>(std::stoi(v_));
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(int& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned char& v) const
+	{
+		v = static_cast<unsigned char>(std::stoi(v_));
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(int& v) const
 	{
 		v = std::stoi(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(long& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned int& v) const
+	{
+		v = static_cast<unsigned int>(std::stoi(v_));
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long& v) const
 	{
 		v = std::stol(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long& v) const
 	{
 		v = std::stoul(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(long long& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long long& v) const
 	{
 		v = std::stoll(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long long& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(unsigned long long& v) const
 	{
 		v = std::stoull(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(float& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(float& v) const
 	{
 		v = std::stof(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(double& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(double& v) const
 	{
 		v = std::stod(v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
-	void daxia::String_base<Elem, Traits, Alloc>::cast(long double& v)
+	void daxia::String_base<Elem, Traits, Alloc>::cast(long double& v) const
 	{
 		v = std::stold(v_);
 	}
