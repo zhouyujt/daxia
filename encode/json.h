@@ -18,12 +18,9 @@
 
 #include <string>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/lexical_cast.hpp>
 #include "../reflect/reflect.hpp"
-#include "../encode/strconv.h"
 #include "../string.hpp"
 
-#define JSON "json"
 namespace daxia
 {
 	namespace encode
@@ -226,7 +223,5 @@ namespace daxia
 		};// class json
 	}// namespace encode
 }// namespace daxia
-
-#undef JSON
 
 #endif // !__DAXIA_ENCODE_JSON_H
