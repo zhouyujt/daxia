@@ -97,10 +97,13 @@ namespace daxia
 		public:
 			virtual const Layout& GetLayout() const = 0;
 			virtual const void* ValueAddr() const = 0;
+			virtual void ResizeArray(size_t count) = 0;
 			virtual size_t Size() const = 0;
 			virtual const std::type_info& Type() const = 0;
 			virtual daxia::string ToString() const = 0;
 			virtual daxia::string ToStringOfElement(size_t index) const = 0;
+			virtual void FromString(const daxia::string& str) = 0;
+			virtual void FromStringOfElement(const daxia::string&str) = 0;
 		public:
 			const daxia::string& Tags() const { return tagsStr_; }
 			daxia::string Tag(const daxia::string& prefix) const;

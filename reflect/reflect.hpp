@@ -75,9 +75,12 @@ namespace daxia
 			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<ValueType>(); } return layout_/*直接读取静态变量，不走虚函数表，性能提升巨大*/; }
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual size_t Size() const override { return sizeof(*this); }
+			virtual void ResizeArray(size_t count) override { throw "don't call this method!"; }
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToString() const override;
 			virtual daxia::string ToStringOfElement(size_t index) const override { throw "don't call this method!"; }
+			inline virtual void FromString(const daxia::string& str) override;
+			virtual void FromStringOfElement(const daxia::string&str) override  { throw "don't call this method!"; }
 
 			ValueType& Value(){ return v_; }
 			const ValueType& Value() const { return v_; }
@@ -147,6 +150,23 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.ToAnsi().GetString()); return str; }
 
+		template<class ValueType> void daxia::reflect::Reflect<ValueType>::FromString(const daxia::string& str) {}
+		template<> void daxia::reflect::Reflect<char>::FromString(const daxia::string& str) { v_ = str.NumericCast<char>(); }
+		template<> void daxia::reflect::Reflect<unsigned char>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned char>(); }
+		template<> void daxia::reflect::Reflect<int>::FromString(const daxia::string& str) { v_ = str.NumericCast<int>(); }
+		template<> void daxia::reflect::Reflect<unsigned int>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned int>(); }
+		template<> void daxia::reflect::Reflect<long>::FromString(const daxia::string& str) { v_ = str.NumericCast<long>(); }
+		template<> void daxia::reflect::Reflect<unsigned long>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned long>(); }
+		template<> void daxia::reflect::Reflect<long long>::FromString(const daxia::string& str) { v_ = str.NumericCast<long long>(); }
+		template<> void daxia::reflect::Reflect<unsigned long long>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned long long>(); }
+		template<> void daxia::reflect::Reflect<long double>::FromString(const daxia::string& str) { v_ = str.NumericCast<long double>(); }
+		template<> void daxia::reflect::Reflect<double>::FromString(const daxia::string& str) { v_ = str.NumericCast<double>(); }
+		template<> void daxia::reflect::Reflect<float>::FromString(const daxia::string& str) { v_ = str.NumericCast<float>(); }
+		template<> void daxia::reflect::Reflect<bool>::FromString(const daxia::string& str) { v_ = str.CompareNoCase("true") == 0; }
+		template<> void daxia::reflect::Reflect<std::string>::FromString(const daxia::string& str) { v_ = std::string(str.GetString()); }
+		template<> void daxia::reflect::Reflect<std::wstring>::FromString(const daxia::string& str) { v_ = std::wstring(str.ToUnicode().GetString()); }
+		template<> void daxia::reflect::Reflect<daxia::string>::FromString(const daxia::string& str) { v_ = str; }
+		template<> void daxia::reflect::Reflect<daxia::wstring>::FromString(const daxia::string& str) { v_ = str.ToUnicode(); }
 
 		template<class ValueType>
 		void daxia::reflect::Reflect<ValueType>::init(const void* baseaddr)
@@ -233,9 +253,12 @@ namespace daxia
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual size_t Size() const override { return sizeof(*this); }
+			virtual void ResizeArray(size_t count) override { ValueType tempValue; std::vector<ValueType> temp(count, tempValue); std::swap(temp, v_); }
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			virtual daxia::string ToString() const override { throw "don't call this method!"; }
 			inline virtual daxia::string ToStringOfElement(size_t index) const override;
+			virtual void FromString(const daxia::string& str) override { throw "don't call this method!"; }
+			inline virtual void FromStringOfElement(const daxia::string&str) override;
 			std::vector<ValueType>& Value(){ return v_; }
 			const std::vector<ValueType>& Value() const { return v_; }
 		private:
@@ -287,6 +310,24 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_[index]).ToAnsi().GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].GetString()); return str; }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str; str.Format("\"%s\"", v_[index].ToAnsi().GetString()); return str; }
+
+		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromStringOfElement(const daxia::string&str) {}
+		template<> void daxia::reflect::Reflect<std::vector<char>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<char>()); }
+		template<> void daxia::reflect::Reflect<std::vector<unsigned char>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned char>()); }
+		template<> void daxia::reflect::Reflect<std::vector<int>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<int>()); }
+		template<> void daxia::reflect::Reflect<std::vector<unsigned int>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned int>()); }
+		template<> void daxia::reflect::Reflect<std::vector<long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long>()); }
+		template<> void daxia::reflect::Reflect<std::vector<unsigned long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned long>()); }
+		template<> void daxia::reflect::Reflect<std::vector<long long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long long>()); }
+		template<> void daxia::reflect::Reflect<std::vector<unsigned long long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned long long>()); }
+		template<> void daxia::reflect::Reflect<std::vector<long double>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long double>()); }
+		template<> void daxia::reflect::Reflect<std::vector<double>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<double>()); }
+		template<> void daxia::reflect::Reflect<std::vector<float>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<float>()); }
+		template<> void daxia::reflect::Reflect<std::vector<bool>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.CompareNoCase("true") == 0); }
+		template<> void daxia::reflect::Reflect<std::vector<std::string>>::FromStringOfElement(const daxia::string&str) { v_.push_back(std::string(str.GetString() + 1, str.GetLength() - 2)); }
+		template<> void daxia::reflect::Reflect<std::vector<std::wstring>>::FromStringOfElement(const daxia::string&str) { v_.push_back(std::wstring(str.ToUnicode().GetString() + 1, str.ToUnicode().GetLength() - 2)); }
+		template<> void daxia::reflect::Reflect<std::vector<daxia::string>>::FromStringOfElement(const daxia::string&str) { v_.push_back(daxia::string(str.GetString() + 1, str.GetLength() - 2)); }
+		template<> void daxia::reflect::Reflect<std::vector<daxia::wstring>>::FromStringOfElement(const daxia::string&str) { v_.push_back(daxia::wstring(str.ToUnicode().GetString() + 1, str.ToUnicode().GetLength() - 2)); }
 
 		template<class ValueType>
 		void daxia::reflect::Reflect<std::vector<ValueType>>::init()
