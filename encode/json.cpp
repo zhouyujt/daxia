@@ -150,18 +150,16 @@ namespace daxia
 		}
 
 		// 使用内存布局缓存进行解码
-		void Json::ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray, bool utf8)
+		void Json::ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, bool utf8)
 		{
 			using namespace daxia::reflect;
 
-			std::shared_ptr<boost::property_tree::ptree> arrayRoot;
-			if (layout.ElementCount() > 0)
-			{
-				arrayRoot = std::shared_ptr<boost::property_tree::ptree>(new boost::property_tree::ptree);
-			}
+			bool isVector = layout.ElementCount() > 0;
 
-			for (size_t elementIndex = 0; arrayRoot ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
+			boost::property_tree::ptree::const_iterator rootIter = root.begin();
+			for (size_t elementIndex = 0; isVector ? elementIndex < layout.ElementCount() : elementIndex < 1; ++elementIndex)
 			{
+				if (elementIndex) ++rootIter;
 				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 				{
 					if (iter->hashcode == 0) continue;
@@ -178,88 +176,53 @@ namespace daxia
 					const Layout& layout = reflectBase->GetLayout();
 					if (layout.Type() == Layout::value)
 					{
-						getValue(reflectBase, tag, root, utf8, parentArray);
-
-					}
-					else if (layout.Type() == Layout::object)
-					{
-						getObject(reflectBase, tag, root, utf8, parentArray);
-
-					}
-					else if (layout.Type() == Layout::vecotr)
-					{
-						const boost::property_tree::ptree* ptree = nullptr;
-						if (parentArray == nullptr)
+						if (!isVector)
 						{
-							ptree = &root.get_child(static_cast<std::string>(tag));
+							getValue(reflectBase, tag, root, utf8);
 						}
 						else
 						{
-							auto elemetIter = parentArray->ptree.begin();
-							ptree = &elemetIter->second.get_child(static_cast<std::string>(tag));
+							if (!root.empty())
+							{
+								daxia::string str(rootIter->second.get<std::string>(static_cast<std::string>(tag)));
+								str.Utf8() = true;
+								if (!utf8) str = str.ToAnsi();
+								reflectBase->FromString(str);
+							}
 						}
-						const boost::property_tree::ptree& child = *ptree;
-
+					}
+					else if (layout.Type() == Layout::object)
+					{
+						getObject(reflectBase, tag, isVector ? rootIter->second : root, utf8);
+					}
+					else if (layout.Type() == Layout::vecotr)
+					{
 						if (layout.Fields().empty())
 							// value
 						{
-							getValueElement(reflectBase, child, utf8);
-
+							getValueElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
 						}
 						else
 							// object
 						{
-							getObjectElement(reflectBase, child, utf8);
+							getObjectElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
 						}
 					}
-
 				}
 			}
 		}
 
-		void Json::getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8, ArrayInfo* parentArray)
+		void Json::getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
 		{
-			if (parentArray)
-			{
-				if (parentArray->firstTag.IsEmpty())
-				{
-					// 设置元素第一个字段的tag
-					parentArray->firstTag = tag;
-				}
-				else if (parentArray->firstTag == tag)
-				{
-					// 删除已经保存过的元素
-					parentArray->ptree.erase(parentArray->ptree.begin());
-				}
-
-				if (!parentArray->ptree.empty())
-				{
-					daxia::string str(parentArray->ptree.begin()->second.get<std::string>(static_cast<std::string>(tag)));
-					str.Utf8() = true;
-					if (!utf8) str = str.ToAnsi();
-					reflectBase->FromString(str);
-				}
-			}
-			else
-			{
-				daxia::string str(root.get<std::string>(static_cast<std::string>(tag)));
-				str.Utf8() = true;
-				if (!utf8) str = str.ToAnsi();
-				reflectBase->FromString(str);
-			}
+			daxia::string str(root.get<std::string>(static_cast<std::string>(tag)));
+			str.Utf8() = true;
+			if (!utf8) str = str.ToAnsi();
+			reflectBase->FromString(str);
 		}
 
-		void Json::getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8, ArrayInfo* parentArray)
+		void Json::getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
 		{
-			if (parentArray == nullptr)
-			{
-				ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), nullptr, utf8);
-			}
-			else
-			{
-				auto elemetIter = parentArray->ptree.begin();
-				ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), elemetIter->second.get_child(static_cast<std::string>(tag)), nullptr, utf8);
-			}
+			ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), utf8);
 		}
 
 		void Json::getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
@@ -291,10 +254,7 @@ namespace daxia
 			Layout layout = reflectBase->GetLayout();
 			layout.ElementCount() = root.size();
 
-			ArrayInfo ai;
-			ai.ptree = root;
-
-			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, &ai, utf8);
+			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, utf8);
 		}
 	}// namespace encode
 }// namespace daxia

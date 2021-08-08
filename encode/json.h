@@ -73,7 +73,7 @@ namespace daxia
 					stringstream ss(json.Utf8() ? static_cast<std::string>(json) : static_cast<std::string>(json.ToUtf8()));
 					json_parser::read_json(ss, root);
 
-					ummarshal(reinterpret_cast<char*>(&v), layout, root, nullptr, json.Utf8());
+					ummarshal(reinterpret_cast<char*>(&v), layout, root, json.Utf8());
 				}
 				catch (const boost::property_tree::ptree_error&)
 				{
@@ -82,13 +82,6 @@ namespace daxia
 
 				return true;
 			}
-
-			// 数组信息
-			struct ArrayInfo
-			{
-				daxia::string firstTag;	// 数组元素第一个变量名称，用于判断一个元素填充完毕
-				boost::property_tree::ptree ptree;
-			};
 		private:
 			// 使用内存布局缓存进行编码
 			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
@@ -98,12 +91,11 @@ namespace daxia
 			inline static void putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root);
 
 			// 使用内存布局缓存进行解码
-			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, ArrayInfo* parentArray, bool utf8);
-			inline static void getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8, ArrayInfo* parentArray);
-			inline static void getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8, ArrayInfo* parentArray);
+			static void ummarshal(char* baseaddr, const daxia::reflect::Layout& layout, const boost::property_tree::ptree& root, bool utf8);
+			inline static void getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
+			inline static void getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
 			inline static void getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
 			inline static void getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
-
 			// 由于boost::property_tree::write_json会将所有数据类型视为字符串类型，所以重写相关方法使之能区分不同类型
 		private:
 			template<class Ptree>
