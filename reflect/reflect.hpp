@@ -253,7 +253,12 @@ namespace daxia
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual size_t Size() const override { return sizeof(*this); }
-			virtual void ResizeArray(size_t count) override { ValueType tempValue; std::vector<ValueType> temp(count, tempValue); std::swap(temp, v_); }
+			virtual void ResizeArray(size_t count) override 
+			{ 
+				static ValueType tempValue; 
+				std::vector<ValueType> temp(count, tempValue); 
+				std::swap(temp, v_); 
+			}
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			virtual daxia::string ToString() const override { throw "don't call this method!"; }
 			inline virtual daxia::string ToStringOfElement(size_t index) const override;
