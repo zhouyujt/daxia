@@ -165,7 +165,7 @@ namespace daxia
 				if (response->Server.Value().empty()) response->Server.Value() = "powered by daxia";
 
 				// 设置所有响应头
-				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayoutFast();
+				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayout();
 				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 				{
 					const reflect::String* field = nullptr;
