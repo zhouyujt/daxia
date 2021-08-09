@@ -206,7 +206,7 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return update(layout, &obj, fields, condition);
 			}
 
@@ -216,7 +216,7 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return create(layout, &obj);
 			}
 
@@ -226,7 +226,7 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return drop(layout, &obj);
 			}
 
