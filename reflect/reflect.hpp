@@ -18,8 +18,11 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <sstream>
+#include <functional>
 #include "reflect_base.h" 
+#include "../string.hpp"
 
 namespace daxia
 {
@@ -77,26 +80,22 @@ namespace daxia
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual void ResizeArray(size_t count) override { throw "don't call this method!"; }
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
-			inline virtual daxia::string ToString() const override;
-			virtual daxia::string ToStringOfElement(size_t index) const override { throw "don't call this method!"; }
-			inline virtual void FromString(const daxia::string& str) override;
-			virtual void FromStringOfElement(const daxia::string&str) override  { throw "don't call this method!"; }
-
+			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
+			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
 			ValueType& Value(){ return v_; }
 			const ValueType& Value() const { return v_; }
-		private:
-			// 数组信息
-			struct ArrayInfo
-			{
-				std::string firstTag;
-				Layout layout;
-			};
 
+			// 设置跟字符串相互转换的方法
+			static void SetToString(const char* tag, std::function<daxia::string(const void*)> func) { tostringFuncs_[tag] = func; }
+			static void SetFromString(const char* tag, std::function<void(const daxia::string&, void*)> func) { fromstringFuncs_[tag] = func; }
+		private:
 			static void init(const void* baseaddr);
 			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
 		private:
 			ValueType v_;
 			static reflect::Layout layout_;
+			static std::map<daxia::string, std::function<daxia::string(const void*)>> tostringFuncs_;
+			static std::map<daxia::string, std::function<void(const daxia::string&, void*)>> fromstringFuncs_;
 			class InitHelper
 			{
 			public:
@@ -129,44 +128,38 @@ namespace daxia
 			};
 		};// class Reflect
 
-		template<class ValueType>
-		reflect::Layout Reflect<ValueType>::layout_;
+		template<class ValueType> reflect::Layout Reflect<ValueType>::layout_;
+		template<class ValueType> std::map<daxia::string, std::function<daxia::string(const void*)>> Reflect<ValueType>::tostringFuncs_;
+		template<class ValueType> std::map<daxia::string, std::function<void(const daxia::string&, void*)>> Reflect<ValueType>::fromstringFuncs_;
 
-		template<class ValueType> daxia::string daxia::reflect::Reflect<ValueType>::ToString() const { return daxia::string(); }
-		template<> daxia::string daxia::reflect::Reflect<char>::ToString() const { return daxia::string::ToString(static_cast<int>(v_)); }
-		template<> daxia::string daxia::reflect::Reflect<unsigned char>::ToString() const { return daxia::string::ToString(static_cast<unsigned int>(v_)); }
-		template<> daxia::string daxia::reflect::Reflect<int>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<unsigned int>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<long>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<unsigned long>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<long long>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<unsigned long long>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<long double>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<double>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<float>::ToString() const { return daxia::string::ToString(v_); }
-		template<> daxia::string daxia::reflect::Reflect<bool>::ToString() const { return v_ ? "true" : "false"; }
-		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str("\""), temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str("\""), temp; temp = daxia::wstring(v_).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str("\""), temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str("\""), temp; temp = v_.ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<class ValueType> daxia::string daxia::reflect::Reflect<ValueType>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string(); }
+		template<> daxia::string daxia::reflect::Reflect<char>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<int>(v_)); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned char>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<unsigned int>(v_)); }
+		template<> daxia::string daxia::reflect::Reflect<int>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); }return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned int>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); }return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned long>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long long>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<unsigned long long>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<long double>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<double>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<float>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
+		template<> daxia::string daxia::reflect::Reflect<bool>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<int>(v_)); }
 
-		template<class ValueType> void daxia::reflect::Reflect<ValueType>::FromString(const daxia::string& str) {}
-		template<> void daxia::reflect::Reflect<char>::FromString(const daxia::string& str) { v_ = str.NumericCast<char>(); }
-		template<> void daxia::reflect::Reflect<unsigned char>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned char>(); }
-		template<> void daxia::reflect::Reflect<int>::FromString(const daxia::string& str) { v_ = str.NumericCast<int>(); }
-		template<> void daxia::reflect::Reflect<unsigned int>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned int>(); }
-		template<> void daxia::reflect::Reflect<long>::FromString(const daxia::string& str) { v_ = str.NumericCast<long>(); }
-		template<> void daxia::reflect::Reflect<unsigned long>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned long>(); }
-		template<> void daxia::reflect::Reflect<long long>::FromString(const daxia::string& str) { v_ = str.NumericCast<long long>(); }
-		template<> void daxia::reflect::Reflect<unsigned long long>::FromString(const daxia::string& str) { v_ = str.NumericCast<unsigned long long>(); }
-		template<> void daxia::reflect::Reflect<long double>::FromString(const daxia::string& str) { v_ = str.NumericCast<long double>(); }
-		template<> void daxia::reflect::Reflect<double>::FromString(const daxia::string& str) { v_ = str.NumericCast<double>(); }
-		template<> void daxia::reflect::Reflect<float>::FromString(const daxia::string& str) { v_ = str.NumericCast<float>(); }
-		template<> void daxia::reflect::Reflect<bool>::FromString(const daxia::string& str) { v_ = str.CompareNoCase("true") == 0; }
-		template<> void daxia::reflect::Reflect<std::string>::FromString(const daxia::string& str) { v_ = std::string(str.GetString()); }
-		template<> void daxia::reflect::Reflect<std::wstring>::FromString(const daxia::string& str) { v_ = std::wstring(str.ToUnicode().GetString()); }
-		template<> void daxia::reflect::Reflect<daxia::string>::FromString(const daxia::string& str) { v_ = str; }
-		template<> void daxia::reflect::Reflect<daxia::wstring>::FromString(const daxia::string& str) { v_ = str.ToUnicode(); }
+		template<class ValueType> void daxia::reflect::Reflect<ValueType>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } }
+		template<> void daxia::reflect::Reflect<char>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<char>(); }
+		template<> void daxia::reflect::Reflect<unsigned char>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<unsigned char>(); }
+		template<> void daxia::reflect::Reflect<int>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<int>(); }
+		template<> void daxia::reflect::Reflect<unsigned int>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<unsigned int>(); }
+		template<> void daxia::reflect::Reflect<long>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<long>(); }
+		template<> void daxia::reflect::Reflect<unsigned long>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } v_ = str.NumericCast<unsigned long>(); }
+		template<> void daxia::reflect::Reflect<long long>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } v_ = str.NumericCast<long long>(); }
+		template<> void daxia::reflect::Reflect<unsigned long long>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<unsigned long long>(); }
+		template<> void daxia::reflect::Reflect<long double>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<long double>(); }
+		template<> void daxia::reflect::Reflect<double>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<double>(); }
+		template<> void daxia::reflect::Reflect<float>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<float>(); }
+		template<> void daxia::reflect::Reflect<bool>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<char>() != 0; }
+
 
 		template<class ValueType>
 		void daxia::reflect::Reflect<ValueType>::init(const void* baseaddr)
@@ -261,10 +254,8 @@ namespace daxia
 				std::swap(temp, v_); 
 			}
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
-			virtual daxia::string ToString() const override { throw "don't call this method!"; }
-			inline virtual daxia::string ToStringOfElement(size_t index) const override;
-			virtual void FromString(const daxia::string& str) override { throw "don't call this method!"; }
-			inline virtual void FromStringOfElement(const daxia::string&str) override;
+			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
+			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
 			std::vector<ValueType>& Value(){ return v_; }
 			const std::vector<ValueType>& Value() const { return v_; }
 		private:
@@ -296,44 +287,30 @@ namespace daxia
 			};
 		};
 
-		template<class ValueType>
-		reflect::Layout Reflect<std::vector<ValueType>>::layout_;
+		template<class ValueType> reflect::Layout Reflect<std::vector<ValueType>>::layout_;
 
-		template<class ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToStringOfElement(size_t index) const { return daxia::string(); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<char>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(static_cast<int>(v_[index])); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned char>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(static_cast<unsigned int>(v_[index])); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<int>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned int>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<long long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<unsigned long long>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<long double>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<double>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<float>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<bool>>::ToStringOfElement(size_t index) const { return v_[index] ? "true" : "false"; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<std::string>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp; temp = daxia::wstring(v_[index]).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp; temp = v_[index].ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<class ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToString(const char* tag, size_t arrayElementIndex) const
+		{
+			if (arrayElementIndex < v_.size())
+			{
+				Reflect<ValueType> temp;
+				temp.Value() = v_[arrayElementIndex];
+				return temp.ToString(tag);
+			}
 
-		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromStringOfElement(const daxia::string&str) {}
-		template<> void daxia::reflect::Reflect<std::vector<char>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<char>()); }
-		template<> void daxia::reflect::Reflect<std::vector<unsigned char>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned char>()); }
-		template<> void daxia::reflect::Reflect<std::vector<int>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<int>()); }
-		template<> void daxia::reflect::Reflect<std::vector<unsigned int>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned int>()); }
-		template<> void daxia::reflect::Reflect<std::vector<long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long>()); }
-		template<> void daxia::reflect::Reflect<std::vector<unsigned long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned long>()); }
-		template<> void daxia::reflect::Reflect<std::vector<long long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long long>()); }
-		template<> void daxia::reflect::Reflect<std::vector<unsigned long long>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<unsigned long long>()); }
-		template<> void daxia::reflect::Reflect<std::vector<long double>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<long double>()); }
-		template<> void daxia::reflect::Reflect<std::vector<double>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<double>()); }
-		template<> void daxia::reflect::Reflect<std::vector<float>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<float>()); }
-		template<> void daxia::reflect::Reflect<std::vector<bool>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.CompareNoCase("true") == 0); }
-		template<> void daxia::reflect::Reflect<std::vector<std::string>>::FromStringOfElement(const daxia::string&str) { v_.push_back(std::string(str.GetString() + 1, str.GetLength() - 2)); }
-		template<> void daxia::reflect::Reflect<std::vector<std::wstring>>::FromStringOfElement(const daxia::string&str) { v_.push_back(std::wstring(str.ToUnicode().GetString() + 1, str.ToUnicode().GetLength() - 2)); }
-		template<> void daxia::reflect::Reflect<std::vector<daxia::string>>::FromStringOfElement(const daxia::string&str) { v_.push_back(daxia::string(str.GetString() + 1, str.GetLength() - 2)); }
-		template<> void daxia::reflect::Reflect<std::vector<daxia::wstring>>::FromStringOfElement(const daxia::string&str) { v_.push_back(daxia::wstring(str.ToUnicode().GetString() + 1, str.ToUnicode().GetLength() - 2)); }
+			return daxia::string();
+		}
+
+		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) 
+		{
+			if (arrayElementIndex < v_.size())
+			{
+				Reflect<ValueType> temp;
+				temp.FromString(tag,str);
+				v_[arrayElementIndex] = temp.Value();
+			}
+		}
+
 
 		template<class ValueType>
 		void daxia::reflect::Reflect<std::vector<ValueType>>::init()
