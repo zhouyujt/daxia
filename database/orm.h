@@ -135,7 +135,7 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return insert(layout, &obj, fields);
 			}
 
@@ -165,7 +165,7 @@ namespace daxia
 				using namespace daxia::reflect;
 
 				ValueType helper;
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
 
 				if (recordset && !recordset->Eof())
@@ -190,7 +190,7 @@ namespace daxia
 				using namespace daxia::reflect;
 
 				ValueType helper;
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
 
 				ReadRecordset(recordset, objs);
@@ -233,7 +233,7 @@ namespace daxia
 			template<class ValueType>
 			void ReadRecordset(std::shared_ptr<Recordset> recordset, std::vector<ValueType>& objs, const FieldFilter* fields = nullptr)
 			{
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>::GetLayoutFast();
 				while (recordset && !recordset->Eof())
 				{
 					ValueType obj;
