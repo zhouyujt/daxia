@@ -145,10 +145,10 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<double>::ToString() const { return daxia::string::ToString(v_); }
 		template<> daxia::string daxia::reflect::Reflect<float>::ToString() const { return daxia::string::ToString(v_); }
 		template<> daxia::string daxia::reflect::Reflect<bool>::ToString() const { return v_ ? "true" : "false"; }
-		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.c_str()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", daxia::wstring(v_).ToAnsi().GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str; str.Format("\"%s\"", v_.ToAnsi().GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str, temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str, temp; temp = daxia::wstring(v_).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str, temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str, temp; temp = v_.ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
 
 		template<class ValueType> void daxia::reflect::Reflect<ValueType>::FromString(const daxia::string& str) {}
 		template<> void daxia::reflect::Reflect<char>::FromString(const daxia::string& str) { v_ = str.NumericCast<char>(); }
@@ -284,7 +284,7 @@ namespace daxia
 				InitHelper()
 				{
 					// vector 类型保存元素的布局
-					layout_ = Reflect<ValueType>::GetLayoutFast();
+					layout_ = Reflect<ValueType>().GetLayout();
 
 					// 每个元素的大小
 					layout_.ElementSize() = sizeof(ValueType);
