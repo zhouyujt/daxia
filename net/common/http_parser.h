@@ -387,7 +387,7 @@ namespace daxia
 					template<class T>
 					void InitIndex(T& obj)
 					{
-						auto& layout = obj.GetLayout();
+						auto layout = obj.GetLayoutFast();
 						for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 						{
 							const reflect::String* field = nullptr;

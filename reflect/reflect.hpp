@@ -72,6 +72,7 @@ namespace daxia
 			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
+			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<ValueType>(); } return layout_/*直接读取静态变量，不走虚函数表，性能提升巨大*/; }
 			virtual const void* ValueAddr() const override { return &v_; }
 			virtual size_t Size() const override { return sizeof(*this); }
 			virtual void ResizeArray(size_t count) override { throw "don't call this method!"; }
@@ -283,7 +284,7 @@ namespace daxia
 				InitHelper()
 				{
 					// vector 类型保存元素的布局
-					layout_ = Reflect<ValueType>().GetLayout();
+					layout_ = Reflect<ValueType>::GetLayoutFast();
 
 					// 每个元素的大小
 					layout_.ElementSize() = sizeof(ValueType);

@@ -41,7 +41,7 @@ namespace daxia
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const reflect::Layout& layout = Reflect<ValueType>().GetLayout();
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				ptree root;
 				stringstream ss;
@@ -62,7 +62,7 @@ namespace daxia
 				using daxia::reflect::Reflect;
 
 				// 获取内存布局
-				const reflect::Layout& layout = Reflect<ValueType>().GetLayout();
+				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
 				try
 				{
