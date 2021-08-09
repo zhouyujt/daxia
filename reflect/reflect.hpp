@@ -145,10 +145,10 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<double>::ToString() const { return daxia::string::ToString(v_); }
 		template<> daxia::string daxia::reflect::Reflect<float>::ToString() const { return daxia::string::ToString(v_); }
 		template<> daxia::string daxia::reflect::Reflect<bool>::ToString() const { return v_ ? "true" : "false"; }
-		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str, temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str, temp; temp = daxia::wstring(v_).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str, temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str, temp; temp = v_.ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::string>::ToString() const { daxia::string str("\""), temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::wstring>::ToString() const { daxia::string str("\""), temp; temp = daxia::wstring(v_).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::string>::ToString() const { daxia::string str("\""), temp(v_); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<daxia::wstring>::ToString() const { daxia::string str("\""), temp; temp = v_.ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
 
 		template<class ValueType> void daxia::reflect::Reflect<ValueType>::FromString(const daxia::string& str) {}
 		template<> void daxia::reflect::Reflect<char>::FromString(const daxia::string& str) { v_ = str.NumericCast<char>(); }
@@ -311,10 +311,10 @@ namespace daxia
 		template<> daxia::string daxia::reflect::Reflect<std::vector<double>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<float>>::ToStringOfElement(size_t index) const { return daxia::string::ToString(v_[index]); }
 		template<> daxia::string daxia::reflect::Reflect<std::vector<bool>>::ToStringOfElement(size_t index) const { return v_[index] ? "true" : "false"; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<std::string>>::ToStringOfElement(size_t index) const { daxia::string str, temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str, temp; temp = daxia::wstring(v_[index]).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str, temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
-		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str, temp; temp = v_[index].ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str.Format("\"%s\"", temp.GetString()); return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<std::string>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<std::wstring>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp; temp = daxia::wstring(v_[index]).ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::string>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp(v_[index]); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
+		template<> daxia::string daxia::reflect::Reflect<std::vector<daxia::wstring>>::ToStringOfElement(size_t index) const { daxia::string str("\""), temp; temp = v_[index].ToAnsi(); temp.Replace("\\", "\\\\"); temp.Replace("\"", "\\\""); str += temp + "\""; return str; }
 
 		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromStringOfElement(const daxia::string&str) {}
 		template<> void daxia::reflect::Reflect<std::vector<char>>::FromStringOfElement(const daxia::string&str) { v_.push_back(str.NumericCast<char>()); }
