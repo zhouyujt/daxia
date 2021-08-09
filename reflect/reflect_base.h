@@ -90,12 +90,10 @@ namespace daxia
 		class Reflect_base : public Reflect_helper
 		{
 		protected:
-			Reflect_base();
+			Reflect_base(const char* tags);
 			virtual ~Reflect_base();
 		protected:
-			static daxia::string tag(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags);
-			static std::map<daxia::string, daxia::string> tagAttribute(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags);
-			static std::map<daxia::string, daxia::string> parseTag(const daxia::string& str);
+			Reflect_base& Swap(Reflect_base& r);
 		public:
 			virtual const Layout& GetLayout() const = 0;
 			virtual const void* ValueAddr() const = 0;
@@ -106,9 +104,15 @@ namespace daxia
 			virtual daxia::string ToStringOfElement(size_t index) const = 0;
 			virtual void FromString(const daxia::string& str) = 0;
 			virtual void FromStringOfElement(const daxia::string&str) = 0;
-			virtual const daxia::string& Tags() const = 0;
-			virtual daxia::string Tag(const char* prefix) const = 0;
-			virtual std::map<daxia::string, daxia::string> TagAttribute(const char* prefix) const = 0;
+		public:
+			const daxia::string& Tags() const { return tagsStr_; }
+			daxia::string Tag(const daxia::string& prefix) const;
+			std::map<daxia::string,daxia::string> TagAttribute(const daxia::string& prefix) const;
+		private:
+			void parseTag(const daxia::string& str);
+		private:
+			daxia::string tagsStr_;
+			std::map<daxia::string, daxia::string> tags_;
 		};// class reflect_base
 	}// namespace reflect
 }// namespace daxia

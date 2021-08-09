@@ -35,44 +35,57 @@ namespace daxia
 					return true;
 				}
 			}
-
+			
 			return false;
 		}
 
 
-		Reflect_base::Reflect_base()
+		Reflect_base::Reflect_base(const char* tags)
+			 : tagsStr_("-")
 		{
+			if (tags != nullptr)
+			{
+				tagsStr_ = tags;
+				parseTag(tags);
+			}
 		}
 
 		Reflect_base::~Reflect_base(){}
 
-		daxia::string Reflect_base::tag(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags)
+		Reflect_base& Reflect_base::Swap(Reflect_base& r)
 		{
-			daxia::string result;
-
-			auto iter = tags.find(prefix);
-			if (iter != tags.end())
-			{
-				size_t pos = 0;
-				result = iter->second.Tokenize(" ", pos);
-			}
-
-			return result;
+			std::swap(tagsStr_, r.tagsStr_);
+			std::swap(tags_, r.tags_);
+			return *this;
 		}
 
-		std::map<daxia::string, daxia::string> Reflect_base::tagAttribute(const daxia::string& prefix, const std::map<daxia::string, daxia::string>& tags)
+		daxia::string Reflect_base::Tag(const daxia::string& prefix) const
+		{
+			daxia::string tag;
+
+			auto iter = tags_.find(prefix);
+			if (iter != tags_.end())
+			{
+				size_t pos = 0;
+				tag = iter->second.Tokenize(" ",pos);
+			}
+
+			return tag;
+		};
+
+		std::map<daxia::string, daxia::string> Reflect_base::TagAttribute(const daxia::string& prefix) const
 		{
 			daxia::string tag;
 			daxia::string attributeString;
 
-			auto iter = tags.find(prefix);
-			if (iter != tags.end())
+			auto iter = tags_.find(prefix);
+			if (iter != tags_.end())
 			{
 				size_t pos = 0;
 				tag = iter->second.Tokenize(" ", pos);
 				attributeString = iter->second.Mid(pos, -1);
 			}
-
+			
 			std::vector<daxia::string> attributes;
 			attributeString.Split(" ", attributes);
 			std::map<daxia::string, daxia::string> result;
@@ -87,10 +100,8 @@ namespace daxia
 			return result;
 		}
 
-		std::map<daxia::string, daxia::string> Reflect_base::parseTag(const daxia::string& str)
+		void Reflect_base::parseTag(const daxia::string& str)
 		{
-			std::map<daxia::string, daxia::string> result;
-
 			daxia::wstring tagStr = str.ToUnicode();
 			tagStr.Trim();
 
@@ -120,15 +131,13 @@ namespace daxia
 						attribute.Delete(attribute.GetLength() - 1);
 					}
 
-					result[prefix.ToAnsi()] = (name + L" " + attribute).ToAnsi();
+					tags_[prefix.ToAnsi()] = (name + L" " + attribute).ToAnsi();
 				}
 				else
 				{
-					result[prefix.ToAnsi()] = name.ToAnsi();
+					tags_[prefix.ToAnsi()] = name.ToAnsi();
 				}
 			}
-
-			return result;
 		}
 	}// namespace reflect
 }// namespace daxia
