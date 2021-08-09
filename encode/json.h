@@ -40,6 +40,8 @@ namespace daxia
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
 
+				init();
+
 				// 获取内存布局
 				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
 
@@ -60,6 +62,8 @@ namespace daxia
 				using namespace std;
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
+
+				init();
 
 				// 获取内存布局
 				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
@@ -93,6 +97,16 @@ namespace daxia
 			inline static void getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
 			inline static void getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
 			inline static void getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
+
+			// 初始化相关工作
+		private:
+			static void init();
+
+			class InitHelper
+			{
+			public:
+				InitHelper();
+			};
 			// 由于boost::property_tree::write_json会将所有数据类型视为字符串类型，所以重写相关方法使之能区分不同类型
 		private:
 			template<class Ptree>
