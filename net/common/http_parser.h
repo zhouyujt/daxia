@@ -223,7 +223,7 @@ namespace daxia
 					size_t InitFromData(const void* data, size_t len, bool isRequest);
 				private:
 					// 加快查找的索引
-					std::map<daxia::string/*tag*/, unsigned long/*offset*/> index_;
+					std::map<daxia::string/*tag*/, size_t/*offset*/> index_;
 				};
 
 				class RequestHeader : public GeneralHeader
