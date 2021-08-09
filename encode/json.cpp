@@ -145,6 +145,10 @@ namespace daxia
 					marshal(baseaddr, layout, child);
 				}
 			}
+			else
+			{
+				child.push_back(std::make_pair("", boost::property_tree::ptree()));
+			}
 
 			root.put_child(tag, child);
 		}
