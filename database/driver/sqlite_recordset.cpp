@@ -46,6 +46,19 @@ namespace daxia
 				return sqlite3_last_insert_rowid(sqlite_);
 			}
 
+			daxia::buffer SqliteRecordset::GetRawData(const char* field)
+			{
+				int index = GetFieldIndex(field);
+				if (index != -1)
+				{
+					const void* data = sqlite3_column_blob(stmt_, index);
+					int size = sqlite3_column_bytes(stmt_, index);
+					return daxia::buffer(reinterpret_cast<const char*>(data), size);
+				}
+
+				return daxia::buffer();
+			}
+
 			void SqliteRecordset::GetField(const char* field, db_tinyint& v)
 			{
 				int index = GetFieldIndex(field);
@@ -114,7 +127,7 @@ namespace daxia
 				{
 					const void* data = sqlite3_column_blob(stmt_, index);
 					int size = sqlite3_column_bytes(stmt_, index);
-					v = daxia::string(reinterpret_cast<const char*>(data), size);
+					v = daxia::buffer(reinterpret_cast<const char*>(data), size);
 				}
 			}
 

@@ -76,7 +76,7 @@ namespace daxia
 			typedef DataType<float> db_float;
 			typedef DataType<double> db_double;
 			typedef DataType<daxia::string> db_text;
-			typedef DataType<std::string> db_blob;
+			typedef DataType<daxia::buffer> db_blob;
 			typedef DataType<daxia::system::DateTime> db_datetime;
 		}
 	}

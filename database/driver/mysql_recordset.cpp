@@ -1,5 +1,6 @@
 #include <string.h>	// strcmp
 #include "mysql_recordset.h"
+#include "../../encode/hex.h"
 
 namespace daxia
 {
@@ -48,54 +49,9 @@ namespace daxia
 				return mysql_insert_id(mysql_);
 			}
 
-			void MySQLRecordset::GetField(const char* field, db_tinyint& v)
+			daxia::buffer MySQLRecordset::GetRawData(const char* fieldName)
 			{
-				daxia::string result = GetField(field);
-				v = result.NumericCast<char>();
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_int& v)
-			{
-				daxia::string result = GetField(field);
-				v = result.NumericCast<int>();
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_bigint& v)
-			{
-				daxia::string result = GetField(field);
-				v = result.NumericCast<long long>();
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_float& v)
-			{
-				daxia::string result = GetField(field);
-				v = result.NumericCast<float>();
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_double& v)
-			{
-				daxia::string result = GetField(field);
-				v = result.NumericCast<double>();
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_text& v)
-			{
-				v = GetField(field);
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_blob& v)
-			{
-				v = GetField(field);
-			}
-
-			void MySQLRecordset::GetField(const char* field, db_datetime& v)
-			{
-				v = GetField(field).GetString();
-			}
-
-			daxia::string MySQLRecordset::GetField(const char* fieldName)
-			{
-				daxia::string result;
+				daxia::buffer result;
 
 				unsigned int fieldsNum = mysql_num_fields(recordset_);
 				MYSQL_FIELD* field;
@@ -118,6 +74,50 @@ namespace daxia
 				return result;
 			}
 
+			void MySQLRecordset::GetField(const char* field, db_tinyint& v)
+			{
+				daxia::buffer result = GetRawData(field);
+				v = result.NumericCast<char>();
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_int& v)
+			{
+				daxia::buffer result = GetRawData(field);
+				v = result.NumericCast<int>();
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_bigint& v)
+			{
+				daxia::buffer result = GetRawData(field);
+				v = result.NumericCast<long long>();
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_float& v)
+			{
+				daxia::buffer result = GetRawData(field);
+				v = result.NumericCast<float>();
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_double& v)
+			{
+				daxia::buffer result = GetRawData(field);
+				v = result.NumericCast<double>();
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_text& v)
+			{
+				v = GetRawData(field);
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_blob& v)
+			{
+				v = daxia::encode::Hex::FromString(GetRawData(field));
+			}
+
+			void MySQLRecordset::GetField(const char* field, db_datetime& v)
+			{
+				v = daxia::system::DateTime(GetRawData(field).GetString());
+			}
 		}
 	}
 }

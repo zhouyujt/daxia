@@ -29,12 +29,12 @@ namespace daxia
 			return result;
 		}
 
-		daxia::string Hex::FromString(const daxia::string& str)
+		daxia::buffer Hex::FromString(const daxia::string& str)
 		{
 			daxia::string temp = str;
 			temp.MakeLower();
 
-			daxia::string result;
+			daxia::buffer result;
 			for (size_t i = 0; i < temp.GetLength(); ++i)
 			{
 				const char& ch = temp[i];
