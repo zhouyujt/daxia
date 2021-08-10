@@ -86,8 +86,8 @@ namespace daxia
 			const ValueType& Value() const { return v_; }
 
 			// 设置跟字符串相互转换的方法
-			static void SetToString(const char* tag, std::function<daxia::string(const void*)> func) { tostringFuncs_[tag] = func; }
-			static void SetFromString(const char* tag, std::function<void(const daxia::string&, void*)> func) { fromstringFuncs_[tag] = func; }
+			static void SetToString(const char* tag, std::function<daxia::string(const void*)> func) { tostringFuncs_[tag] = func; GetLayoutFast().Type() = reflect::Layout::value; }
+			static void SetFromString(const char* tag, std::function<void(const daxia::string&, void*)> func) { fromstringFuncs_[tag] = func; GetLayoutFast().Type() = reflect::Layout::value; }
 		private:
 			static void init(const void* baseaddr);
 			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
