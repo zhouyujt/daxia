@@ -260,14 +260,6 @@ namespace daxia
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
-		private:
-			void init();
-
-			class InitHelper
-			{
-			public:
-				InitHelper();
-			};
 		};
 	}
 }

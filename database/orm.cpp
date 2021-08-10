@@ -22,8 +22,6 @@ namespace daxia
 		{
 			using namespace daxia::database::driver;
 
-			init();
-
 			switch (driver)
 			{
 			case daxia::database::Orm::mysql:
@@ -42,7 +40,6 @@ namespace daxia
 		Orm::Orm(Driver driver, const daxia::string& connectString)
 			: driverType_(driver)
 		{
-			init();
 		}
 
 		Orm::~Orm()
@@ -535,128 +532,6 @@ namespace daxia
 					reflectBase->FromString(ORM,recordset->GetRawData(tag.GetString()));
 				}
 			}
-		}
-
-		void Orm::init()
-		{
-			static InitHelper initHelper;
-		}
-
-		// 反射序列化支持
-		Orm::InitHelper::InitHelper()
-		{
-			using namespace daxia::reflect;
-			using namespace database::driver;
-
-			// SetToString
-			{
-				Reflect<db_tinyint>::SetToString(ORM, [](const void* data)
-				{
-					return daxia::string::ToString(reinterpret_cast<const db_tinyint*>(data)->Value());
-				});
-
-				Reflect<db_int>::SetToString(ORM, [](const void* data)
-				{
-					return daxia::string::ToString(reinterpret_cast<const db_int*>(data)->Value());
-				});
-
-				Reflect<db_bigint>::SetToString(ORM, [](const void* data)
-				{
-					return daxia::string::ToString(reinterpret_cast<const db_bigint*>(data)->Value());
-				});
-
-				Reflect<db_float>::SetToString(ORM, [](const void* data)
-				{
-					return daxia::string::ToString(reinterpret_cast<const db_float*>(data)->Value());
-				});
-
-				Reflect<db_double>::SetToString(ORM, [](const void* data)
-				{
-					return daxia::string::ToString(reinterpret_cast<const db_double*>(data)->Value());
-				});
-
-				Reflect<db_text>::SetToString(ORM, [](const void* data)
-				{
-					const std::string& v = reinterpret_cast<const db_text*>(data)->Value();;
-
-					daxia::string result = "\'";
-					result += v + "\'";
-
-					return result;
-				});
-
-				Reflect<db_blob>::SetToString(ORM, [](const void* data)
-				{
-					const daxia::buffer& v = reinterpret_cast<const db_blob*>(data)->Value();
-
-					daxia::string result = "\'";
-					result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\'";
-
-					return result;
-				});
-
-				Reflect<db_datetime>::SetToString(ORM, [](const void* data)
-				{
-					const daxia::system::DateTime& v = reinterpret_cast<const db_datetime*>(data)->Value();
-
-					daxia::string result = "\'";
-					result += v.ToString() + "\'";
-
-					return result;
-				});
-			}
-
-			// SetFromString
-			{
-				Reflect<db_tinyint>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_tinyint& v = *reinterpret_cast<db_tinyint*>(data);
-					v = str.NumericCast<char>();
-				});
-
-				Reflect<db_int>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_int& v = *reinterpret_cast<db_int*>(data);
-					v = str.NumericCast<int>();
-				});
-
-				Reflect<db_bigint>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_bigint& v = *reinterpret_cast<db_bigint*>(data);
-					v = str.NumericCast<long long>();
-				});
-
-				Reflect<db_float>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_float& v = *reinterpret_cast<db_float*>(data);
-					v = str.NumericCast<float>();
-				});
-
-				Reflect<db_double>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_double& v = *reinterpret_cast<db_double*>(data);
-					v = str.NumericCast<double>();
-				});
-
-				Reflect<db_text>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_text& v = *reinterpret_cast<db_text*>(data);
-					v = str;
-				});
-
-				Reflect<db_blob>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_blob& v = *reinterpret_cast<db_blob*>(data);
-					v = daxia::encode::Hex::FromString(str);
-				});
-
-				Reflect<db_datetime>::SetFromString(ORM, [](const daxia::string& str, void* data)
-				{
-					db_datetime& v = *reinterpret_cast<db_datetime*>(data);
-					v = daxia::system::DateTime(str.GetString());
-				});
-			}
-
 		}
 	}
 }
