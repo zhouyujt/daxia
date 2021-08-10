@@ -55,7 +55,7 @@
 
 #define DATABASE_ORM_TABLE_FIELD				__tableName__
 #define DATABASE_ORM_TABLE_TAG					tableName
-#define DATABASE_ORM_MAKE_TABLE_TAG(name)		orm: ## DATABASE_ORM_TABLE_TAG ## ( ##name ##)
+#define DATABASE_ORM_MAKE_TABLE_TAG(name)		orm:DATABASE_ORM_TABLE_TAG(name)
 #define DECLARE_ORM_TABLE(name)					daxia::reflect::Reflect<daxia::string> DATABASE_ORM_TABLE_FIELD = DATABASE_ORM_STRING(DATABASE_ORM_MAKE_TABLE_TAG(name));
 
 #define ORM "orm"
