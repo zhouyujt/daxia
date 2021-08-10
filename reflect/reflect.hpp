@@ -301,7 +301,7 @@ namespace daxia
 			return daxia::string();
 		}
 
-		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) 
+		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) 
 		{
 			if (arrayElementIndex < v_.size())
 			{

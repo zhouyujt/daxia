@@ -233,6 +233,8 @@ namespace daxia
 			template<class ValueType>
 			void ReadRecordset(std::shared_ptr<Recordset> recordset, std::vector<ValueType>& objs, const FieldFilter* fields = nullptr)
 			{
+				using namespace daxia::reflect;
+
 				auto layout = Reflect<ValueType>::GetLayoutFast();
 				while (recordset && !recordset->Eof())
 				{
