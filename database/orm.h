@@ -244,6 +244,8 @@ namespace daxia
 				}
 			}
 
+			long long  ScopeIdentity();
+
 			// Ö´ĞĞ¸ü¸´ÔÓµÄÃüÁî
 			std::shared_ptr<Recordset> Excute(const daxia::string& sql);
 		private:
@@ -260,6 +262,7 @@ namespace daxia
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
+			long long scopeIdentity_;
 		};
 	}
 }

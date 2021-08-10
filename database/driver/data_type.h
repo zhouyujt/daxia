@@ -290,7 +290,7 @@ namespace daxia
 					template<>
 					void init<daxia::system::DateTime>()
 					{
-						Reflect<DataType<daxia::buffer>>::SetToString(ORM, [](const void* data)
+						Reflect<DataType<daxia::system::DateTime>>::SetToString(ORM, [](const void* data)
 						{
 							const daxia::system::DateTime& v = reinterpret_cast<const db_datetime*>(data)->Value();
 

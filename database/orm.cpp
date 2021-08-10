@@ -19,6 +19,7 @@ namespace daxia
 	{
 		Orm::Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
 			: driverType_(driver)
+			, scopeIdentity_(0)
 		{
 			using namespace daxia::database::driver;
 
@@ -39,6 +40,7 @@ namespace daxia
 
 		Orm::Orm(Driver driver, const daxia::string& connectString)
 			: driverType_(driver)
+			, scopeIdentity_(0)
 		{
 		}
 
@@ -109,6 +111,7 @@ namespace daxia
 
 			// Ö´ÐÐ
 			auto recodset = command_->Excute(sql);
+			scopeIdentity_ = recodset->ScopeIdentity();
 			return command_->GetLastError();
 		}
 
@@ -478,6 +481,11 @@ namespace daxia
 			catch (const std::exception&){}
 			
 			return reflectBase;
+		}
+
+		long long Orm::ScopeIdentity()
+		{
+			return scopeIdentity_;
 		}
 
 		std::shared_ptr<Orm::Recordset> Orm::Excute(const daxia::string& sql)
