@@ -2,6 +2,7 @@
 #include "driver/mysql_driver.h"
 #include "driver/sqlite_driver.h"
 #include "driver/sqlserver_driver.h"
+#include "../encode/hex.h"
 
 #define ORM "orm"
 #define IDENTITY "identity"
@@ -21,6 +22,8 @@ namespace daxia
 		{
 			using namespace daxia::database::driver;
 
+			init();
+
 			switch (driver)
 			{
 			case daxia::database::Orm::mysql:
@@ -39,6 +42,7 @@ namespace daxia
 		Orm::Orm(Driver driver, const daxia::string& connectString)
 			: driverType_(driver)
 		{
+			init();
 		}
 
 		Orm::~Orm()
@@ -93,7 +97,7 @@ namespace daxia
 					fieldList += tag;
 
 					if (!valueList.IsEmpty()) valueList += ',';
-					valueList += tostring(reflectBase);
+					valueList += reflectBase->ToString(ORM);
 				}
 
 			}
@@ -156,7 +160,7 @@ namespace daxia
 					if (!conditionList.IsEmpty())  conditionList += " AND ";
 					conditionList += tag;
 					conditionList += '=';
-					conditionList += tostring(reflectBase);
+					conditionList += reflectBase->ToString(ORM);
 				}
 
 			}
@@ -257,7 +261,7 @@ namespace daxia
 					if (!valueList.IsEmpty())  valueList += ','; 
 					valueList += tag;
 					valueList += "=";
-					valueList += tostring(reflectBase);
+					valueList += reflectBase->ToString(ORM);
 				}
 
 				// 构造条件语句
@@ -266,7 +270,7 @@ namespace daxia
 					if (!conditionList.IsEmpty()) conditionList += " AND ";
 					conditionList += tag;
 					conditionList += "=";
-					conditionList += tostring(reflectBase);
+					conditionList += reflectBase->ToString(ORM);
 				}
 			}
 
@@ -484,37 +488,6 @@ namespace daxia
 			return command_->Excute(sql);
 		}
 
-		daxia::string Orm::tostring(const daxia::reflect::Reflect_base* reflectBase)
-		{
-			using namespace daxia::database::driver;
-
-			daxia::string str;
-
-			const auto& typeinfo = reflectBase->Type();
-			if (typeinfo == typeid(db_text))
-			{
-				str += '\'';
-				str += static_cast<daxia::string>(*reinterpret_cast<const db_text*>(reflectBase->ValueAddr()));
-				str += '\'';
-			}
-			else if (typeinfo == typeid(db_datetime))
-			{
-				str += '\'';
-				str += static_cast<daxia::system::DateTime>(*reinterpret_cast<const db_datetime*>(reflectBase->ValueAddr())).ToString();
-				str += '\'';
-			}
-			else
-			{
-				if (typeinfo == typeid(db_tinyint)){ str += daxia::string::ToString(static_cast<char>(*reinterpret_cast<const db_tinyint*>(reflectBase->ValueAddr()))); }
-				else if (typeinfo == typeid(db_int)){ str += daxia::string::ToString(static_cast<int>(*reinterpret_cast<const db_int*>(reflectBase->ValueAddr()))); }
-				else if (typeinfo == typeid(db_bigint)){ str += daxia::string::ToString(static_cast<long long>(*reinterpret_cast<const db_bigint*>(reflectBase->ValueAddr()))); }
-				else if (typeinfo == typeid(db_float)){ str += daxia::string::ToString(static_cast<float>(*reinterpret_cast<const db_float*>(reflectBase->ValueAddr()))); }
-				else if (typeinfo == typeid(db_double)){ str += daxia::string::ToString(static_cast<double>(*reinterpret_cast<const db_double*>(reflectBase->ValueAddr()))); }
-			}
-
-			return str;
-		}
-
 		daxia::string Orm::makeConditionByPrimaryKey(const daxia::reflect::Layout& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
@@ -534,7 +507,7 @@ namespace daxia
 					{
 						condition = reflectBase->Tag(ORM);
 						condition += "=";
-						condition += tostring(reflectBase);
+						condition += reflectBase->ToString(ORM);
 					}
 				}
 			}
@@ -549,7 +522,7 @@ namespace daxia
 
 			for (std::vector<daxia::reflect::Field>::const_iterator iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
-				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
+				Reflect_base* reflectBase = const_cast<Reflect_base*>(cast(baseaddr, iter->offset));
 				if (reflectBase == nullptr) continue;
 
 				daxia::string tag = reflectBase->Tag(ORM);
@@ -559,20 +532,131 @@ namespace daxia
 
 				if (fields == nullptr || fields->HasField(tag))
 				{
-					void* p = const_cast<void*>(reflectBase->ValueAddr());
-
-					const auto& typeinfo = reflectBase->Type();
-					if (typeinfo == typeid(db_tinyint)) *reinterpret_cast<db_tinyint*>(p) = recordset->Get<db_tinyint>(tag.GetString());
-					else if (typeinfo == typeid(db_int))  *reinterpret_cast<db_int*>(p) = recordset->Get<db_int>(tag.GetString());
-					else if (typeinfo == typeid(db_bigint)) *reinterpret_cast<db_bigint*>(p) = recordset->Get<db_bigint>(tag.GetString());
-					else if (typeinfo == typeid(db_float)) *reinterpret_cast<db_float*>(p) = recordset->Get<db_float>(tag.GetString());
-					else if (typeinfo == typeid(db_double)) *reinterpret_cast<db_double*>(p) = recordset->Get<db_double>(tag.GetString());
-					else if (typeinfo == typeid(db_text)) *reinterpret_cast<db_text*>(p) = recordset->Get<db_text>(tag.GetString());
-					else if (typeinfo == typeid(db_blob)) *reinterpret_cast<db_blob*>(p) = recordset->Get<db_blob>(tag.GetString());
-					else if (typeinfo == typeid(db_datetime)) *reinterpret_cast<db_datetime*>(p) = recordset->Get<db_datetime>(tag.GetString());
+					reflectBase->FromString(ORM,recordset->GetRawData(tag.GetString()));
 				}
 			}
 		}
 
+		void Orm::init()
+		{
+			static InitHelper initHelper;
+		}
+
+		// 反射序列化支持
+		Orm::InitHelper::InitHelper()
+		{
+			using namespace daxia::reflect;
+			using namespace database::driver;
+
+			// SetToString
+			{
+				Reflect<db_tinyint>::SetToString(ORM, [](const void* data)
+				{
+					return daxia::string::ToString(reinterpret_cast<const db_tinyint*>(data)->Value());
+				});
+
+				Reflect<db_int>::SetToString(ORM, [](const void* data)
+				{
+					return daxia::string::ToString(reinterpret_cast<const db_int*>(data)->Value());
+				});
+
+				Reflect<db_bigint>::SetToString(ORM, [](const void* data)
+				{
+					return daxia::string::ToString(reinterpret_cast<const db_bigint*>(data)->Value());
+				});
+
+				Reflect<db_float>::SetToString(ORM, [](const void* data)
+				{
+					return daxia::string::ToString(reinterpret_cast<const db_float*>(data)->Value());
+				});
+
+				Reflect<db_double>::SetToString(ORM, [](const void* data)
+				{
+					return daxia::string::ToString(reinterpret_cast<const db_double*>(data)->Value());
+				});
+
+				Reflect<db_text>::SetToString(ORM, [](const void* data)
+				{
+					const std::string& v = reinterpret_cast<const db_text*>(data)->Value();;
+
+					daxia::string result = "\'";
+					result += v + "\'";
+
+					return result;
+				});
+
+				Reflect<db_blob>::SetToString(ORM, [](const void* data)
+				{
+					const daxia::buffer& v = reinterpret_cast<const db_blob*>(data)->Value();
+
+					daxia::string result = "\'";
+					result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\'";
+
+					return result;
+				});
+
+				Reflect<db_datetime>::SetToString(ORM, [](const void* data)
+				{
+					const daxia::system::DateTime& v = reinterpret_cast<const db_datetime*>(data)->Value();
+
+					daxia::string result = "\'";
+					result += v.ToString() + "\'";
+
+					return result;
+				});
+			}
+
+			// SetFromString
+			{
+				Reflect<db_tinyint>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_tinyint& v = *reinterpret_cast<db_tinyint*>(data);
+					v = str.NumericCast<char>();
+				});
+
+				Reflect<db_int>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_int& v = *reinterpret_cast<db_int*>(data);
+					v = str.NumericCast<int>();
+				});
+
+				Reflect<db_bigint>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_bigint& v = *reinterpret_cast<db_bigint*>(data);
+					v = str.NumericCast<long long>();
+				});
+
+				Reflect<db_float>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_float& v = *reinterpret_cast<db_float*>(data);
+					v = str.NumericCast<float>();
+				});
+
+				Reflect<db_double>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_double& v = *reinterpret_cast<db_double*>(data);
+					v = str.NumericCast<double>();
+				});
+
+				Reflect<db_text>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_text& v = *reinterpret_cast<db_text*>(data);
+					v = str;
+				});
+
+				Reflect<db_blob>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_blob& v = *reinterpret_cast<db_blob*>(data);
+					v = daxia::encode::Hex::FromString(str);
+				});
+
+				Reflect<db_datetime>::SetFromString(ORM, [](const daxia::string& str, void* data)
+				{
+					db_datetime& v = *reinterpret_cast<db_datetime*>(data);
+					v = daxia::system::DateTime(str.GetString());
+				});
+			}
+
+		}
 	}
 }

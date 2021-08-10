@@ -255,12 +255,19 @@ namespace daxia
 			daxia::string drop(const daxia::reflect::Layout& layout, const void* baseaddr);
 		private:
 			static const daxia::reflect::Reflect_base* cast(const void* baseaddr, unsigned long offset);
-			static daxia::string tostring(const daxia::reflect::Reflect_base* reflectBase);
 			static daxia::string makeConditionByPrimaryKey(const daxia::reflect::Layout& layout, const void* baseaddr);
 			static void record2obj(std::shared_ptr<Recordset> recordset, const daxia::reflect::Layout& layout, void* baseaddr, const FieldFilter* fields = nullptr);
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
+		private:
+			void init();
+
+			class InitHelper
+			{
+			public:
+				InitHelper();
+			};
 		};
 	}
 }

@@ -31,6 +31,7 @@ namespace daxia
 				virtual void Next() = 0;
 				virtual size_t Count() = 0;
 				virtual long long  ScopeIdentity() = 0;
+				virtual daxia::buffer GetRawData(const char* field) = 0;
 				template<class ValueType>
 				ValueType Get(const char* field)
 				{

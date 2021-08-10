@@ -268,7 +268,7 @@ namespace daxia
 			static InitHelper initHelper;
 		}
 
-		// 设置特殊类型跟字符串相互转换规则
+		// 特殊类型反射序列化支持
 		Json::InitHelper::InitHelper()
 		{
 			using namespace daxia::reflect;

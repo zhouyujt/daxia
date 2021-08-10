@@ -811,7 +811,14 @@ namespace daxia
 
 	typedef String_base<char, std::char_traits<char>, std::allocator<char>> string;
 	typedef String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> wstring;
-	typedef String_base<char, std::char_traits<char>, std::allocator<char>> buffer;
+	class buffer : public string
+	{
+	public:
+		buffer(){}
+		buffer(const char* str) : string(str){}
+		buffer(const char* str, size_t count) : string(str, count) {}
+		buffer(const std::string& str) : string(str){}
+	};
 #ifdef UNICODE
 	typedef wstring tstring;
 #else
