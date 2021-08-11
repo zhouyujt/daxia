@@ -1,4 +1,4 @@
-
+#ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 #include "sqlite_driver.h"
 #include "../../system/windows/path.h"
 #include "sqlite_recordset.h"
@@ -139,3 +139,4 @@ namespace daxia
 		}
 	}
 }
+#endif // !__DAXIA_DATABASE_DRIVER_USE_SQLITE

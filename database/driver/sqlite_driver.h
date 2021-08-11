@@ -10,6 +10,7 @@
 * sqlite3 Çý¶¯
 *
 */
+#ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 #ifndef __DAXIA_DATABASE_DRIVER_SQLITE_H
 #define __DAXIA_DATABASE_DRIVER_SQLITE_H
 #include "basic_driver.h"
@@ -46,3 +47,4 @@ namespace daxia
 	}
 }
 #endif // !__DAXIA_DATABASE_DRIVER_SQLITE_H
+#endif // !__DAXIA_DATABASE_DRIVER_USE_SQLITE

@@ -7,9 +7,10 @@
 * \author 漓江里的大虾
 * \date 八月 2021
 *
-* mysql 数据集接口实现
+* sqlite 数据集接口实现
 *
 */
+#ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 #ifndef __DAXIA_DATABASE_DRIVER_SQLITE_RECORDSET_H
 #define __DAXIA_DATABASE_DRIVER_SQLITE_RECORDSET_H
 #include "sqlite3/sqlite3.h"
@@ -52,3 +53,4 @@ namespace daxia
 	}
 }
 #endif // !__DAXIA_DATABASE_DRIVER_SQLITE_RECORDSET_H
+#endif // !__DAXIA_DATABASE_DRIVER_USE_SQLITE

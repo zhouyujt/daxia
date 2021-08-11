@@ -1,3 +1,4 @@
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 #include <memory.h>	// memset
 #include "mysql_driver.h"
 #include "mysql_recordset.h"
@@ -82,3 +83,4 @@ namespace daxia
 		}
 	}
 }
+#endif	// !__DAXIA_DATABASE_DRIVER_USE_MYSQL

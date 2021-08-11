@@ -10,6 +10,7 @@
 * mysql Çý¶¯ 
 *
 */
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 #ifndef __DAXIA_DATABASE_DRIVER_MYSQL_H
 #define __DAXIA_DATABASE_DRIVER_MYSQL_H
 #include <mysql.h>
@@ -42,3 +43,4 @@ namespace daxia
 	}
 }
 #endif	// !__DAXIA_DATABASE_DRIVER_MYSQL_H
+#endif	// !__DAXIA_DATABASE_DRIVER_USE_MYSQL

@@ -28,10 +28,14 @@ namespace daxia
 			switch (driver)
 			{
 			case daxia::database::Orm::mysql:
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 				command_ = std::shared_ptr<MySQLDriver>(new MySQLDriver(host, port, db, user, psw));
+#endif
 				break;
 			case daxia::database::Orm::sqlite:
+#ifdef	__DAXIA_DATABASE_DRIVER_USE_SQLITE
 				command_ = std::shared_ptr<SqliteDriver>(new SqliteDriver(db));
+#endif
 				break;
 			case daxia::database::Orm::sqlserver:
 				break;
@@ -552,8 +556,12 @@ namespace daxia
 
 		Orm::InitHelper::InitHelper()
 		{
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 			daxia::database::driver::MySQLDriver::Init();
+#endif
+#ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 			daxia::database::driver::SqliteDriver::Init();
+#endif
 			daxia::database::driver::db_tinyint::Init();
 			daxia::database::driver::db_int::Init();
 			daxia::database::driver::db_bigint::Init();
@@ -566,8 +574,12 @@ namespace daxia
 
 		Orm::InitHelper::~InitHelper()
 		{
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 			daxia::database::driver::MySQLDriver::Uninit();
+#endif
+#ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 			daxia::database::driver::SqliteDriver::Uninit();
+#endif
 		}
 	}
 }

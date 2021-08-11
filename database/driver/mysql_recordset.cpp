@@ -1,3 +1,4 @@
+#ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
 #include <string.h>	// strcmp
 #include "mysql_recordset.h"
 #include "../../encode/hex.h"
@@ -121,3 +122,4 @@ namespace daxia
 		}
 	}
 }
+#endif // !__DAXIA_DATABASE_DRIVER_USE_MYSQL
