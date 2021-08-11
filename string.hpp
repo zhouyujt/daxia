@@ -611,13 +611,13 @@ namespace daxia
 	}
 
 	template<>
-	daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToUnicode() const
+	inline daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToUnicode() const
 	{
 		return *this;
 	}
 
 	template<>
-	daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToUnicode() const
+	inline daxia::String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToUnicode() const
 	{
 		if (utf8_)
 		{
@@ -630,7 +630,7 @@ namespace daxia
 	}
 
 	template<>
-	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToAnsi() const
+	inline daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToAnsi() const
 	{
 		daxia::String_base< char, std::char_traits<char>, std::allocator<char> > result = daxia::encode::Strconv::Unicode2Ansi(reinterpret_cast<const wchar_t*>(v_.c_str()));
 		result.Utf8() = false;
@@ -638,7 +638,7 @@ namespace daxia
 	}
 
 	template<>
-	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToAnsi() const
+	inline daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToAnsi() const
 	{
 		if (utf8_)
 		{
@@ -653,7 +653,7 @@ namespace daxia
 	}
 
 	template<>
-	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToUtf8() const
+	inline daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToUtf8() const
 	{
 		daxia::String_base< char, std::char_traits<char>, std::allocator<char> > result = daxia::encode::Strconv::Unicode2Utf8(reinterpret_cast<const wchar_t*>(v_.c_str()));
 		result.Utf8() = true;
@@ -661,7 +661,7 @@ namespace daxia
 	}
 
 	template<>
-	daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToUtf8() const
+	inline daxia::String_base< char, std::char_traits<char>, std::allocator<char> > daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToUtf8() const
 	{
 		if (utf8_)
 		{
@@ -677,14 +677,14 @@ namespace daxia
 
 	template<>
 	template<class T>
-	String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToString(T v)
+	inline String_base<char, std::char_traits<char>, std::allocator<char>> daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::ToString(T v)
 	{
 		return std::to_string(v);
 	}
 
 	template<>
 	template<class T>
-	String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
+	inline String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::ToString(T v)
 	{
 		return std::to_wstring(v);
 	}
@@ -790,7 +790,7 @@ namespace daxia
 
 
 	template<>
-	void daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::initUtf8()
+	inline void daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::initUtf8()
 	{
 		const static daxia::String_base<char, std::char_traits<char>, std::allocator<char>> test = "a´óÏº";
 		if (test.GetLength() == 7)
@@ -804,7 +804,7 @@ namespace daxia
 	}
 
 	template<>
-	void daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::initUtf8()
+	inline void daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::initUtf8()
 	{
 		utf8_ = false;
 	}

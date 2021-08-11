@@ -90,7 +90,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<char>::InitHelper::init()
+			inline void DataType<char>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -118,7 +118,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<int>::InitHelper::init()
+			inline void DataType<int>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -146,7 +146,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<long long>::InitHelper::init()
+			inline void DataType<long long>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -174,7 +174,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<float>::InitHelper::init()
+			inline void DataType<float>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -202,7 +202,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<double>::InitHelper::init()
+			inline void DataType<double>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -230,7 +230,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<daxia::string>::InitHelper::init()
+			inline void DataType<daxia::string>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -272,7 +272,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<daxia::buffer>::InitHelper::init()
+			inline void DataType<daxia::buffer>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
@@ -310,7 +310,7 @@ namespace daxia
 			}
 
 			template<>
-			void DataType<daxia::system::DateTime>::InitHelper::init()
+			inline void DataType<daxia::system::DateTime>::InitHelper::init()
 			{
 				using namespace daxia::reflect;
 
