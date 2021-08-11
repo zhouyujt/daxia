@@ -72,7 +72,17 @@ namespace daxia
 
 			std::string BasicSession::GetPeerAddr() const
 			{
-				endpoint ep = sock_->remote_endpoint();
+				endpoint ep;
+
+				try
+				{
+					ep = sock_->remote_endpoint();
+				}
+				catch (...)
+				{
+					return "";
+				}
+
 				return (boost::format("%s:%d") % ep.address().to_string() % ep.port()).str();
 			}
 
