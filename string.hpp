@@ -29,6 +29,10 @@
 
 namespace daxia
 {
+	// ansi: sizeof(test) == 6
+	// utf8: sizeof(test) == 8
+	const static char __utf8Test[] = "a´óÏº";
+
 	template<class Elem, class Traits, class Alloc>
 	class String_base
 	{
@@ -74,7 +78,7 @@ namespace daxia
 		// ·Ö¸î×Ö·û´®
 		void Split(const Elem* sub, std::vector<String_base>& strings) const;
 
-		// ±àÂë×ª»»
+		// ×Ö·û¼¯±àÂë×ª»»
 		bool& Utf8() { return utf8_; }
 		bool Utf8() const { return utf8_; }
 		inline String_base< wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > ToUnicode() const;
@@ -238,37 +242,51 @@ namespace daxia
 		void cast(float& v) const;
 		void cast(double& v) const;
 		void cast(long double& v) const;
-		inline void initUtf8();
 	private:
 		std::basic_string<Elem, Traits, Alloc> v_;
 		bool utf8_;
+	private:
+		template <size_t>
+		struct size{};
+
+		template<typename ...>
+		struct utf8
+		{
+			const static bool value = false;
+		};
+
+		template<>
+		struct utf8 < size<8> >
+		{
+			const static bool value = true;
+		};
 	};
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base()
+		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
 	{
-		initUtf8();
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str)
+		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str);
-		initUtf8();
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str, size_t count)
+		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str, count);
-		initUtf8();
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const std::basic_string<Elem, Traits, Alloc>& str)
+		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str, 0, -1);
-		initUtf8();
 	}
 
 	template<class Elem, class Traits, class Alloc>
@@ -786,27 +804,6 @@ namespace daxia
 	void daxia::String_base<Elem, Traits, Alloc>::cast(long double& v) const
 	{
 		v = std::stold(v_);
-	}
-
-
-	template<>
-	inline void daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::initUtf8()
-	{
-		const static std::string test = "a´óÏº";
-		if (test.length() == 7)
-		{
-			utf8_ = true;
-		}
-		else
-		{
-			utf8_ = false;
-		}
-	}
-
-	template<>
-	inline void daxia::String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>>::initUtf8()
-	{
-		utf8_ = false;
 	}
 
 	typedef String_base<char, std::char_traits<char>, std::allocator<char>> string;
