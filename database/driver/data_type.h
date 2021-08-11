@@ -41,7 +41,7 @@ namespace daxia
 			class DataType : public BasicDataType
 			{
 			public:
-				DataType(){ static InitHelper initHelper; }
+				DataType(){}
 				DataType(const DataType& dt)
 				{ 
 					v_ = dt.v_; 
@@ -70,27 +70,15 @@ namespace daxia
 				{
 					return v_;
 				}
+
+				// 支持反射序列化
+				inline static void Init();
 			private:
 				ValueType v_;
-				// 支持反射序列化
-			private:
-				class InitHelper
-				{
-				public:
-					InitHelper(){ init(); }
-				private:
-					inline void init();
-				};
 			};
 
-			template<class ValueType>
-			void DataType<ValueType>::InitHelper::init()
-			{
-
-			}
-
 			template<>
-			inline void DataType<char>::InitHelper::init()
+			inline void daxia::database::driver::DataType<char>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -118,7 +106,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<int>::InitHelper::init()
+			inline void daxia::database::driver::DataType<int>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -146,7 +134,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<long long>::InitHelper::init()
+			inline void daxia::database::driver::DataType<long long>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -174,7 +162,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<float>::InitHelper::init()
+			inline void daxia::database::driver::DataType<float>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -202,7 +190,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<double>::InitHelper::init()
+			inline void daxia::database::driver::DataType<double>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -230,7 +218,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<daxia::string>::InitHelper::init()
+			inline void daxia::database::driver::DataType<daxia::string>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -272,7 +260,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<daxia::buffer>::InitHelper::init()
+			inline void daxia::database::driver::DataType<daxia::buffer>::Init()
 			{
 				using namespace daxia::reflect;
 
@@ -310,7 +298,7 @@ namespace daxia
 			}
 
 			template<>
-			inline void DataType<daxia::system::DateTime>::InitHelper::init()
+			inline void daxia::database::driver::DataType<daxia::system::DateTime>::Init()
 			{
 				using namespace daxia::reflect;
 

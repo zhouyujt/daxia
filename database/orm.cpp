@@ -21,6 +21,8 @@ namespace daxia
 			: driverType_(driver)
 			, scopeIdentity_(0)
 		{
+			init();
+
 			using namespace daxia::database::driver;
 
 			switch (driver)
@@ -42,6 +44,7 @@ namespace daxia
 			: driverType_(driver)
 			, scopeIdentity_(0)
 		{
+			init();
 		}
 
 		Orm::~Orm()
@@ -540,6 +543,31 @@ namespace daxia
 					reflectBase->FromString(ORM,recordset->GetRawData(tag.GetString()));
 				}
 			}
+		}
+
+		void Orm::init()
+		{
+			static InitHelper initHelper;
+		}
+
+		Orm::InitHelper::InitHelper()
+		{
+			daxia::database::driver::MySQLDriver::Init();
+			daxia::database::driver::SqliteDriver::Init();
+			daxia::database::driver::db_tinyint::Init();
+			daxia::database::driver::db_int::Init();
+			daxia::database::driver::db_bigint::Init();
+			daxia::database::driver::db_float::Init();
+			daxia::database::driver::db_double::Init();
+			daxia::database::driver::db_text::Init();
+			daxia::database::driver::db_blob::Init();
+			daxia::database::driver::db_datetime::Init();
+		}
+
+		Orm::InitHelper::~InitHelper()
+		{
+			daxia::database::driver::MySQLDriver::Uninit();
+			daxia::database::driver::SqliteDriver::Uninit();
 		}
 	}
 }

@@ -32,8 +32,6 @@ namespace daxia
 				typedef std::function<void(const daxia::string& error)> connect_callback;
 				typedef std::function<void(std::shared_ptr<BasicRecordset>, const daxia::string& error)> excute_callback;
 			public:
-				virtual void Init() = 0;
-				virtual void Uninit() = 0;
 				virtual	bool Connnect() = 0;
 				virtual	void ConnnectAsync(connect_callback cb) = 0;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) = 0;

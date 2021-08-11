@@ -265,6 +265,14 @@ namespace daxia
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
 			long long scopeIdentity_;
+		private:
+			static void init();
+			class InitHelper
+			{
+			public:
+				InitHelper();
+				~InitHelper();
+			};
 		};
 	}
 }

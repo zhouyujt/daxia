@@ -27,8 +27,8 @@ namespace daxia
 				MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
 				~MySQLDriver();
 			public:
-				virtual void Init() override;
-				virtual void Uninit() override;
+				static void Init();
+				static void Uninit();
 				virtual bool Connnect() override;
 				virtual void ConnnectAsync(connect_callback cb) override;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) override;
@@ -37,22 +37,6 @@ namespace daxia
 				virtual daxia::string TypeName(const std::type_info& type) const override;
 			private:
 				MYSQL mysql_;
-			};
-
-			class InitHelperMySQL : private MySQLDriver
-			{
-				friend MySQLDriver;
-			private:
-				InitHelperMySQL()
-					: MySQLDriver("",0,"","","")
-				{
-					Init();
-				}
-			protected:
-				~InitHelperMySQL()
-				{
-					Uninit();
-				}
 			};
 		}
 	}

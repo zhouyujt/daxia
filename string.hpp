@@ -792,8 +792,8 @@ namespace daxia
 	template<>
 	inline void daxia::String_base<char, std::char_traits<char>, std::allocator<char>>::initUtf8()
 	{
-		const static daxia::String_base<char, std::char_traits<char>, std::allocator<char>> test = "a´óÏº";
-		if (test.GetLength() == 7)
+		const static std::string test = "a´óÏº";
+		if (test.length() == 7)
 		{
 			utf8_ = true;
 		}

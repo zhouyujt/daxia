@@ -13,7 +13,6 @@ namespace daxia
 				: BasicDriver("",0,db,"","")
 				, sqlite_(nullptr)
 			{
-				static InitHelperSqliteDriver initHelper;
 			}
 
 			SqliteDriver::~SqliteDriver()

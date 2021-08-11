@@ -28,8 +28,8 @@ namespace daxia
 				SqliteDriver(const daxia::string& db);
 				~SqliteDriver();
 			public:
-				virtual void Init() override;
-				virtual void Uninit() override;
+				static void Init();
+				static void Uninit();
 				virtual bool Connnect() override;
 				virtual void ConnnectAsync(connect_callback cb) override;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) override;
@@ -41,22 +41,6 @@ namespace daxia
 			private:
 				sqlite3* sqlite_;
 				daxia::string lastError_;
-			};
-
-			class InitHelperSqliteDriver : private SqliteDriver
-			{
-				friend SqliteDriver;
-			private:
-				InitHelperSqliteDriver()
-					: SqliteDriver("")
-				{
-					Init();
-				}
-			protected:
-				~InitHelperSqliteDriver()
-				{
-					Uninit();
-				}
 			};
 		}
 	}
