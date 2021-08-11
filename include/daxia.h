@@ -65,5 +65,13 @@
 #undef dxPATH2
 #endif // _MSC_VER
 
+namespace daxia
+{
+	inline static void Init()
+	{
+		daxia::database::Orm::Init();
+		daxia::encode::Json::Init();
+	}
+}
 
 #endif // !__DAXIA_INCLUDE_DAXIA_H

@@ -30,6 +30,8 @@ namespace daxia
 		public:
 			Json() = delete;
 			~Json(){}
+			// 调用本类任何方法前需调用且仅调用一次初始化
+			static void Init();
 		public:
 			// 将指定的对象编码为json字符串
 			// 字符串编码类型（ utf8 或 ansi ）跟对象内部使用的编码一致
@@ -39,8 +41,6 @@ namespace daxia
 				using namespace std;
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
-
-				init();
 
 				// 获取内存布局
 				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
@@ -62,8 +62,6 @@ namespace daxia
 				using namespace std;
 				using namespace boost::property_tree;
 				using daxia::reflect::Reflect;
-
-				init();
 
 				// 获取内存布局
 				const reflect::Layout& layout = Reflect<ValueType>::GetLayoutFast();
@@ -97,11 +95,7 @@ namespace daxia
 			inline static void getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8);
 			inline static void getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
 			inline static void getObjectElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8);
-
-			// 初始化相关工作
 		private:
-			static void init();
-
 			class InitHelper
 			{
 			public:

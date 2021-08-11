@@ -21,8 +21,6 @@ namespace daxia
 			: driverType_(driver)
 			, scopeIdentity_(0)
 		{
-			init();
-
 			using namespace daxia::database::driver;
 
 			switch (driver)
@@ -48,12 +46,16 @@ namespace daxia
 			: driverType_(driver)
 			, scopeIdentity_(0)
 		{
-			init();
 		}
 
 		Orm::~Orm()
 		{
+		}
 
+		void Orm::Init()
+		{
+			// 防止多次初始化
+			static InitHelper initHelper;
 		}
 
 		daxia::string Orm::insert(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields)
@@ -547,11 +549,6 @@ namespace daxia
 					reflectBase->FromString(ORM,recordset->GetRawData(tag.GetString()));
 				}
 			}
-		}
-
-		void Orm::init()
-		{
-			static InitHelper initHelper;
 		}
 
 		Orm::InitHelper::InitHelper()

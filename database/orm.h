@@ -127,6 +127,9 @@ namespace daxia
 			Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
 			Orm(Driver driver, const daxia::string& connectString);
 			virtual ~Orm();
+
+			// 调用本类任何方法前需调用且仅调用一次初始化
+			static void Init();
 		public:
 			// 插入
 			// fields: 需要插入的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则插入所有已经初始化的字段。
@@ -266,7 +269,6 @@ namespace daxia
 			Driver driverType_;
 			long long scopeIdentity_;
 		private:
-			static void init();
 			class InitHelper
 			{
 			public:

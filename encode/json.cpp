@@ -10,6 +10,12 @@ namespace daxia
 {
 	namespace encode
 	{
+		void Json::Init()
+		{
+			// 防止多次调用
+			static InitHelper initHelper;
+		}
+
 		// 使用内存布局缓存进行编码
 		void Json::marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
 		{
@@ -261,11 +267,6 @@ namespace daxia
 			layout.ElementCount() = root.size();
 
 			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, utf8);
-		}
-
-		void Json::init()
-		{
-			static InitHelper initHelper;
 		}
 
 		// 特殊类型反射序列化支持
