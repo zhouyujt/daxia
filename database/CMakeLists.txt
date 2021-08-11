@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 project(database)
 
-include(FindMySQL.cmake)
-
 add_definitions(-DUNICODE -D_UNICODE)
+
 if (ORM_MYSQL STREQUAL 1)
+	include(FindMySQL.cmake)
 	add_definitions(-D__DAXIA_DATABASE_DRIVER_USE_MYSQL)
 	message(STATUS "Database use orm MySQL...")
 endif()
