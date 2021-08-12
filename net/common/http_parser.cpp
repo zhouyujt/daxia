@@ -71,16 +71,16 @@ namespace daxia
 					reflect::String* address = nullptr;
 					if (isRequest)
 					{
-						address = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().Find(line.Tokenize(":", pos).MakeLower(),this);
+						address = static_cast<RequestHeader>(daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_).Find(line.Tokenize(":", pos).MakeLower(), this);
 					}
 					else
 					{
-						address = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.Value().Find(line.Tokenize(":", pos).MakeLower(), this);
+						address = static_cast<ResponseHeader>(daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_).Find(line.Tokenize(":", pos).MakeLower(), this);
 					}
 
 					if (address)
 					{
-						address->Value() = line.Mid(pos, -1);
+						*address = line.Mid(pos, -1);
 					}
 
 					lastLineEndPos = lineEndPos;
@@ -156,13 +156,13 @@ namespace daxia
 				msg += CRLF;
 
 				// 设置Content-Length
-				if (daxia::string(response->ContentLength.Value()).NumericCast<int>() == 0)
+				if (daxia::string(response->ContentLength).NumericCast<int>() == 0)
 				{
-					if (len) response->ContentLength.Value() = daxia::string::ToString(len);
+					if (len) response->ContentLength = daxia::string::ToString(len);
 				}
 
 				// 设置Server
-				if (response->Server.Value().empty()) response->Server.Value() = "powered by daxia";
+				if (static_cast<std::string>(response->Server).empty()) response->Server = "powered by daxia";
 
 				// 设置所有响应头
 				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayoutFast();
@@ -173,10 +173,10 @@ namespace daxia
 					catch (const std::exception&){}
 					if (field == nullptr) continue;
 
-					if (!field->Value().empty())
+					if (!static_cast<std::string>(*field).empty())
 					{
 						daxia::string temp;
-						temp.Format("%s:%s", field->Tag("http").GetString(), field->Value().c_str());
+						temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<std::string>(*field).c_str());
 						msg += temp;
 						msg += CRLF;
 					}
@@ -243,7 +243,7 @@ namespace daxia
 				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
-				daxia::string ContentLengtTag = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().ContentLength.Tag("http");
+				daxia::string ContentLengtTag = static_cast<RequestHeader>(daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_).ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;
@@ -325,7 +325,7 @@ namespace daxia
 				packetLen = headerEndPos + strlen(CRLFCRLF);
 
 				// 获取Content-Length
-				daxia::string ContentLengtTag = daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_.Value().ContentLength.Tag("http");
+				daxia::string ContentLengtTag = static_cast<RequestHeader>(daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_).ContentLength.Tag("http");
 				ContentLengtTag.MakeLower();
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;

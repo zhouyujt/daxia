@@ -49,28 +49,30 @@ namespace daxia
 				}
 				~DataType(){}
 			public:
-				DataType& operator=(ValueType v)
+				operator ValueType&()
 				{
-					init_ = true;
-					v_ = v;
-					return *this;
+					return v_;
 				}
 
 				operator const ValueType&() const
 				{
 					return v_;
 				}
+
+				DataType& operator=(const DataType& v)
+				{
+					init_ = v.init_;
+					v_ = v.v_;
+					return *this;
+				}
+
+				ValueType& operator=(const ValueType& v)
+				{
+					init_ = true;
+					v_ = v;
+					return v_;
+				}
 			public:
-				ValueType& Value()
-				{
-					return v_;
-				}
-
-				const ValueType& Value() const
-				{
-					return v_;
-				}
-
 				// 支持反射序列化
 				inline static void Init();
 			private:
@@ -84,7 +86,7 @@ namespace daxia
 
 				Reflect<DataType<char>>::SetToString(ORM, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<char>*>(data)->Value());
+					return daxia::string::ToString(static_cast<char>(*reinterpret_cast<const DataType<char>*>(data)));
 				});
 
 				Reflect<DataType<char>>::SetFromString(ORM, [](const daxia::string& str, void* data)
@@ -95,7 +97,7 @@ namespace daxia
 
 				Reflect<DataType<char>>::SetToString(JSON, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<char>*>(data)->Value());
+					return daxia::string::ToString(static_cast<char>(*reinterpret_cast<const DataType<char>*>(data)));
 				});
 
 				Reflect<DataType<char>>::SetFromString(JSON, [](const daxia::string& str, void* data)
@@ -112,7 +114,7 @@ namespace daxia
 
 				Reflect<DataType<int>>::SetToString(ORM, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<int>*>(data)->Value());
+					return daxia::string::ToString(static_cast<int>(*reinterpret_cast<const DataType<int>*>(data)));
 				});
 
 				Reflect<DataType<int>>::SetFromString(ORM, [](const daxia::string& str, void* data)
@@ -123,7 +125,7 @@ namespace daxia
 
 				Reflect<DataType<int>>::SetToString(JSON, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<int>*>(data)->Value());
+					return daxia::string::ToString(static_cast<int>(*reinterpret_cast<const DataType<int>*>(data)));
 				});
 
 				Reflect<DataType<int>>::SetFromString(JSON, [](const daxia::string& str, void* data)
@@ -140,7 +142,7 @@ namespace daxia
 
 				Reflect<DataType<long long>>::SetToString(ORM, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<long long>*>(data)->Value());
+					return daxia::string::ToString(static_cast<long long>(*reinterpret_cast<const DataType<long long>*>(data)));
 				});
 
 				Reflect<DataType<long long>>::SetFromString(ORM, [](const daxia::string& str, void* data)
@@ -151,7 +153,7 @@ namespace daxia
 
 				Reflect<DataType<long long>>::SetToString(JSON, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<long long>*>(data)->Value());
+					return daxia::string::ToString(static_cast<long long>(*reinterpret_cast<const DataType<long long>*>(data)));
 				});
 
 				Reflect<DataType<long long>>::SetFromString(JSON, [](const daxia::string& str, void* data)
@@ -168,7 +170,7 @@ namespace daxia
 
 				Reflect<DataType<float>>::SetToString(ORM, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<float>*>(data)->Value());
+					return daxia::string::ToString(static_cast<float>(*reinterpret_cast<const DataType<float>*>(data)));
 				});
 
 				Reflect<DataType<float>>::SetFromString(ORM, [](const daxia::string& str, void* data)
@@ -179,7 +181,7 @@ namespace daxia
 
 				Reflect<DataType<float>>::SetToString(JSON, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<float>*>(data)->Value());
+					return daxia::string::ToString(static_cast<float>(*reinterpret_cast<const DataType<float>*>(data)));
 				});
 
 				Reflect<DataType<float>>::SetFromString(JSON, [](const daxia::string& str, void* data)
@@ -196,7 +198,7 @@ namespace daxia
 
 				Reflect<DataType<double>>::SetToString(ORM, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<double>*>(data)->Value());
+					return daxia::string::ToString(static_cast<double>(*reinterpret_cast<const DataType<double>*>(data)));
 				});
 
 				Reflect<DataType<double>>::SetFromString(ORM, [](const daxia::string& str, void* data)
@@ -207,7 +209,7 @@ namespace daxia
 
 				Reflect<DataType<double>>::SetToString(JSON, [](const void* data)
 				{
-					return daxia::string::ToString(reinterpret_cast<const DataType<double>*>(data)->Value());
+					return daxia::string::ToString(static_cast<double>(*reinterpret_cast<const DataType<double>*>(data)));
 				});
 
 				Reflect<DataType<double>>::SetFromString(JSON, [](const daxia::string& str, void* data)
@@ -224,7 +226,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::string>>::SetToString(ORM, [](const void* data)
 				{
-					const daxia::string& v = reinterpret_cast<const DataType<daxia::string>*>(data)->Value();;
+					const daxia::string& v = static_cast<daxia::string>(*reinterpret_cast<const DataType<daxia::string>*>(data));
 
 					daxia::string result = "\'";
 					result += v + "\'";
@@ -240,7 +242,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::string>>::SetToString(JSON, [](const void* data)
 				{
-					const daxia::string& v = reinterpret_cast<const DataType<daxia::string>*>(data)->Value();;
+					const daxia::string& v = static_cast<daxia::string>(*reinterpret_cast<const DataType<daxia::string>*>(data));
 
 					daxia::string temp(v);
 					temp.Replace("\\", "\\\\");
@@ -266,7 +268,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::buffer>>::SetToString(ORM, [](const void* data)
 				{
-					const daxia::buffer& v = reinterpret_cast<const DataType<daxia::buffer>*>(data)->Value();
+					const daxia::buffer& v = static_cast<daxia::buffer>(*reinterpret_cast<const DataType<daxia::buffer>*>(data));
 
 					daxia::string result = "\'";
 					result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\'";
@@ -282,7 +284,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::buffer>>::SetToString(JSON, [](const void* data)
 				{
-					const daxia::buffer& v = reinterpret_cast<const DataType<daxia::buffer>*>(data)->Value();
+					const daxia::buffer& v = static_cast<daxia::buffer>(*reinterpret_cast<const DataType<daxia::buffer>*>(data));
 
 					daxia::string result = "\"";
 					result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\"";
@@ -304,7 +306,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::system::DateTime>>::SetToString(ORM, [](const void* data)
 				{
-					const daxia::system::DateTime& v = reinterpret_cast<const DataType<daxia::system::DateTime>*>(data)->Value();
+					const daxia::system::DateTime& v = static_cast<daxia::system::DateTime>(*reinterpret_cast<const DataType<daxia::system::DateTime>*>(data));
 
 					daxia::string result = "\'";
 					result += v.ToString() + "\'";
@@ -320,7 +322,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::system::DateTime>>::SetToString(JSON, [](const void* data)
 				{
-					const daxia::system::DateTime& v = reinterpret_cast<const DataType<daxia::system::DateTime>*>(data)->Value();
+					const daxia::system::DateTime& v = static_cast<daxia::system::DateTime>(*reinterpret_cast<const DataType<daxia::system::DateTime>*>(data));
 
 					daxia::string result = "\"";
 					result += v.ToString() + "\"";

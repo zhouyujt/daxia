@@ -38,7 +38,7 @@ namespace daxia
 				init(&this->v_);
 			}
 
-			Reflect(const char* tags)
+			explicit Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
 				init(&this->v_);
@@ -73,6 +73,12 @@ namespace daxia
 				v_ = v.v_;
 				return *this;
 			}
+
+			ValueType& operator=(const ValueType& v)
+			{
+				v_ = v;
+				return v_;
+			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<ValueType>(); } return layout_/*直接读取静态变量，不走构造函数以免重新解析tag*/; }
@@ -82,8 +88,6 @@ namespace daxia
 			virtual const std::type_info& Type() const override { return typeid(ValueType); }
 			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
 			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
-			ValueType& Value(){ return v_; }
-			const ValueType& Value() const { return v_; }
 
 			// 设置跟字符串相互转换的方法
 			static void SetToString(const char* tag, std::function<daxia::string(const void*)> func) { tostringFuncs_[tag] = func; GetLayoutFast().Type() = reflect::Layout::value; }
@@ -207,7 +211,7 @@ namespace daxia
 				init();
 			}
 
-			Reflect(const char* tags)
+			explicit Reflect(const char* tags)
 				: Reflect_base(tags)
 			{
 				init();
@@ -242,6 +246,12 @@ namespace daxia
 				v_ = v.v_;
 				return *this;
 			}
+
+			std::vector<ValueType>& operator=(const std::vector<ValueType>& v)
+			{
+				v_ = v;
+				return v_;
+			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<std::vector<ValueType>>(); } return layout_/*直接读取静态变量，不走构造函数以免重新解析tag*/; }
@@ -256,8 +266,6 @@ namespace daxia
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
 			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
-			std::vector<ValueType>& Value(){ return v_; }
-			const std::vector<ValueType>& Value() const { return v_; }
 		private:
 			// 数组信息
 			struct ArrayInfo
@@ -294,7 +302,7 @@ namespace daxia
 			if (arrayElementIndex < v_.size())
 			{
 				Reflect<ValueType> temp;
-				temp.Value() = v_[arrayElementIndex];
+				temp = v_[arrayElementIndex];
 				return temp.ToString(tag);
 			}
 
@@ -307,7 +315,7 @@ namespace daxia
 			{
 				Reflect<ValueType> temp;
 				temp.FromString(tag,str);
-				v_[arrayElementIndex] = temp.Value();
+				v_[arrayElementIndex] = temp;
 			}
 		}
 
@@ -338,12 +346,7 @@ namespace daxia
 			{
 			}
 
-			Vector(const std::string& tags)
-				: Reflect<std::vector<T>>(tags)
-			{
-			}
-
-			Vector(const char* tags)
+			explicit Vector(const char* tags)
 				: Reflect<std::vector<T>>(tags)
 			{
 			}

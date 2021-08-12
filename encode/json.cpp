@@ -98,7 +98,7 @@ namespace daxia
 			const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
 
 			boost::property_tree::ptree child;
-			if (array->Value().empty())
+			if (static_cast<std::vector<unknow>>(*array).empty())
 			{
 				boost::property_tree::ptree tr;
 				child.push_back(make_pair("", tr));
@@ -106,8 +106,8 @@ namespace daxia
 			else
 			{
 				int index = 0;
-				const unknow* begin = reinterpret_cast<const char*>(&(*(array->Value().begin())));
-				const unknow* end = begin + array->Value().size();
+				const unknow* begin = reinterpret_cast<const char*>(&(*(static_cast<std::vector<unknow>>(*array).begin())));
+				const unknow* end = begin + static_cast<std::vector<unknow>>(*array).size();
 				for (const unknow* iter = begin;
 					iter != end;
 					iter += reflectBase->GetLayout().ElementSize(), ++index)
@@ -139,13 +139,13 @@ namespace daxia
 				typedef char unknow;
 				using daxia::reflect::Reflect;
 				const Reflect<std::vector<unknow>>* array = reinterpret_cast<const Reflect<std::vector<unknow>>*>(reflectBase);
-				layout.ElementCount() = array->Value().size() / layout.ElementSize();
+				layout.ElementCount() = static_cast<std::vector<unknow>>(*array).size() / layout.ElementSize();
 			}
 
 			boost::property_tree::ptree child;
-			if (!array->Value().empty())
+			if (!static_cast<std::vector<unknow>>(*array).empty())
 			{
-				const char* baseaddr = reinterpret_cast<const char*>(&(*(array->Value().begin())));
+				const char* baseaddr = reinterpret_cast<const char*>(&(*(static_cast<std::vector<unknow>>(*array).begin())));
 				if (baseaddr != nullptr)
 				{
 					marshal(baseaddr, layout, child);
@@ -266,7 +266,7 @@ namespace daxia
 			Layout layout = reflectBase->GetLayout();
 			layout.ElementCount() = root.size();
 
-			ummarshal(reinterpret_cast<char*>(&(*(array->Value().begin()))), layout, root, utf8);
+			ummarshal(reinterpret_cast<char*>(&(*(static_cast<std::vector<unknow>>(*array).begin()))), layout, root, utf8);
 		}
 
 		// 特殊类型反射序列化支持

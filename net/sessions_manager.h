@@ -72,18 +72,14 @@ namespace daxia
 				clientIter != sessions_.end();
 				++clientIter)
 			{
-				auto userDataIter = clientIter->second->userData_.find(static_cast<int>(daxia::string(key).Hash()));
-				if (userDataIter != clientIter->second->userData_.end() && userDataIter->second.type() == typeid(data))
+				T* userdata = clientIter->second->GetUserData<T>(key.c_str());
+				if (userdata != nullptr)
 				{
-					try
+					if (*userdata == data)
 					{
-						if (boost::any_cast<T>(userDataIter->second) == data) session = clientIter->second;
+						session = clientIter->second;
+						break;
 					}
-					catch (...)
-					{
-					}
-
-					if (session) break;
 				}
 			}
 

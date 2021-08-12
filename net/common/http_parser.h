@@ -372,8 +372,8 @@ namespace daxia
 				public:
 					HeaderHelp()
 					{
-						InitIndex(request_);
-						InitIndex(response_);
+						InitIndex<RequestHeader>(request_);
+						InitIndex<ResponseHeader>(response_);
 
 #define XX(code,text)	status_[code] = #text;
 						HTTP_STATUS_MAP(XX)
@@ -385,17 +385,17 @@ namespace daxia
 					}
 				private:
 					template<class T>
-					void InitIndex(T& obj)
+					void InitIndex(reflect::Reflect<T>& obj)
 					{
 						auto layout = obj.GetLayoutFast();
 						for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 						{
 							const reflect::String* field = nullptr;
-							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(&obj.Value()) + iter->offset)); }
+							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(obj.ValueAddr()) + iter->offset)); }
 							catch (const std::exception&){}
 							if (field == nullptr) continue;
 
-							obj.Value().index_[daxia::string(field->Tag("http")).MakeLower()] = iter->offset;
+							static_cast<T>(obj).index_[daxia::string(field->Tag("http")).MakeLower()] = iter->offset;
 						}
 					}
 				public:
