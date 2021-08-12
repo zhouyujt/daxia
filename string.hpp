@@ -255,8 +255,8 @@ namespace daxia
 			const static bool value = false;
 		};
 
-		template<>
-		struct utf8 < size<30> >
+		template<class T>
+		struct utf8 <T, size<30> >
 		{
 			const static bool value = true;
 		};
@@ -264,27 +264,27 @@ namespace daxia
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base()
-		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
+		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str)
-		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
+		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str);
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str, size_t count)
-		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
+		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str, count);
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const std::basic_string<Elem, Traits, Alloc>& str)
-		: utf8_(utf8<size<sizeof(__utf8Test)>>::value)
+		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str, 0, -1);
 	}
