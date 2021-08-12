@@ -29,9 +29,9 @@
 
 namespace daxia
 {
-	// ansi: sizeof(test) == 6
-	// utf8: sizeof(test) == 8
-	const static char __utf8Test[] = "a大虾";
+	// ansi: sizeof(__utf8Test) == 24 
+	// utf8: sizeof(__utf8Test) == 30
+	const static char __utf8Test[] = "powered by 漓江里的大虾";
 
 	template<class Elem, class Traits, class Alloc>
 	class String_base
@@ -256,7 +256,7 @@ namespace daxia
 		};
 
 		template<>
-		struct utf8 < size<8> >
+		struct utf8 < size<30> >
 		{
 			const static bool value = true;
 		};
