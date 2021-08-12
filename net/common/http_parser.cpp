@@ -162,7 +162,7 @@ namespace daxia
 				}
 
 				// 设置Server
-				if (static_cast<std::string>(response->Server).empty()) response->Server = "powered by daxia";
+				if (static_cast<daxia::string>(response->Server).IsEmpty()) response->Server = "powered by daxia";
 
 				// 设置所有响应头
 				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayoutFast();
@@ -173,10 +173,10 @@ namespace daxia
 					catch (const std::exception&){}
 					if (field == nullptr) continue;
 
-					if (!static_cast<std::string>(*field).empty())
+					if (!static_cast<daxia::string>(*field).IsEmpty())
 					{
 						daxia::string temp;
-						temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<std::string>(*field).c_str());
+						temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<daxia::string>(*field).GetString());
 						msg += temp;
 						msg += CRLF;
 					}

@@ -337,7 +337,7 @@ namespace daxia
 		typedef Reflect<unsigned long> ULong;
 		typedef Reflect<long long> LLong;
 		typedef Reflect<unsigned long long> ULLong;
-		typedef Reflect<std::string> String;
+		typedef Reflect<daxia::string> String;
 		template <typename T> class Vector : public Reflect<std::vector<T>>
 		{
 		public:
