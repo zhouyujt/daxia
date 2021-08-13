@@ -266,14 +266,6 @@ namespace daxia
 			virtual const std::type_info& Type() const override { return typeid(std::vector<ValueType>); }
 			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
 			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
-		private:
-			// 数组信息
-			struct ArrayInfo
-			{
-				daxia::string firstTag;
-				reflect::Layout layout;
-			};
-
 			static void init();
 		private:
 			std::vector<ValueType> v_;
