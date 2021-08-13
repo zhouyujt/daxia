@@ -337,23 +337,23 @@ namespace daxia
 				});
 			}
 
-			typedef DataType<char> db_tinyint;
-			typedef DataType<int> db_int;
-			typedef DataType<long long> db_bigint;
-			typedef DataType<float> db_float;
-			typedef DataType<double> db_double;
-			typedef DataType<daxia::string> db_text;
-			typedef DataType<daxia::buffer> db_blob;
-			typedef DataType<daxia::system::DateTime> db_datetime;
+			using db_tinyint = DataType < char > ;
+			using db_int = DataType < int > ;
+			using db_bigint = DataType < long long > ;
+			using db_float = DataType < float > ;
+			using db_double = DataType < double > ;
+			using db_text = DataType < daxia::string > ;
+			using db_blob = DataType < daxia::buffer > ;
+			using db_datetime = DataType < daxia::system::DateTime > ;
 
-			typedef daxia::reflect::Reflect<db_tinyint> ref_db_tinyint;
-			typedef daxia::reflect::Reflect<db_int> ref_db_int;
-			typedef daxia::reflect::Reflect<db_bigint> ref_db_bigint;
-			typedef daxia::reflect::Reflect<db_float> ref_db_float;
-			typedef daxia::reflect::Reflect<db_double> ref_db_double;
-			typedef daxia::reflect::Reflect<db_text> ref_db_text;
-			typedef daxia::reflect::Reflect<db_blob> ref_db_blob;
-			typedef daxia::reflect::Reflect<db_datetime> ref_db_datetime;
+			using ref_db_tinyint = daxia::reflect::Reflect < db_tinyint > ;
+			using ref_db_int = daxia::reflect::Reflect < db_int > ;
+			using ref_db_bigint = daxia::reflect::Reflect < db_bigint > ;
+			using ref_db_float = daxia::reflect::Reflect < db_float > ;
+			using ref_db_double = daxia::reflect::Reflect < db_double > ;
+			using ref_db_text = daxia::reflect::Reflect < db_text > ;
+			using ref_db_blob = daxia::reflect::Reflect < db_blob > ;
+			using ref_db_datetime = daxia::reflect::Reflect < db_datetime > ;
 		}
 	}
 }

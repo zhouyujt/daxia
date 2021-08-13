@@ -514,32 +514,20 @@ namespace daxia
 			static InitHelper initHelper;
 		}
 
-		typedef Reflect<bool> ref_bool;
-		typedef Reflect<char> ref_char;
-		typedef Reflect<unsigned char> ref_unsigned_char;
-		typedef Reflect<short> ref_short;
-		typedef Reflect<unsigned short> ref_unsigned_short;
-		typedef Reflect<int> ref_int;
-		typedef Reflect<unsigned int> ref_unsigned_int;
-		typedef Reflect<long> ref_long;
-		typedef Reflect<unsigned long> ref_unsigned_long;
-		typedef Reflect<long long> ref_long_long;
-		typedef Reflect<unsigned long long> ref_unsigned_long_long;
-		typedef Reflect<daxia::string> ref_string;
-		template <typename T> class ref_vector : public Reflect<std::vector<T>>
-		{
-		public:
-			ref_vector()
-				: Reflect<std::vector<T>>()
-			{
-			}
-
-			explicit ref_vector(const char* tags)
-				: Reflect<std::vector<T>>(tags)
-			{
-			}
-
-		};
+		using ref_bool = Reflect < bool > ;
+		using ref_char = Reflect < char > ;
+		using ref_unsigned_char = Reflect < unsigned char > ;
+		using ref_short = Reflect < short > ;
+		using ref_unsigned_short = Reflect < unsigned short > ;
+		using ref_int = Reflect < int > ;
+		using ref_unsigned_int = Reflect < unsigned int > ;
+		using ref_long = Reflect < long > ;
+		using ref_unsigned_long = Reflect < unsigned long > ;
+		using ref_long_long = Reflect < long long > ;
+		using ref_unsigned_long_long = Reflect<unsigned long long>;
+		using ref_string = Reflect < daxia::string > ;
+		template<typename T> using ref_vector = Reflect < std::vector<T> > ;
+			
 	}// namespace reflect
 }// namespace daxia
 
