@@ -348,6 +348,39 @@ namespace daxia
 		}
 	}
 }
+
+// 特化Reflect,重载=操作符
+//namespace daxia
+//{
+//	namespace reflect
+//	{
+//		template<class ValueType>
+//		class Reflect<daxia::database::driver::DataType<ValueType>> : public Reflect<ValueType>
+//		{
+//		public:
+//			Reflect();
+//			Reflect(const char* tag) : Reflect<ValueType>(tag) {}
+//		public:
+//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const Reflect<daxia::database::driver::DataType<ValueType>>& v)
+//			{
+//				static_cast<ValueType>(v_) = static_cast<ValueType>(v);
+//				return *this;
+//			}
+//
+//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const Reflect<ValueType>& v)
+//			{
+//				static_cast<ValueType>(v_) = static_cast<ValueType>(v);
+//				return *this;
+//			}
+//
+//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const ValueType& v)
+//			{
+//				static_cast<ValueType>(v_) = v;
+//				return *this;
+//			}
+//		};
+//	}
+//}
 #undef JSON
 #undef ORM
 #endif	// !__DAXIA_DATABASE_DATA_TYPE_H

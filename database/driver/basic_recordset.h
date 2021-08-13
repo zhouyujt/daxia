@@ -12,7 +12,7 @@
 */
 #ifndef __DAXIA_DATABASE_DRIVER_BASIC_RECORDSET_H
 #define __DAXIA_DATABASE_DRIVER_BASIC_RECORDSET_H
-#include "data_type.h"
+#include "data_type.hpp"
 #include "../../string.hpp"
 
 namespace daxia
