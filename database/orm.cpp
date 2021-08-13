@@ -85,7 +85,7 @@ namespace daxia
 				}
 
 				// 强制排除未初始化字段
-				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
 				{
 					continue;
 				}
@@ -150,7 +150,7 @@ namespace daxia
 				}
 
 				// 强制排除未初始化字段
-				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
 				{
 					continue;
 				}
@@ -259,7 +259,7 @@ namespace daxia
 				}
 
 				// 强制排除未初始化字段
-				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
 				{
 					continue;
 				}
@@ -517,7 +517,7 @@ namespace daxia
 				auto attribute = reflectBase->TagAttribute(ORM);
 				if (attribute.find(PRIMARY_KEY) != attribute.end())
 				{
-					if (reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsInit())
+					if (reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
 					{
 						condition = reflectBase->Tag(ORM);
 						condition += "=";

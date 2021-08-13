@@ -32,7 +32,7 @@ namespace daxia
 				BasicDataType() : init_(false) {}
 				~BasicDataType() {}
 			public:
-				bool IsInit() const{ return init_; }
+				bool IsAssign() const{ return init_; }
 			protected:
 				bool init_;
 			};
