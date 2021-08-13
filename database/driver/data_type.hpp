@@ -345,42 +345,19 @@ namespace daxia
 			typedef DataType<daxia::string> db_text;
 			typedef DataType<daxia::buffer> db_blob;
 			typedef DataType<daxia::system::DateTime> db_datetime;
+
+			typedef daxia::reflect::Reflect<db_tinyint> ref_db_tinyint;
+			typedef daxia::reflect::Reflect<db_int> ref_db_int;
+			typedef daxia::reflect::Reflect<db_bigint> ref_db_bigint;
+			typedef daxia::reflect::Reflect<db_float> ref_db_float;
+			typedef daxia::reflect::Reflect<db_double> ref_db_double;
+			typedef daxia::reflect::Reflect<db_text> ref_db_text;
+			typedef daxia::reflect::Reflect<db_blob> ref_db_blob;
+			typedef daxia::reflect::Reflect<db_datetime> ref_db_datetime;
 		}
 	}
 }
 
-// 特化Reflect,重载=操作符
-//namespace daxia
-//{
-//	namespace reflect
-//	{
-//		template<class ValueType>
-//		class Reflect<daxia::database::driver::DataType<ValueType>> : public Reflect<ValueType>
-//		{
-//		public:
-//			Reflect();
-//			Reflect(const char* tag) : Reflect<ValueType>(tag) {}
-//		public:
-//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const Reflect<daxia::database::driver::DataType<ValueType>>& v)
-//			{
-//				static_cast<ValueType>(v_) = static_cast<ValueType>(v);
-//				return *this;
-//			}
-//
-//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const Reflect<ValueType>& v)
-//			{
-//				static_cast<ValueType>(v_) = static_cast<ValueType>(v);
-//				return *this;
-//			}
-//
-//			Reflect<daxia::database::driver::DataType<ValueType>>& operator=(const ValueType& v)
-//			{
-//				static_cast<ValueType>(v_) = v;
-//				return *this;
-//			}
-//		};
-//	}
-//}
 #undef JSON
 #undef ORM
 #endif	// !__DAXIA_DATABASE_DATA_TYPE_H

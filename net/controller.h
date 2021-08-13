@@ -79,7 +79,7 @@ namespace daxia
 				if (!context_.expired())
 				{
 					Response().StartLine.StatusCode = "200";
-					Response().ContentType.Value() = ContentType.json;
+					Response().ContentType = ContentType.json;
 					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
 				}
 			}

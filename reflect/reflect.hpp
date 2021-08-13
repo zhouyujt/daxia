@@ -26,11 +26,22 @@
 
 namespace daxia
 {
+	namespace database
+	{
+		namespace driver
+		{
+			template<typename T>
+			class DataType;
+		}
+	}
+
 	namespace reflect
 	{
 		template<typename ValueType>
 		class Reflect : public Reflect_base
 		{
+		public:
+			typedef ValueType type;
 		public:
 			Reflect()
 				: Reflect_base(nullptr)
@@ -44,7 +55,7 @@ namespace daxia
 				init(&this->v_);
 			}
 
-			~Reflect(){}
+			virtual ~Reflect(){}
 		public:
 			Reflect_base& Swap(Reflect_base& r)
 			{
@@ -66,6 +77,16 @@ namespace daxia
 			operator const ValueType&() const
 			{
 				return v_;
+			}
+
+			ValueType* operator->()
+			{
+				return &v_;
+			}
+
+			const ValueType* operator->() const
+			{
+				return &v_;
 			}
 
 			Reflect& operator=(const Reflect& v)
@@ -95,11 +116,12 @@ namespace daxia
 		private:
 			static void init(const void* baseaddr);
 			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
-		private:
+		protected:
 			ValueType v_;
 			static reflect::Layout layout_;
 			static std::map<daxia::string, std::function<daxia::string(const void*)>> tostringFuncs_;
 			static std::map<daxia::string, std::function<void(const daxia::string&, void*)>> fromstringFuncs_;
+		private:
 			class InitHelper
 			{
 			public:
@@ -164,7 +186,6 @@ namespace daxia
 		template<> inline void daxia::reflect::Reflect<float>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<float>(); }
 		template<> inline void daxia::reflect::Reflect<bool>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<char>() != 0; }
 
-
 		template<typename ValueType>
 		void daxia::reflect::Reflect<ValueType>::init(const void* baseaddr)
 		{
@@ -199,11 +220,60 @@ namespace daxia
 			}
 		}
 
+		template<typename ValueType>
+		class Reflect<daxia::database::driver::DataType<ValueType>> : public Reflect<ValueType>
+		{
+		public:
+			typedef daxia::database::driver::DataType<ValueType> type;
+		public:
+			Reflect() {}
+			Reflect(const char* tag) : Reflect<ValueType>(tag) {}
+			~Reflect(){}
+		public:
+			operator daxia::database::driver::DataType<ValueType>&()
+			{
+				return v_;
+			}
+
+			operator const daxia::database::driver::DataType<ValueType>&() const
+			{
+				return v_;
+			}
+
+			daxia::database::driver::DataType<ValueType>* operator->()
+			{
+				return &v_;
+			}
+
+			const daxia::database::driver::DataType<ValueType>* operator->() const
+			{
+				return &v_;
+			}
+
+			Reflect& operator=(const Reflect& v)
+			{
+				v_ = v.v_;
+				Reflect<ValueType>::v_ = v.v_;
+				return *this;
+			}
+
+			Reflect& operator=(const ValueType& v)
+			{
+				v_ = v;
+				Reflect<ValueType>::v_ = v;
+				return *this;
+			}
+		private:
+			daxia::database::driver::DataType<ValueType> v_;
+		};
+
 		//////////////////////////////////////////////////////////////////////////
 		// 针对std::vector<ValueType>进行特化
 		template<typename ValueType>
 		class Reflect<std::vector<ValueType>> : public Reflect_base
 		{
+		public:
+			typedef std::vector<ValueType> type;
 		public:
 			Reflect()
 				: Reflect_base(nullptr)
@@ -239,6 +309,16 @@ namespace daxia
 			operator const std::vector<ValueType>&() const
 			{
 				return v_;
+			}
+
+			std::vector<ValueType>* operator->()
+			{
+				return &v_;
+			}
+
+			const std::vector<ValueType>* operator->() const
+			{
+				return &v_;
 			}
 
 			Reflect& operator=(const Reflect& v)
