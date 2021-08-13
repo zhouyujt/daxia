@@ -92,6 +92,8 @@ namespace daxia
 	{
 		namespace common
 		{
+			using namespace reflect;
+
 			class HttpParser : public Parser
 			{
 			protected:
@@ -136,14 +138,14 @@ namespace daxia
 				// 请求方法
 				struct Methods
 				{
-					reflect::String Get = "http:GET";				// 获取资源
-					reflect::String Post = "http:POST";				// 传送实体主体
-					reflect::String Put = "http:PUT";				// 传输文件 尽量配合REST标准
-					reflect::String Head = "http:HEAD";				// 获得报文首部, 和GET方法一样,只是不返回报文主体部分. 用于确认URI的有效性及资源更新的日期时间等.
-					reflect::String Delete = "http:DELETE";			// 删除文件 尽量配合REST标准
-					reflect::String Options = "http:OPTIONS";		// 询问支持的方法, 用来查询针对请求URI指定的资源支持的方法
-					reflect::String Trace = "http:TRACE";			// 追踪路径, 极不常用
-					reflect::String Connect = "http:CONNECT";		// 要求用隧道协议连接代理
+					ref_string Get = "http:GET";				// 获取资源
+					ref_string Post = "http:POST";				// 传送实体主体
+					ref_string Put = "http:PUT";				// 传输文件 尽量配合REST标准
+					ref_string Head = "http:HEAD";				// 获得报文首部, 和GET方法一样,只是不返回报文主体部分. 用于确认URI的有效性及资源更新的日期时间等.
+					ref_string Delete = "http:DELETE";			// 删除文件 尽量配合REST标准
+					ref_string Options = "http:OPTIONS";		// 询问支持的方法, 用来查询针对请求URI指定的资源支持的方法
+					ref_string Trace = "http:TRACE";			// 追踪路径, 极不常用
+					ref_string Connect = "http:CONNECT";		// 要求用隧道协议连接代理
 
 					bool IsValidMethod(const char* method)
 					{
@@ -208,17 +210,17 @@ namespace daxia
 					Warning				错误通知								110 111 112 113 199 214 299
 					*/
 				public:
-					reflect::String CacheControl = "http:Cache-Control";
-					reflect::String Connection = "http:Connection";
-					reflect::String Date = "http:Date";
-					reflect::String Pragma = "http:Pragma";
-					reflect::String Trailer = "http:Trailer";
-					reflect::String TransferEncoding = "http:Transfer-Encoding";
-					reflect::String Upgrade = "http:Upgrade";
-					reflect::String Via = "http:Via";
-					reflect::String Warning = "http:Warning";
+					ref_string CacheControl = "http:Cache-Control";
+					ref_string Connection = "http:Connection";
+					ref_string Date = "http:Date";
+					ref_string Pragma = "http:Pragma";
+					ref_string Trailer = "http:Trailer";
+					ref_string TransferEncoding = "http:Transfer-Encoding";
+					ref_string Upgrade = "http:Upgrade";
+					ref_string Via = "http:Via";
+					ref_string Warning = "http:Warning";
 				public:
-					reflect::String* Find(const daxia::string& key,const void* base) const;
+					ref_string* Find(const daxia::string& key, const void* base) const;
 				protected:
 					size_t InitFromData(const void* data, size_t len, bool isRequest);
 				private:
@@ -254,25 +256,25 @@ namespace daxia
 					User-Agent			HTTP客户端程序的信息					创建请求的浏览器 \用户代理名称等信息
 					*/
 				public:
-					reflect::String Accept = "http:Accept";
-					reflect::String AcceptCharset = "http:Accept-Charset";
-					reflect::String AcceptEncoding = "http:Accept-Encoding";
-					reflect::String AcceptLanguage = "http:Accept-Language";
-					reflect::String Authorization = "http:Authorization";
-					reflect::String Expect = "http:Expect";
-					reflect::String From = "http:From";
-					reflect::String Host = "http:Host";
-					reflect::String IfMatch = "http:If-Match";
-					reflect::String IfModifiedSince = "http:If-Modified-Since";
-					reflect::String IfNoneMatch = "http:If-None-match";
-					reflect::String IfRange = "http:If-Range";
-					reflect::String IfUnmodifiedSince = "http:If-Unmodified-Since";
-					reflect::String MaxForward = "http:Max-Forward";
-					reflect::String ProxyAuthorization = "http:Proxy-Authorization";
-					reflect::String Range = "http:Range";
-					reflect::String Referer = "http:Referer";
-					reflect::String TE = "http:TE";
-					reflect::String UserAgent = "http:User-Agent";
+					ref_string Accept = "http:Accept";
+					ref_string AcceptCharset = "http:Accept-Charset";
+					ref_string AcceptEncoding = "http:Accept-Encoding";
+					ref_string AcceptLanguage = "http:Accept-Language";
+					ref_string Authorization = "http:Authorization";
+					ref_string Expect = "http:Expect";
+					ref_string From = "http:From";
+					ref_string Host = "http:Host";
+					ref_string IfMatch = "http:If-Match";
+					ref_string IfModifiedSince = "http:If-Modified-Since";
+					ref_string IfNoneMatch = "http:If-None-match";
+					ref_string IfRange = "http:If-Range";
+					ref_string IfUnmodifiedSince = "http:If-Unmodified-Since";
+					ref_string MaxForward = "http:Max-Forward";
+					ref_string ProxyAuthorization = "http:Proxy-Authorization";
+					ref_string Range = "http:Range";
+					ref_string Referer = "http:Referer";
+					ref_string TE = "http:TE";
+					ref_string UserAgent = "http:User-Agent";
 
 					/*实体首部字段(Entity Header Fields) 针对请求报文和响应报文的实体部分使用的首部.补充了资源内容更新时间等与实体有关的信息
 					首部字段名			说明									备注
@@ -289,17 +291,17 @@ namespace daxia
 					Last-Modified		资源的最后修改日期时间
 					*/
 				public:
-					reflect::String Allow = "http:Allow";
-					reflect::String Cookie = "http:Cookie";
-					reflect::String ContentEncoding = "http:Content-Encoding";
-					reflect::String ContentLanguage = "http:Content-Language";
-					reflect::String ContentLength = "http:Content-Length";
-					reflect::String ContentLocation = "http:Content-Location";
-					reflect::String ContentMD5 = "http:Content-MD5";
-					reflect::String ContentRange = "http:Content-Range";
-					reflect::String ContentType = "http:Content-Type";
-					reflect::String Expires = "http:Expires";
-					reflect::String LastModified = "http:Last-Modified";
+					ref_string Allow = "http:Allow";
+					ref_string Cookie = "http:Cookie";
+					ref_string ContentEncoding = "http:Content-Encoding";
+					ref_string ContentLanguage = "http:Content-Language";
+					ref_string ContentLength = "http:Content-Length";
+					ref_string ContentLocation = "http:Content-Location";
+					ref_string ContentMD5 = "http:Content-MD5";
+					ref_string ContentRange = "http:Content-Range";
+					ref_string ContentType = "http:Content-Type";
+					ref_string Expires = "http:Expires";
+					ref_string LastModified = "http:Last-Modified";
 
 				public:
 					size_t InitFromData(const void* data, size_t len);
@@ -326,15 +328,15 @@ namespace daxia
 					WWW-Authenticate	服务器对客户端的认证信息
 					*/
 				public:
-					reflect::String AcceptRanges = "http:Accept-Ranges";
-					reflect::String Age = "http:Age";
-					reflect::String ETage = "http:ETage";
-					reflect::String Location = "http:Location";
-					reflect::String ProxyAuthenticate = "http:Proxy-Authenticate";
-					reflect::String RetryAfter = "http:Retry-After";
-					reflect::String Server = "http:Server";
-					reflect::String Vary = "http:Vary";
-					reflect::String WWWAuthenticate = "http:WWW-Authenticate";
+					ref_string AcceptRanges = "http:Accept-Ranges";
+					ref_string Age = "http:Age";
+					ref_string ETage = "http:ETage";
+					ref_string Location = "http:Location";
+					ref_string ProxyAuthenticate = "http:Proxy-Authenticate";
+					ref_string RetryAfter = "http:Retry-After";
+					ref_string Server = "http:Server";
+					ref_string Vary = "http:Vary";
+					ref_string WWWAuthenticate = "http:WWW-Authenticate";
 
 					/*实体首部字段(Entity Header Fields) 针对请求报文和响应报文的实体部分使用的首部.补充了资源内容更新时间等与实体有关的信息
 					首部字段名			说明									备注
@@ -351,17 +353,17 @@ namespace daxia
 					Last-Modified		资源的最后修改日期时间
 					*/
 				public:
-					reflect::String Allow = "http:Allow";
-					reflect::String SetCookie = "http:Set-Cookie";
-					reflect::String ContentEncoding = "http:Content-Encoding";
-					reflect::String ContentLanguage = "http:Content-Language";
-					reflect::String ContentLength = "http:Content-Length";
-					reflect::String ContentLocation = "http:Content-Location";
-					reflect::String ContentMD5 = "http:Content-MD5";
-					reflect::String ContentRange = "http:Content-Range";
-					reflect::String ContentType = "http:Content-Type";
-					reflect::String Expires = "http:Expires";
-					reflect::String LastModified = "http:Last-Modified";
+					ref_string Allow = "http:Allow";
+					ref_string SetCookie = "http:Set-Cookie";
+					ref_string ContentEncoding = "http:Content-Encoding";
+					ref_string ContentLanguage = "http:Content-Language";
+					ref_string ContentLength = "http:Content-Length";
+					ref_string ContentLocation = "http:Content-Location";
+					ref_string ContentMD5 = "http:Content-MD5";
+					ref_string ContentRange = "http:Content-Range";
+					ref_string ContentType = "http:Content-Type";
+					ref_string Expires = "http:Expires";
+					ref_string LastModified = "http:Last-Modified";
 
 				public:
 					size_t InitFromData(const void* data, size_t len);
@@ -390,8 +392,8 @@ namespace daxia
 						auto layout = obj.GetLayoutFast();
 						for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 						{
-							const reflect::String* field = nullptr;
-							try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(obj.ValueAddr()) + iter->offset)); }
+							const ref_string* field = nullptr;
+							try{ field = dynamic_cast<const ref_string*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(obj.ValueAddr()) + iter->offset)); }
 							catch (const std::exception&){}
 							if (field == nullptr) continue;
 

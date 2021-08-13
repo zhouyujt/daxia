@@ -227,7 +227,7 @@ namespace daxia
 			typedef daxia::database::driver::DataType<ValueType> type;
 		public:
 			Reflect() {}
-			Reflect(const char* tag) : Reflect<ValueType>(tag) {}
+			explicit Reflect(const char* tag) : Reflect<ValueType>(tag) {}
 			~Reflect(){}
 		public:
 			operator daxia::database::driver::DataType<ValueType>&()
@@ -398,27 +398,27 @@ namespace daxia
 			static InitHelper initHelper;
 		}
 
-		typedef Reflect<bool> Bool;
-		typedef Reflect<char> Char;
-		typedef Reflect<unsigned char> UChar;
-		typedef Reflect<short> Short;
-		typedef Reflect<unsigned short> UShort;
-		typedef Reflect<int> Int;
-		typedef Reflect<unsigned int> UInt;
-		typedef Reflect<long> Long;
-		typedef Reflect<unsigned long> ULong;
-		typedef Reflect<long long> LLong;
-		typedef Reflect<unsigned long long> ULLong;
-		typedef Reflect<daxia::string> String;
-		template <typename T> class Vector : public Reflect<std::vector<T>>
+		typedef Reflect<bool> ref_bool;
+		typedef Reflect<char> ref_char;
+		typedef Reflect<unsigned char> ref_unsigned_char;
+		typedef Reflect<short> ref_short;
+		typedef Reflect<unsigned short> ref_unsigned_short;
+		typedef Reflect<int> ref_int;
+		typedef Reflect<unsigned int> ref_unsigned_int;
+		typedef Reflect<long> ref_long;
+		typedef Reflect<unsigned long> ref_unsigned_long;
+		typedef Reflect<long long> ref_long_long;
+		typedef Reflect<unsigned long long> ref_unsigned_long_long;
+		typedef Reflect<daxia::string> ref_string;
+		template <typename T> class ref_vector : public Reflect<std::vector<T>>
 		{
 		public:
-			Vector()
+			ref_vector()
 				: Reflect<std::vector<T>>()
 			{
 			}
 
-			explicit Vector(const char* tags)
+			explicit ref_vector(const char* tags)
 				: Reflect<std::vector<T>>(tags)
 			{
 			}

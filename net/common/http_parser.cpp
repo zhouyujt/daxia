@@ -25,18 +25,20 @@ namespace daxia
 {
 	namespace net
 	{
+		using namespace reflect;
+
 		namespace common
 		{
-			daxia::reflect::String* HttpParser::GeneralHeader::Find(const daxia::string& key,const void* base) const
+			ref_string* HttpParser::GeneralHeader::Find(const daxia::string& key,const void* base) const
 			{
-				const daxia::reflect::String* str = nullptr;
+				const ref_string* str = nullptr;
 				auto iter = index_.find(key);
 				if (iter != index_.end())
 				{
-					str = reinterpret_cast<const daxia::reflect::String*>(reinterpret_cast<const char*>(base) + iter->second);
+					str = reinterpret_cast<const ref_string*>(reinterpret_cast<const char*>(base) + iter->second);
 				}
 
-				return const_cast<daxia::reflect::String*>(str);
+				return const_cast<ref_string*>(str);
 			}
 
 			size_t HttpParser::GeneralHeader::InitFromData(const void* data, size_t len, bool isRequest)
@@ -68,7 +70,7 @@ namespace daxia
 				{
 					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
 					size_t pos = 0;
-					reflect::String* address = nullptr;
+					ref_string* address = nullptr;
 					if (isRequest)
 					{
 						address = static_cast<RequestHeader>(daxia::Singleton<HttpParser::HeaderHelp>::Instance().request_).Find(line.Tokenize(":", pos).MakeLower(), this);
@@ -162,18 +164,18 @@ namespace daxia
 				}
 
 				// 设置Server
-				if (static_cast<daxia::string>(response->Server).IsEmpty()) response->Server = "powered by daxia";
+				if (response->Server->IsEmpty()) response->Server = "powered by daxia";
 
 				// 设置所有响应头
 				auto layout = daxia::Singleton<HttpParser::HeaderHelp>::Instance().response_.GetLayoutFast();
 				for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 				{
-					const reflect::String* field = nullptr;
-					try{ field = dynamic_cast<const reflect::String*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+iter->offset)); }
+					const ref_string* field = nullptr;
+					try{ field = dynamic_cast<const ref_string*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+iter->offset)); }
 					catch (const std::exception&){}
 					if (field == nullptr) continue;
 
-					if (!static_cast<daxia::string>(*field).IsEmpty())
+					if (!(*field)->IsEmpty())
 					{
 						daxia::string temp;
 						temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<daxia::string>(*field).GetString());
