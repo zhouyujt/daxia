@@ -73,7 +73,7 @@ namespace daxia
 			common::HttpParser::ResponseHeader& Response();
 		protected:
 			void ServeNone(int status);
-			template<class T>
+			template<typename T>
 			void ServeJson(const T& v)
 			{
 				if (!context_.expired())

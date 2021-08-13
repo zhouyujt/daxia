@@ -384,7 +384,7 @@ namespace daxia
 
 					}
 				private:
-					template<class T>
+					template<typename T>
 					void InitIndex(reflect::Reflect<T>& obj)
 					{
 						auto layout = obj.GetLayoutFast();

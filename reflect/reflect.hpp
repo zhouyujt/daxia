@@ -26,18 +26,9 @@
 
 namespace daxia
 {
-	namespace database
-	{
-		namespace driver
-		{
-			template<class T>
-			class DataType;
-		}
-	}
-
 	namespace reflect
 	{
-		template<class ValueType>
+		template<typename ValueType>
 		class Reflect : public Reflect_base
 		{
 		public:
@@ -141,11 +132,11 @@ namespace daxia
 			};
 		};// class Reflect
 
-		template<class ValueType> reflect::Layout Reflect<ValueType>::layout_;
-		template<class ValueType> std::map<daxia::string, std::function<daxia::string(const void*)>> Reflect<ValueType>::tostringFuncs_;
-		template<class ValueType> std::map<daxia::string, std::function<void(const daxia::string&, void*)>> Reflect<ValueType>::fromstringFuncs_;
+		template<typename ValueType> reflect::Layout Reflect<ValueType>::layout_;
+		template<typename ValueType> std::map<daxia::string, std::function<daxia::string(const void*)>> Reflect<ValueType>::tostringFuncs_;
+		template<typename ValueType> std::map<daxia::string, std::function<void(const daxia::string&, void*)>> Reflect<ValueType>::fromstringFuncs_;
 
-		template<class ValueType> inline daxia::string daxia::reflect::Reflect<ValueType>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string(); }
+		template<typename ValueType> inline daxia::string daxia::reflect::Reflect<ValueType>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string(); }
 		template<> inline daxia::string daxia::reflect::Reflect<char>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<int>(v_)); }
 		template<> inline daxia::string daxia::reflect::Reflect<unsigned char>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<unsigned int>(v_)); }
 		template<> inline daxia::string daxia::reflect::Reflect<int>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); }return daxia::string::ToString(v_); }
@@ -159,7 +150,7 @@ namespace daxia
 		template<> inline daxia::string daxia::reflect::Reflect<float>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(v_); }
 		template<> inline daxia::string daxia::reflect::Reflect<bool>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string::ToString(static_cast<int>(v_)); }
 
-		template<class ValueType> inline void daxia::reflect::Reflect<ValueType>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } }
+		template<typename ValueType> inline void daxia::reflect::Reflect<ValueType>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } }
 		template<> inline void daxia::reflect::Reflect<char>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<char>(); }
 		template<> inline void daxia::reflect::Reflect<unsigned char>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<unsigned char>(); }
 		template<> inline void daxia::reflect::Reflect<int>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<int>(); }
@@ -174,13 +165,13 @@ namespace daxia
 		template<> inline void daxia::reflect::Reflect<bool>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; }  v_ = str.NumericCast<char>() != 0; }
 
 
-		template<class ValueType>
+		template<typename ValueType>
 		void daxia::reflect::Reflect<ValueType>::init(const void* baseaddr)
 		{
 			static InitHelper initHelper(baseaddr);
 		}
 
-		template<class ValueType>
+		template<typename ValueType>
 		void daxia::reflect::Reflect<ValueType>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields)
 		{
 			fields.clear();
@@ -210,7 +201,7 @@ namespace daxia
 
 		//////////////////////////////////////////////////////////////////////////
 		// 针对std::vector<ValueType>进行特化
-		template<class ValueType>
+		template<typename ValueType>
 		class Reflect<std::vector<ValueType>> : public Reflect_base
 		{
 		public:
@@ -304,9 +295,9 @@ namespace daxia
 			};
 		};
 
-		template<class ValueType> reflect::Layout Reflect<std::vector<ValueType>>::layout_;
+		template<typename ValueType> reflect::Layout Reflect<std::vector<ValueType>>::layout_;
 
-		template<class ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToString(const char* tag, size_t arrayElementIndex) const
+		template<typename ValueType> daxia::string daxia::reflect::Reflect<std::vector<ValueType>>::ToString(const char* tag, size_t arrayElementIndex) const
 		{
 			if (arrayElementIndex < v_.size())
 			{
@@ -318,7 +309,7 @@ namespace daxia
 			return daxia::string();
 		}
 
-		template<class ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) 
+		template<typename ValueType> void daxia::reflect::Reflect<std::vector<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) 
 		{
 			if (arrayElementIndex < v_.size())
 			{
@@ -329,7 +320,7 @@ namespace daxia
 		}
 
 
-		template<class ValueType>
+		template<typename ValueType>
 		void daxia::reflect::Reflect<std::vector<ValueType>>::init()
 		{
 			static InitHelper initHelper;

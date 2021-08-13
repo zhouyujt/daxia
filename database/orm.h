@@ -68,7 +68,7 @@ namespace daxia
 		class FieldFilter
 		{
 		public:
-			template<class ValueType>
+			template<typename ValueType>
 			FieldFilter(const ValueType& v)
 				: exlude_(false)
 			{
@@ -79,7 +79,7 @@ namespace daxia
 		private:
 			FieldFilter() : exlude_(false){}
 		public:
-			template<class ValueType>
+			template<typename ValueType>
 			FieldFilter& operator()(const ValueType& v)
 			{
 				fields_.insert(v.Tag(ORM));
@@ -133,7 +133,7 @@ namespace daxia
 		public:
 			// 插入
 			// fields: 需要插入的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则插入所有已经初始化的字段。
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Insert(const ValueType& obj, const FieldFilter* fields = nullptr)
 			{
 				using namespace daxia::reflect;
@@ -144,7 +144,7 @@ namespace daxia
 
 			// 删除
 			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有primary_key属性且已初始化的字段删除。
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Delete(const ValueType& obj, const FieldFilter* condition = nullptr)
 			{
 				using namespace daxia::reflect;
@@ -158,7 +158,7 @@ namespace daxia
 			// fields: 需要查询的字段。nullptr则查询所有字段。
 			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
 			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Query(ValueType& obj,
 				const FieldFilter* fields = nullptr,
 				const char* suffix = nullptr,
@@ -183,7 +183,7 @@ namespace daxia
 			// fields: 需要查询的字段。nullptr则查询所有字段。
 			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
 			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Query(std::vector<ValueType>& objs,
 				const FieldFilter* fields = nullptr,
 				const char* suffix = nullptr,
@@ -204,7 +204,7 @@ namespace daxia
 			// 更新
 			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
 			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Update(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
 				using namespace daxia::reflect;
@@ -214,7 +214,7 @@ namespace daxia
 			}
 
 			// 建表
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Create(const ValueType& obj)
 			{
 				using namespace daxia::reflect;
@@ -224,7 +224,7 @@ namespace daxia
 			}
 
 			// 删表
-			template<class ValueType>
+			template<typename ValueType>
 			daxia::string Drop(const ValueType& obj)
 			{
 				using namespace daxia::reflect;
@@ -233,7 +233,7 @@ namespace daxia
 				return drop(layout, &obj);
 			}
 
-			template<class ValueType>
+			template<typename ValueType>
 			void ReadRecordset(std::shared_ptr<Recordset> recordset, std::vector<ValueType>& objs, const FieldFilter* fields = nullptr)
 			{
 				using namespace daxia::reflect;

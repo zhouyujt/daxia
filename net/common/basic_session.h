@@ -68,10 +68,10 @@ namespace daxia
 				void SetUserData(UserDataIndex index, boost::any data);
 
 				// 获取自定义数据
-				template<class T>
+				template<typename T>
 				T* GetUserData(const char* key);
 				// 获取自定义数据(高性能)
-				template<class T>
+				template<typename T>
 				T* GetUserData(UserDataIndex index);
 
 				// 删除指定的自定义数据
@@ -135,7 +135,7 @@ namespace daxia
 				common::shared_buffer buffer_;
 			};
 
-			template<class T>
+			template<typename T>
 			T* BasicSession::GetUserData(const char* key)
 			{
 				lock_guard locker(userDataLocker_);
@@ -157,7 +157,7 @@ namespace daxia
 				return  data;
 			}
 
-			template<class T>
+			template<typename T>
 			T* BasicSession::GetUserData(UserDataIndex index)
 			{
 				lock_guard locker(userDataLocker_);

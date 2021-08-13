@@ -35,7 +35,7 @@ namespace daxia
 		public:
 			// 将指定的对象编码为json字符串
 			// 字符串编码类型（ utf8 或 ansi ）跟对象内部使用的编码一致
-			template<class ValueType>
+			template<typename ValueType>
 			static daxia::string Marshal(const ValueType& v, bool pretty = false/*是否换行*/)
 			{
 				using namespace std;
@@ -56,7 +56,7 @@ namespace daxia
 
 			// 将json字符串解码到对象
 			// 对象内字符串编码跟json字符串编码一致
-			template<class ValueType>
+			template<typename ValueType>
 			static bool Unmarshal(const daxia::string& json, ValueType& v)
 			{
 				using namespace std;
@@ -103,7 +103,7 @@ namespace daxia
 			};
 			// 由于boost::property_tree::write_json会将所有数据类型视为字符串类型，所以重写相关方法使之能区分不同类型
 		private:
-			template<class Ptree>
+			template<typename Ptree>
 			static void write_json(std::basic_ostream <
 				typename Ptree::key_type::value_type
 			> &stream,
@@ -113,7 +113,7 @@ namespace daxia
 				write_json_internal(stream, pt, std::string(), pretty);
 			}
 
-			template<class Ptree>
+			template<typename Ptree>
 			static void write_json_internal(std::basic_ostream<typename Ptree::key_type::value_type> &stream,
 				const Ptree &pt,
 				const std::string &filename,
@@ -127,7 +127,7 @@ namespace daxia
 					BOOST_PROPERTY_TREE_THROW(boost::property_tree::json_parser::json_parser_error("write error", filename, 0));
 			}
 
-			template<class Ptree>
+			template<typename Ptree>
 			static void write_json_helper(std::basic_ostream<typename Ptree::key_type::value_type> &stream,
 				const Ptree &pt,
 				int indent, bool pretty)
@@ -186,7 +186,7 @@ namespace daxia
 			}
 
 			// Create necessary escape sequences from illegal characters
-			template<class Ch>
+			template<typename Ch>
 			static std::basic_string<Ch> create_escapes(const std::basic_string<Ch> &s)
 			{
 				std::basic_string<Ch> result;

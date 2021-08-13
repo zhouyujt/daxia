@@ -41,7 +41,7 @@ namespace daxia
 					return !IsLittleEndian();
 				}
 
-				template<class ValueType>
+				template<typename ValueType>
 				static ValueType hton(ValueType v)
 				{
 					if (IsBigEndian()) return v;
@@ -58,7 +58,7 @@ namespace daxia
 					return result;
 				}
 
-				template<class ValueType>
+				template<typename ValueType>
 				static ValueType ntoh(ValueType v)
 				{
 					if (IsBigEndian()) return v;

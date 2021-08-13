@@ -38,7 +38,7 @@ namespace daxia
 			// 获取客户端
 			Session::ptr GetSession(long long id);
 			// 根据自定义数据获取客户端
-			template<class T>
+			template<typename T>
 			Session::ptr GetSession(const std::string& key, const T& data);
 			// 向一个客户端组广播一条消息
 			void Broadcast(const std::string& name,const std::string& msg);
@@ -61,7 +61,7 @@ namespace daxia
 			std::mutex groupLocker_;
 		};
 
-		template<class T>
+		template<typename T>
 		inline std::shared_ptr<Session> SessionsManager::GetSession(const std::string& key, const T& data)
 		{
 			std::shared_ptr<Session> session;
