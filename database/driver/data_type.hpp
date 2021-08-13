@@ -41,10 +41,10 @@ namespace daxia
 			class DataType : public BasicDataType
 			{
 			public:
-				DataType(){}
+				DataType() : v_{}{}
 				DataType(const DataType& dt)
-				{ 
-					v_ = dt.v_; 
+				{
+					v_ = dt.v_;
 					init_ = dt.init_;
 				}
 				~DataType(){}

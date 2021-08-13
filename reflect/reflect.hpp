@@ -45,12 +45,14 @@ namespace daxia
 		public:
 			Reflect()
 				: Reflect_base(nullptr)
+				, v_{}
 			{
 				init(&this->v_);
 			}
 
 			explicit Reflect(const char* tags)
 				: Reflect_base(tags)
+				, v_{}
 			{
 				init(&this->v_);
 			}
@@ -231,11 +233,13 @@ namespace daxia
 		public:
 			Reflect()
 				: Reflect_base(nullptr)
+				, v_{}
 			{
 				init(&this->v_);
 			}
 			explicit Reflect(const char* tag) 
 				: Reflect_base(tag)
+				, v_{}
 			{
 				init(&this->v_);
 			}
@@ -393,12 +397,14 @@ namespace daxia
 		public:
 			Reflect()
 				: Reflect_base(nullptr)
+				, v_{}
 			{
 				init();
 			}
 
 			explicit Reflect(const char* tags)
 				: Reflect_base(tags)
+				, v_{}
 			{
 				init();
 			}
