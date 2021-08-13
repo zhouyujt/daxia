@@ -26,13 +26,13 @@ using  daxia::reflect::Reflect;
 #define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpRequestHeaderIndex)
 #define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpResponseHeaderIndex)
 #define HTTP_STATUS_MAP(XX)						\
-	XX(100,	Continue)							\
+	XX(100, Continue)							\
 	XX(101, Switching Protocols)				\
 	XX(102, Processing)							\
 	XX(200, OK)									\
 	XX(201, Created)							\
 	XX(202, Accepted)							\
-	XX(203, Non-Authoritative Information)		\
+	XX(203, Non - Authoritative Information)		\
 	XX(204, No Content)							\
 	XX(205, Reset Content)						\
 	XX(206, Partial Content)					\
@@ -62,19 +62,19 @@ using  daxia::reflect::Reflect;
 	XX(412, Precondition Failed)				\
 	XX(413, Payload Too Large)					\
 	XX(414, URI Too Long)						\
-	XX(415,	Unsupported Media Type)				\
+	XX(415, Unsupported Media Type)				\
 	XX(416, Range Not Satisfiable)				\
 	XX(417, Expectation Failed)					\
 	XX(421, Misdirected Request)				\
 	XX(422, Unprocessable Entity)				\
-	XX(423,	Locked)								\
+	XX(423, Locked)								\
 	XX(424, Failed Dependency)					\
 	XX(426, Upgrade Required)					\
 	XX(428, Precondition Required)				\
 	XX(429, Too Many Requests)					\
 	XX(431, Request Header Fields Too Large)	\
 	XX(451, Unavailable For Legal Reasons)		\
-	XX(500,	Internal Server Error)				\
+	XX(500, Internal Server Error)				\
 	XX(501, Not Implemented)					\
 	XX(502, Bad Gateway)						\
 	XX(503, Service Unavailable)				\
@@ -138,14 +138,14 @@ namespace daxia
 				// 请求方法
 				struct Methods
 				{
-					ref_string Get = "http:GET";				// 获取资源
-					ref_string Post = "http:POST";				// 传送实体主体
-					ref_string Put = "http:PUT";				// 传输文件 尽量配合REST标准
-					ref_string Head = "http:HEAD";				// 获得报文首部, 和GET方法一样,只是不返回报文主体部分. 用于确认URI的有效性及资源更新的日期时间等.
-					ref_string Delete = "http:DELETE";			// 删除文件 尽量配合REST标准
-					ref_string Options = "http:OPTIONS";		// 询问支持的方法, 用来查询针对请求URI指定的资源支持的方法
-					ref_string Trace = "http:TRACE";			// 追踪路径, 极不常用
-					ref_string Connect = "http:CONNECT";		// 要求用隧道协议连接代理
+					ref_string Get{ "http:GET" };				// 获取资源
+					ref_string Post{ "http:POST" };				// 传送实体主体
+					ref_string Put{ "http:PUT" };				// 传输文件 尽量配合REST标准
+					ref_string Head{ "http:HEAD" };				// 获得报文首部, 和GET方法一样,只是不返回报文主体部分. 用于确认URI的有效性及资源更新的日期时间等.
+					ref_string Delete{ "http:DELETE" };			// 删除文件 尽量配合REST标准
+					ref_string Options{ "http:OPTIONS" };		// 询问支持的方法, 用来查询针对请求URI指定的资源支持的方法
+					ref_string Trace{ "http:TRACE" };			// 追踪路径, 极不常用
+					ref_string Connect{ "http:CONNECT" };		// 要求用隧道协议连接代理
 
 					bool IsValidMethod(const char* method)
 					{
@@ -210,15 +210,15 @@ namespace daxia
 					Warning				错误通知								110 111 112 113 199 214 299
 					*/
 				public:
-					ref_string CacheControl = "http:Cache-Control";
-					ref_string Connection = "http:Connection";
-					ref_string Date = "http:Date";
-					ref_string Pragma = "http:Pragma";
-					ref_string Trailer = "http:Trailer";
-					ref_string TransferEncoding = "http:Transfer-Encoding";
-					ref_string Upgrade = "http:Upgrade";
-					ref_string Via = "http:Via";
-					ref_string Warning = "http:Warning";
+					ref_string CacheControl{ "http:Cache-Control" };
+					ref_string Connection{ "http:Connection" };
+					ref_string Date{ "http:Date" };
+					ref_string Pragma{ "http:Pragma" };
+					ref_string Trailer{ "http:Trailer" };
+					ref_string TransferEncoding{ "http:Transfer-Encoding" };
+					ref_string Upgrade{ "http:Upgrade" };
+					ref_string Via{ "http:Via" };
+					ref_string Warning{ "http:Warning" };
 				public:
 					ref_string* Find(const daxia::string& key, const void* base) const;
 				protected:
@@ -256,25 +256,25 @@ namespace daxia
 					User-Agent			HTTP客户端程序的信息					创建请求的浏览器 \用户代理名称等信息
 					*/
 				public:
-					ref_string Accept = "http:Accept";
-					ref_string AcceptCharset = "http:Accept-Charset";
-					ref_string AcceptEncoding = "http:Accept-Encoding";
-					ref_string AcceptLanguage = "http:Accept-Language";
-					ref_string Authorization = "http:Authorization";
-					ref_string Expect = "http:Expect";
-					ref_string From = "http:From";
-					ref_string Host = "http:Host";
-					ref_string IfMatch = "http:If-Match";
-					ref_string IfModifiedSince = "http:If-Modified-Since";
-					ref_string IfNoneMatch = "http:If-None-match";
-					ref_string IfRange = "http:If-Range";
-					ref_string IfUnmodifiedSince = "http:If-Unmodified-Since";
-					ref_string MaxForward = "http:Max-Forward";
-					ref_string ProxyAuthorization = "http:Proxy-Authorization";
-					ref_string Range = "http:Range";
-					ref_string Referer = "http:Referer";
-					ref_string TE = "http:TE";
-					ref_string UserAgent = "http:User-Agent";
+					ref_string Accept{ "http:Accept" };
+					ref_string AcceptCharset{ "http:Accept-Charset" };
+					ref_string AcceptEncoding{ "http:Accept-Encoding" };
+					ref_string AcceptLanguage{ "http:Accept-Language" };
+					ref_string Authorization{ "http:Authorization" };
+					ref_string Expect{ "http:Expect" };
+					ref_string From{ "http:From" };
+					ref_string Host{ "http:Host" };
+					ref_string IfMatch{ "http:If-Match" };
+					ref_string IfModifiedSince{ "http:If-Modified-Since" };
+					ref_string IfNoneMatch{ "http:If-None-match" };
+					ref_string IfRange{ "http:If-Range" };
+					ref_string IfUnmodifiedSince{ "http:If-Unmodified-Since" };
+					ref_string MaxForward{ "http:Max-Forward" };
+					ref_string ProxyAuthorization{ "http:Proxy-Authorization" };
+					ref_string Range{ "http:Range" };
+					ref_string Referer{ "http:Referer" };
+					ref_string TE{ "http:TE" };
+					ref_string UserAgent{ "http:User-Agent" };
 
 					/*实体首部字段(Entity Header Fields) 针对请求报文和响应报文的实体部分使用的首部.补充了资源内容更新时间等与实体有关的信息
 					首部字段名			说明									备注
@@ -291,17 +291,17 @@ namespace daxia
 					Last-Modified		资源的最后修改日期时间
 					*/
 				public:
-					ref_string Allow = "http:Allow";
-					ref_string Cookie = "http:Cookie";
-					ref_string ContentEncoding = "http:Content-Encoding";
-					ref_string ContentLanguage = "http:Content-Language";
-					ref_string ContentLength = "http:Content-Length";
-					ref_string ContentLocation = "http:Content-Location";
-					ref_string ContentMD5 = "http:Content-MD5";
-					ref_string ContentRange = "http:Content-Range";
-					ref_string ContentType = "http:Content-Type";
-					ref_string Expires = "http:Expires";
-					ref_string LastModified = "http:Last-Modified";
+					ref_string Allow{ "http:Allow" };
+					ref_string Cookie{ "http:Cookie" };
+					ref_string ContentEncoding{ "http:Content-Encoding" };
+					ref_string ContentLanguage{ "http:Content-Language" };
+					ref_string ContentLength{ "http:Content-Length" };
+					ref_string ContentLocation{ "http:Content-Location" };
+					ref_string ContentMD5{ "http:Content-MD5" };
+					ref_string ContentRange{ "http:Content-Range" };
+					ref_string ContentType{ "http:Content-Type" };
+					ref_string Expires{ "http:Expires" };
+					ref_string LastModified{ "http:Last-Modified" };
 
 				public:
 					size_t InitFromData(const void* data, size_t len);
@@ -328,15 +328,15 @@ namespace daxia
 					WWW-Authenticate	服务器对客户端的认证信息
 					*/
 				public:
-					ref_string AcceptRanges = "http:Accept-Ranges";
-					ref_string Age = "http:Age";
-					ref_string ETage = "http:ETage";
-					ref_string Location = "http:Location";
-					ref_string ProxyAuthenticate = "http:Proxy-Authenticate";
-					ref_string RetryAfter = "http:Retry-After";
-					ref_string Server = "http:Server";
-					ref_string Vary = "http:Vary";
-					ref_string WWWAuthenticate = "http:WWW-Authenticate";
+					ref_string AcceptRanges{ "http:Accept-Ranges" };
+					ref_string Age{ "http:Age" };
+					ref_string ETage{ "http:ETage" };
+					ref_string Location{ "http:Location" };
+					ref_string ProxyAuthenticate{ "http:Proxy-Authenticate" };
+					ref_string RetryAfter{ "http:Retry-After" };
+					ref_string Server{ "http:Server" };
+					ref_string Vary{ "http:Vary" };
+					ref_string WWWAuthenticate{ "http:WWW-Authenticate" };
 
 					/*实体首部字段(Entity Header Fields) 针对请求报文和响应报文的实体部分使用的首部.补充了资源内容更新时间等与实体有关的信息
 					首部字段名			说明									备注
@@ -353,17 +353,17 @@ namespace daxia
 					Last-Modified		资源的最后修改日期时间
 					*/
 				public:
-					ref_string Allow = "http:Allow";
-					ref_string SetCookie = "http:Set-Cookie";
-					ref_string ContentEncoding = "http:Content-Encoding";
-					ref_string ContentLanguage = "http:Content-Language";
-					ref_string ContentLength = "http:Content-Length";
-					ref_string ContentLocation = "http:Content-Location";
-					ref_string ContentMD5 = "http:Content-MD5";
-					ref_string ContentRange = "http:Content-Range";
-					ref_string ContentType = "http:Content-Type";
-					ref_string Expires = "http:Expires";
-					ref_string LastModified = "http:Last-Modified";
+					ref_string Allow{ "http:Allow" };
+					ref_string SetCookie{ "http:Set-Cookie" };
+					ref_string ContentEncoding{ "http:Content-Encoding" };
+					ref_string ContentLanguage{ "http:Content-Language" };
+					ref_string ContentLength{ "http:Content-Length" };
+					ref_string ContentLocation{ "http:Content-Location" };
+					ref_string ContentMD5{ "http:Content-MD5" };
+					ref_string ContentRange{ "http:Content-Range" };
+					ref_string ContentType{ "http:Content-Type" };
+					ref_string Expires{ "http:Expires" };
+					ref_string LastModified{ "http:Last-Modified" };
 
 				public:
 					size_t InitFromData(const void* data, size_t len);
