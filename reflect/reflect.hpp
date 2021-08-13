@@ -26,6 +26,15 @@
 
 namespace daxia
 {
+	namespace database
+	{
+		namespace driver
+		{
+			template<class T>
+			class DataType;
+		}
+	}
+
 	namespace reflect
 	{
 		template<class ValueType>
@@ -74,10 +83,10 @@ namespace daxia
 				return *this;
 			}
 
-			ValueType& operator=(const ValueType& v)
+			Reflect& operator=(const ValueType& v)
 			{
 				v_ = v;
-				return v_;
+				return *this;
 			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
@@ -247,10 +256,10 @@ namespace daxia
 				return *this;
 			}
 
-			std::vector<ValueType>& operator=(const std::vector<ValueType>& v)
+			Reflect& operator=(const std::vector<ValueType>& v)
 			{
 				v_ = v;
-				return v_;
+				return *this;
 			}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
