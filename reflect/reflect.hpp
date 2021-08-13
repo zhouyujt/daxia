@@ -55,7 +55,7 @@ namespace daxia
 				init(&this->v_);
 			}
 
-			virtual ~Reflect(){}
+			~Reflect(){}
 		public:
 			Reflect_base& Swap(Reflect_base& r)
 			{
@@ -116,7 +116,7 @@ namespace daxia
 		private:
 			static void init(const void* baseaddr);
 			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
-		protected:
+		private:
 			ValueType v_;
 			static reflect::Layout layout_;
 			static std::map<daxia::string, std::function<daxia::string(const void*)>> tostringFuncs_;
@@ -220,16 +220,37 @@ namespace daxia
 			}
 		}
 
+		//////////////////////////////////////////////////////////////////////////
+		// 针对daxia::database::driver::DataType<ValueType>进行特化
+		// 跟Reflect<ValueType>的唯一区别就是多了一个=重载操作符,其他的一切一模一样
 		template<typename ValueType>
-		class Reflect<daxia::database::driver::DataType<ValueType>> : public Reflect<ValueType>
+		class Reflect<daxia::database::driver::DataType<ValueType>> : public Reflect_base
 		{
 		public:
 			typedef daxia::database::driver::DataType<ValueType> type;
 		public:
-			Reflect() {}
-			explicit Reflect(const char* tag) : Reflect<ValueType>(tag) {}
+			Reflect()
+				: Reflect_base(nullptr)
+			{
+				init(&this->v_);
+			}
+			explicit Reflect(const char* tag) 
+				: Reflect_base(tag)
+			{
+				init(&this->v_);
+			}
 			~Reflect(){}
 		public:
+			operator ValueType&()
+			{
+				return static_cast<ValueType&>(v_);
+			}
+
+			operator const ValueType&() const
+			{
+				return static_cast<const ValueType&>(v_);
+			}
+
 			operator daxia::database::driver::DataType<ValueType>&()
 			{
 				return v_;
@@ -250,22 +271,117 @@ namespace daxia
 				return &v_;
 			}
 
+			// 特化本类的目的就是为了拥有这个操作符
+			Reflect& operator=(const Reflect<ValueType>& v)
+			{
+				v_ = static_cast<ValueType>(v);
+				return *this;
+			}
+
 			Reflect& operator=(const Reflect& v)
 			{
 				v_ = v.v_;
-				Reflect<ValueType>::v_ = v.v_;
 				return *this;
 			}
 
 			Reflect& operator=(const ValueType& v)
 			{
 				v_ = v;
-				Reflect<ValueType>::v_ = v;
 				return *this;
 			}
+		public:
+			virtual const reflect::Layout& GetLayout() const override { return layout_; }
+			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<ValueType>(); } return layout_/*直接读取静态变量，不走构造函数以免重新解析tag*/; }
+			virtual const void* ValueAddr() const override { return &v_; }
+			virtual size_t Size() const override { return sizeof(*this); }
+			virtual void ResizeArray(size_t count) override { throw "don't call this method!"; }
+			virtual const std::type_info& Type() const override { return typeid(ValueType); }
+			inline virtual daxia::string ToString(const char* tag, size_t arrayElementIndex = -1) const override;
+			inline virtual void FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex = -1) override;
+
+			// 设置跟字符串相互转换的方法
+			static void SetToString(const char* tag, std::function<daxia::string(const void*)> func) { tostringFuncs_[tag] = func; GetLayoutFast().Type() = reflect::Layout::value; }
+			static void SetFromString(const char* tag, std::function<void(const daxia::string&, void*)> func) { fromstringFuncs_[tag] = func; GetLayoutFast().Type() = reflect::Layout::value; }
+		private:
+			static void init(const void* baseaddr);
+			static void makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields);
 		private:
 			daxia::database::driver::DataType<ValueType> v_;
+			static reflect::Layout layout_;
+			static std::map<daxia::string, std::function<daxia::string(const void*)>> tostringFuncs_;
+			static std::map<daxia::string, std::function<void(const daxia::string&, void*)>> fromstringFuncs_;
+			class InitHelper
+			{
+			public:
+				InitHelper(const void* baseaddr)
+				{
+					if (!std::is_class<ValueType>::value
+						|| std::is_same<ValueType, std::string>::value
+						|| std::is_same<ValueType, std::wstring>::value
+						|| std::is_same<ValueType, daxia::string>::value
+						|| std::is_same<ValueType, daxia::wstring>::value
+						)
+						// value
+					{
+						layout_.Type() = reflect::Layout::value;
+						layout_.Size() = sizeof(ValueType);
+					}
+					else
+						// object
+					{
+						layout_.Type() = reflect::Layout::object;
+						layout_.Size() = sizeof(ValueType);
+						const char* start = reinterpret_cast<const char*>(baseaddr);
+						const char* end = start + sizeof(ValueType);
+						makeObjectFields(start, start, end, layout_.Fields());
+					}
+
+					// vector
+					// 特化处理
+				}
+			};
 		};
+
+		template<typename ValueType> reflect::Layout Reflect<daxia::database::driver::DataType<ValueType>>::layout_;
+		template<typename ValueType> std::map<daxia::string, std::function<daxia::string(const void*)>> Reflect<daxia::database::driver::DataType<ValueType>>::tostringFuncs_;
+		template<typename ValueType> std::map<daxia::string, std::function<void(const daxia::string&, void*)>> Reflect<daxia::database::driver::DataType<ValueType>>::fromstringFuncs_;
+
+		template<typename ValueType> inline daxia::string daxia::reflect::Reflect<daxia::database::driver::DataType<ValueType>>::ToString(const char* tag, size_t arrayElementIndex) const { auto iter = tostringFuncs_.find(tag); if (iter != tostringFuncs_.end()) { return iter->second(&v_); } return daxia::string(); }
+		template<typename ValueType> inline void daxia::reflect::Reflect<daxia::database::driver::DataType<ValueType>>::FromString(const char* tag, const daxia::string& str, size_t arrayElementIndex) { auto iter = fromstringFuncs_.find(tag); if (iter != fromstringFuncs_.end()) { iter->second(str, &v_); return; } }
+
+		template<typename ValueType>
+		void daxia::reflect::Reflect<daxia::database::driver::DataType<ValueType>>::init(const void* baseaddr)
+		{
+			static InitHelper initHelper(baseaddr);
+		}
+
+		template<typename ValueType>
+		void daxia::reflect::Reflect<daxia::database::driver::DataType<ValueType>>::makeObjectFields(const char* baseaddr, const char* start, const char* end, std::vector<daxia::reflect::Field>& fields)
+		{
+			fields.clear();
+			for (; start < end; ++start)
+			{
+				const Reflect_base* reflectBase = nullptr;
+
+				// 根据前4个字节判断是不是Reflect_helper
+				// 如果省略这一步，MSVC编译器工作正常
+				// gcc dynamic_cast 会报segmentation fault
+				if (!Reflect_helper::IsValidReflect(start)) continue;
+
+				try{ reflectBase = dynamic_cast<const Reflect_base*>(reinterpret_cast<const Reflect_helper*>(start)); }
+				catch (const std::exception&){}
+
+				if (reflectBase == nullptr) continue;
+
+				Field field;
+				field.hashcode = reflectBase->Type().hash_code();
+				field.offset = reinterpret_cast<size_t>(start)-reinterpret_cast<size_t>(baseaddr);
+				field.size = reflectBase->Size();
+				fields.push_back(field);
+
+				start += reflectBase->Size() - 1;
+			}
+		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// 针对std::vector<ValueType>进行特化
