@@ -73,6 +73,9 @@ namespace daxia
 		size_t Delete(size_t start, size_t count = 1);
 		// 其他方法
 	public:
+		// 获取指定位置的字符
+		Elem& At(size_t pos);
+		const Elem& At(size_t pos) const;
 		// 获取哈希值
 		std::size_t Hash() const;
 		// 分割字符串
@@ -604,6 +607,18 @@ namespace daxia
 		}
 
 		return GetLength();
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	Elem& daxia::String_base<Elem, Traits, Alloc>::At(size_t pos)
+	{
+		return v_.at(pos);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	const Elem& daxia::String_base<Elem, Traits, Alloc>::At(size_t pos) const
+	{
+		return v_.at(pos);
 	}
 
 	template<class Elem, class Traits, class Alloc>
