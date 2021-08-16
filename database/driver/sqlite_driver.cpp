@@ -76,6 +76,13 @@ namespace daxia
 					return std::shared_ptr<BasicRecordset>();
 				}
 
+				// ¥¶¿Ìblob
+				for (size_t i = 0; i < blob_.size(); ++i)
+				{
+					sqlite3_bind_blob(stmt, i + 1, blob_[i].GetString(), blob_[i].GetLength(), nullptr);
+				}
+				blob_.clear();
+
 				// ÷¥––
 				int rc = sqlite3_step(stmt);
 
@@ -118,6 +125,11 @@ namespace daxia
 				else if (type == typeid(db_blob)) return "BLOB";
 				else if (type == typeid(db_datetime)) return "NUMERIC";
 				else return "";
+			}
+
+			void SqliteDriver::PushBlob(const daxia::buffer& blob)
+			{
+				blob_.push_back(blob);
 			}
 
 			void SqliteDriver::setLastError(bool clean /*= false*/)

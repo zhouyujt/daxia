@@ -61,6 +61,7 @@ namespace daxia
 		daxia::string Orm::insert(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields)
 		{
 			using namespace daxia::reflect;
+			using namespace daxia::database::driver;
 
 			daxia::string tableName;
 			daxia::string fieldList;
@@ -85,7 +86,7 @@ namespace daxia
 				}
 
 				// 强制排除未初始化字段
-				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
+				if (!reinterpret_cast<const BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
 				{
 					continue;
 				}
@@ -106,6 +107,10 @@ namespace daxia
 
 					if (!valueList.IsEmpty()) valueList += ',';
 					valueList += reflectBase->ToString(ORM);
+					if (reflectBase->Type() == typeid(db_blob))
+					{
+						command_->PushBlob(static_cast<const daxia::buffer&>(*reinterpret_cast<const db_blob*>(reflectBase->ValueAddr())));
+					}
 				}
 
 			}
@@ -238,6 +243,7 @@ namespace daxia
 		daxia::string Orm::update(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition)
 		{
 			using namespace daxia::reflect;
+			using namespace daxia::database::driver;
 
 			daxia::string tableName;
 			daxia::string valueList;
@@ -274,6 +280,10 @@ namespace daxia
 					valueList += tag;
 					valueList += "=";
 					valueList += reflectBase->ToString(ORM);
+					if (reflectBase->Type() == typeid(db_blob))
+					{
+						command_->PushBlob(static_cast<const daxia::buffer&>(*reinterpret_cast<const db_blob*>(reflectBase->ValueAddr())));
+					}
 				}
 
 				// 构造条件语句

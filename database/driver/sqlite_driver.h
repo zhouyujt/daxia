@@ -13,6 +13,7 @@
 #ifdef __DAXIA_DATABASE_DRIVER_USE_SQLITE
 #ifndef __DAXIA_DATABASE_DRIVER_SQLITE_H
 #define __DAXIA_DATABASE_DRIVER_SQLITE_H
+#include <vector>
 #include "basic_driver.h"
 #include "sqlite3/sqlite3.h"
 #include "../../string.hpp"
@@ -37,11 +38,13 @@ namespace daxia
 				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
 				virtual daxia::string GetLastError() const override;
 				virtual daxia::string TypeName(const std::type_info& type) const override;
+				virtual void PushBlob(const daxia::buffer& blob) override;
 			private:
 				void setLastError(bool clean = false);
 			private:
 				sqlite3* sqlite_;
 				daxia::string lastError_;
+				std::vector<daxia::buffer> blob_;
 			};
 		}
 	}
