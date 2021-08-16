@@ -397,7 +397,7 @@ namespace daxia
 							catch (const std::exception&){}
 							if (field == nullptr) continue;
 
-							static_cast<T>(obj).index_[daxia::string(field->Tag("http")).MakeLower()] = iter->offset;
+							static_cast<T&>(obj).index_[daxia::string(field->Tag("http")).MakeLower()] = iter->offset;
 						}
 					}
 				public:

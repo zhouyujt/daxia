@@ -81,6 +81,18 @@ namespace daxia
 				return v_;
 			}
 
+			template<typename T>
+			operator T&()
+			{
+				return static_cast<T&>(v_);
+			}
+
+			template<typename T>
+			operator const T&() const
+			{
+				return static_cast<const T&>(v_);
+			}
+
 			ValueType* operator->()
 			{
 				return &v_;
@@ -101,16 +113,16 @@ namespace daxia
 			template<typename T>
 			Reflect& operator=(const Reflect<T>& v)
 			{
-				v_ = v.v_;
+				v_ = static_cast<T>(v);
 				return *this;
 			}
 
-			template<typename T>
-			Reflect& operator=(const daxia::database::driver::DataType<T>& v)
-			{
-				v_ = v.v_;
-				return *this;
-			}
+			//template<typename T>
+			//Reflect& operator=(const Reflect<daxia::database::driver::DataType<T>>& v)
+			//{
+			//	v_ = static_cast<T>(v);
+			//	return *this;
+			//}
 		public:
 			virtual const reflect::Layout& GetLayout() const override { return layout_; }
 			static reflect::Layout& GetLayoutFast() { if (layout_.Type() == reflect::Layout::unset){ Reflect<ValueType>(); } return layout_/*直接读取静态变量，不走构造函数以免重新解析tag*/; }
