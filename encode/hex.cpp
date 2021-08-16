@@ -22,8 +22,8 @@ namespace daxia
 			result.GetBuffer(size * 2);
 			for (size_t i = 0; i < size; ++i)
 			{
-				result[i * 2] = table_[(*reinterpret_cast<const unsigned char*>(data)+i) >> 4];
-				result[i * 2 + 1] = table_[(*reinterpret_cast<const unsigned char*>(data)+i) & 0x0f];
+				result[i * 2] = table_[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) >> 4];
+				result[i * 2 + 1] = table_[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) & 0x0f];
 			}
 			
 			return result;
