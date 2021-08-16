@@ -213,6 +213,18 @@ namespace daxia
 				return update(layout, &obj, fields, condition);
 			}
 
+			// 追加更新。	数字类型的字段，新的值为原先的值跟本次指定的值两者之和；字符串及blob类型则在末尾追加。
+			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
+			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
+			template<typename ValueType>
+			daxia::string Append(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
+			{
+				using namespace daxia::reflect;
+
+				auto layout = Reflect<ValueType>::GetLayoutFast();
+				return append(layout, &obj, fields, condition);
+			}
+
 			// 建表
 			template<typename ValueType>
 			daxia::string Create(const ValueType& obj)
@@ -256,6 +268,7 @@ namespace daxia
 			daxia::string delette(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* condition);
 			std::shared_ptr<Recordset> query(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const char* suffix, const char* prefix);
 			daxia::string update(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition);
+			daxia::string append(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition);
 			daxia::string create(const daxia::reflect::Layout& layout, const void* baseaddr);
 			daxia::string drop(const daxia::reflect::Layout& layout, const void* baseaddr);
 		private:

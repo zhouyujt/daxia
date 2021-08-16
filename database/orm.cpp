@@ -307,6 +307,76 @@ namespace daxia
 			return command_->GetLastError();
 		}
 
+		daxia::string Orm::append(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields, const FieldFilter* condition)
+		{
+			using namespace daxia::reflect;
+			using namespace daxia::database::driver;
+
+			daxia::string tableName;
+			daxia::string valueList;
+			daxia::string conditionList;
+			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
+			{
+				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
+				if (reflectBase == nullptr) continue;
+
+				// 构造表名
+				daxia::string tag = reflectBase->Tag(ORM);
+				if (tag.IsEmpty()) continue;
+
+				if (tag == DATABASE_ORM_STRING(DATABASE_ORM_TABLE_TAG))
+				{
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (!attribute.empty())
+					{
+						tableName = reflectBase->TagAttribute(ORM).begin()->first;
+					}
+					continue;
+				}
+
+				// 强制排除未初始化字段
+				if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
+				{
+					continue;
+				}
+
+				// 构造赋值语句
+				if (fields == nullptr || fields->HasField(tag))
+				{
+					if (!valueList.IsEmpty())  valueList += ',';
+					valueList += tag;
+					valueList += "=";
+					valueList += tag;
+					valueList += "+";
+					valueList += reflectBase->ToString(ORM);
+					if (reflectBase->Type() == typeid(db_blob))
+					{
+						command_->PushBlob(static_cast<const daxia::buffer&>(*reinterpret_cast<const db_blob*>(reflectBase->ValueAddr())));
+					}
+				}
+
+				// 构造条件语句
+				if (condition && condition->HasField(tag))
+				{
+					if (!conditionList.IsEmpty()) conditionList += " AND ";
+					conditionList += tag;
+					conditionList += "=";
+					conditionList += reflectBase->ToString(ORM);
+				}
+			}
+
+			// 拼接
+			daxia::string sql;
+			sql.Format("UPDATE %s SET %s WHERE %s",
+				tableName.GetString(),
+				valueList.GetString(),
+				conditionList.IsEmpty() ? makeConditionByPrimaryKey(layout, baseaddr).GetString() : conditionList.GetString());
+
+			// 执行
+			auto recodset = command_->Excute(sql);
+			return command_->GetLastError();
+		}
+
 		daxia::string Orm::create(const daxia::reflect::Layout& layout, const void* baseaddr)
 		{
 			using namespace daxia::reflect;
