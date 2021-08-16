@@ -41,6 +41,7 @@ namespace daxia
 		String_base(const Elem* str);
 		String_base(const Elem* str, size_t count);
 		String_base(const std::basic_string<Elem, Traits, Alloc>& str);
+		String_base(const String_base& str);
 
 		// VC里CString的功能
 	public:
@@ -107,6 +108,12 @@ namespace daxia
 		String_base& operator=(const std::basic_string<Elem, Traits, Alloc>& str)
 		{
 			v_.assign(str);
+			return *this;
+		}
+
+		String_base& operator=(const String_base& str)
+		{
+			v_ = str.v_;
 			return *this;
 		}
 
@@ -290,6 +297,13 @@ namespace daxia
 		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
 		v_.append(str, 0, -1);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base<Elem, Traits, Alloc>::String_base(const daxia::String_base<Elem, Traits, Alloc>& str)
+		: utf8_(utf8<void, size<sizeof(__utf8Test)>>::value)
+	{
+		v_ = str.v_;
 	}
 
 	template<class Elem, class Traits, class Alloc>
