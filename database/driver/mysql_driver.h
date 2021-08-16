@@ -36,7 +36,8 @@ namespace daxia
 				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
 				virtual daxia::string GetLastError() const override;
 				virtual daxia::string TypeName(const std::type_info& type) const override;
-				virtual void PushBlob(const daxia::buffer& blob) override {throw "ипн╢й╣ож";};
+				virtual long long  ScopeIdentity() override;
+				virtual void PushBlob(const daxia::buffer& blob) override;
 			private:
 				MYSQL mysql_;
 			};

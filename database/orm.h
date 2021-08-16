@@ -249,10 +249,8 @@ namespace daxia
 				}
 			}
 
-			long long  ScopeIdentity();
-
-			// 执行更复杂的命令
-			std::shared_ptr<Recordset> Excute(const daxia::string& sql);
+			// 获取命令执行器
+			std::shared_ptr<Command> GetCommand();
 		private:
 			daxia::string insert(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* fields);
 			daxia::string delette(const daxia::reflect::Layout& layout, const void* baseaddr, const FieldFilter* condition);
@@ -267,7 +265,6 @@ namespace daxia
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
-			long long scopeIdentity_;
 		private:
 			class InitHelper
 			{

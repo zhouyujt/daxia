@@ -31,7 +31,6 @@ namespace daxia
 				virtual bool Eof() override;
 				virtual void Next() override;
 				virtual size_t Count() override;
-				virtual long long ScopeIdentity() override;
 				virtual daxia::buffer GetRawData(const char* field) override;
 			protected:
 				virtual void GetField(const char* field, db_tinyint& v) override;
@@ -45,7 +44,6 @@ namespace daxia
 			private:
 				int GetFieldIndex(const char* field);
 			private:
-				sqlite3* sqlite_;
 				sqlite3_stmt* stmt_;
 				bool isEof_;
 			};

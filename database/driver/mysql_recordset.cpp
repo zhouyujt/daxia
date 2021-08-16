@@ -11,7 +11,6 @@ namespace daxia
 		{
 			MySQLRecordset::MySQLRecordset(MYSQL_RES* recordset, MYSQL* mysql)
 				: recordset_(recordset)
-				, mysql_(mysql)
 				, fields_(nullptr)
 				, isEof_(false)
 			{
@@ -43,11 +42,6 @@ namespace daxia
 			size_t MySQLRecordset::Count()
 			{
 				return mysql_num_rows(recordset_);
-			}
-
-			long long MySQLRecordset::ScopeIdentity()
-			{
-				return mysql_insert_id(mysql_);
 			}
 
 			daxia::buffer MySQLRecordset::GetRawData(const char* fieldName)

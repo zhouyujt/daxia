@@ -31,7 +31,6 @@ namespace daxia
 				virtual bool Eof() override;
 				virtual void Next() override;
 				virtual size_t Count() override;
-				virtual long long ScopeIdentity() override;
 				virtual daxia::buffer GetRawData(const char* field) override;
 			protected:
 				virtual void GetField(const char* field, db_tinyint& v) override;
@@ -44,7 +43,6 @@ namespace daxia
 				virtual void GetField(const char* field, db_datetime& v) override;
 			private:
 				MYSQL_RES* recordset_;
-				MYSQL* mysql_;
 				MYSQL_ROW row_;
 				MYSQL_FIELD* fields_;
 				bool isEof_;

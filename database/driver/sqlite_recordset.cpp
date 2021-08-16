@@ -9,8 +9,7 @@ namespace daxia
 		namespace driver
 		{
 			SqliteRecordset::SqliteRecordset(sqlite3* sqlite, sqlite3_stmt* stmt)
-				: sqlite_(sqlite)
-				, stmt_(stmt)
+				: stmt_(stmt)
 				, isEof_(stmt == nullptr)
 			{
 				
@@ -40,11 +39,6 @@ namespace daxia
 			size_t SqliteRecordset::Count()
 			{
 				throw "ипн╢й╣ож";
-			}
-
-			long long SqliteRecordset::ScopeIdentity()
-			{
-				return sqlite3_last_insert_rowid(sqlite_);
 			}
 
 			daxia::buffer SqliteRecordset::GetRawData(const char* field)

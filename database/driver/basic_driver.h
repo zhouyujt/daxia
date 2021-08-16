@@ -38,6 +38,7 @@ namespace daxia
 				virtual	void ExcuteAsync(const daxia::string& sql, excute_callback cb) = 0;
 				virtual daxia::string GetLastError() const = 0;
 				virtual daxia::string TypeName(const std::type_info& type) const = 0;
+				virtual long long  ScopeIdentity() = 0;
 				virtual void PushBlob(const daxia::buffer& blob) = 0;
 			protected:
 				daxia::string host_;

@@ -127,6 +127,11 @@ namespace daxia
 				else return "";
 			}
 
+			long long SqliteDriver::ScopeIdentity()
+			{
+				return sqlite3_last_insert_rowid(sqlite_);
+			}
+
 			void SqliteDriver::PushBlob(const daxia::buffer& blob)
 			{
 				blob_.push_back(blob);

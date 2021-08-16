@@ -80,6 +80,16 @@ namespace daxia
 				else return "";
 			}
 
+			long long MySQLDriver::ScopeIdentity()
+			{
+				return mysql_insert_id(mysql_);
+			}
+
+			void MySQLDriver::PushBlob(const daxia::buffer& blob)
+			{
+				throw "ипн╢й╣ож";
+			}
+
 		}
 	}
 }
