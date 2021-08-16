@@ -120,7 +120,10 @@ namespace daxia
 
 			// Ö´ÐÐ
 			auto recodset = command_->Excute(sql);
-			scopeIdentity_ = recodset->ScopeIdentity();
+			if (recodset)
+			{
+				scopeIdentity_ = recodset->ScopeIdentity();
+			}
 			return command_->GetLastError();
 		}
 
