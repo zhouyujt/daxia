@@ -24,6 +24,16 @@ namespace daxia
 
 		Client::~Client()
 		{
+			scheduleLocker_.lock();
+			for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
+			{
+				iter->second->cancel();
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				delete iter->second;
+			}
+			timers_.clear();
+			scheduleLocker_.unlock();
+
 			handlerLocker_.lock();
 			handler_.clear();
 			handlerLocker_.unlock();
@@ -35,15 +45,6 @@ namespace daxia
 
 			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
 			initSocket(BasicSession::socket_ptr());
-
-			lock_guard locker(scheduleLocker_);
-			for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
-			{
-				iter->second->cancel();
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				delete iter->second;
-			}
-			timers_.clear();
 		}
 
 		Client::initHelper::initHelper()
