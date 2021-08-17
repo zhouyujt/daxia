@@ -275,13 +275,18 @@ namespace daxia
 				// 构造赋值语句
 				if (fields == nullptr || fields->HasField(tag))
 				{
-					if (!valueList.IsEmpty())  valueList += ','; 
-					valueList += tag;
-					valueList += "=";
-					valueList += reflectBase->ToString(ORM);
-					if (reflectBase->Type() == typeid(db_blob))
+					// 排除主键
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (attribute.find(PRIMARY_KEY) == attribute.end())
 					{
-						command_->PushBlob(static_cast<const daxia::buffer&>(*reinterpret_cast<const db_blob*>(reflectBase->ValueAddr())));
+						if (!valueList.IsEmpty())  valueList += ',';
+						valueList += tag;
+						valueList += "=";
+						valueList += reflectBase->ToString(ORM);
+						if (reflectBase->Type() == typeid(db_blob))
+						{
+							command_->PushBlob(static_cast<const daxia::buffer&>(*reinterpret_cast<const db_blob*>(reflectBase->ValueAddr())));
+						}
 					}
 				}
 
