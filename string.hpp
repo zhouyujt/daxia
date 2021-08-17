@@ -234,7 +234,7 @@ namespace daxia
 			return v_;
 		}
 
-		friend std::ostream& operator<<(std::ostream& os, const String_base& s)
+		friend std::basic_ostream<Elem>& operator<<(std::basic_ostream<Elem>& os, const String_base& s)
 		{
 			os << s.v_;
 			return os;
