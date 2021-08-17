@@ -174,7 +174,7 @@ namespace daxia
 				int ordinal = -1;
 				if (((size_t)name & 0xFFFF0000) == 0) //IT IS A ORDINAL!
 				{
-					ordinal = (size_t)name & 0x0000FFFF - base;
+					ordinal = ((size_t)name & 0x0000FFFF) - base;
 				}
 				else //use name
 				{
