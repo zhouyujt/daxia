@@ -81,10 +81,10 @@ namespace daxia
 				{
 					sqlite3_bind_blob(stmt, i + 1, blob_[i].GetString(), blob_[i].GetLength(), nullptr);
 				}
-				blob_.clear();
 
 				// Ö´ÐÐ
 				int rc = sqlite3_step(stmt);
+				blob_.clear();
 
 				if (rc == SQLITE_DONE)
 				{
@@ -152,7 +152,6 @@ namespace daxia
 #endif
 				}
 			}
-
 		}
 	}
 }
