@@ -26,9 +26,33 @@ namespace daxia
 			class Process;
 			class ProcessesManager
 			{
-			public:
+			protected:
 				ProcessesManager();
 				~ProcessesManager();
+
+				// STL·ç¸ñ±éÀú
+			public:
+				class iterator
+				{
+					friend ProcessesManager;
+				public:
+					iterator();
+				private:
+					iterator(std::shared_ptr<void> handle, std::shared_ptr<Process> process);
+				public:
+					iterator& operator++();
+					bool operator==(const iterator& iter) const;
+					bool operator!=(const iterator& iter) const;
+					std::shared_ptr<Process> operator->();
+					std::shared_ptr<Process> operator*();
+					iterator& operator=(const iterator& iter);
+				private:
+					std::shared_ptr<void> handle_;
+					std::shared_ptr<Process> process_;
+				};
+				static iterator begin();
+				static iterator end();
+				static iterator find(const daxia::tstring& name, const iterator& pos = end());
 			public:
 				enum EnumType
 				{

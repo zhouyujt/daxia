@@ -22,6 +22,56 @@ namespace daxia
 
 			}
 
+			ProcessesManager::iterator ProcessesManager::begin()
+			{
+				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+				if (hSnapshot == INVALID_HANDLE_VALUE) return iterator();
+
+				PROCESSENTRY32 pe;
+				pe.dwSize = sizeof(PROCESSENTRY32);
+				BOOL bRet = ::Process32First(hSnapshot, &pe);
+				if (bRet)
+				{
+					auto handle = std::shared_ptr<void>(hSnapshot, [](void* handle)
+					{
+						::CloseHandle(handle);
+					});
+					auto process = std::shared_ptr<Process>(new Process(pe.th32ProcessID));
+					auto iter = iterator(handle, process);
+					while (!**iter)
+					{
+						++iter;
+					}
+
+					return iter;
+				}
+
+				return end();
+			}
+
+			ProcessesManager::iterator ProcessesManager::end()
+			{
+				return iterator();
+			}
+
+			ProcessesManager::iterator ProcessesManager::find(const daxia::tstring& name, const ProcessesManager::iterator& pos)
+			{
+				ProcessesManager::iterator result = end();
+
+				auto iter = pos == end() ? begin() : pos;
+				if (pos != end()) ++iter;
+				for (; iter != end(); ++iter)
+				{
+					if (iter->GetName().CompareNoCase(name.GetString()) == 0)
+					{
+						result = iter;
+						break;
+					}
+				}
+
+				return result;
+			}
+
 			void ProcessesManager::Enum(std::function<bool(std::shared_ptr<Process>)> fun, EnumType type /*= EnumType_CreateToolhelp32Snapshot*/)
 			{
 				switch (type)
@@ -108,6 +158,68 @@ namespace daxia
 			{
 
 			}
+
+			ProcessesManager::iterator::iterator()
+			{
+
+			}
+
+			ProcessesManager::iterator::iterator(std::shared_ptr<void> handle, std::shared_ptr<Process> process)
+				: handle_(handle)
+				, process_(process)
+			{
+
+			}
+
+			ProcessesManager::iterator& ProcessesManager::iterator::operator++()
+			{
+				PROCESSENTRY32 pe;
+				pe.dwSize = sizeof(PROCESSENTRY32);
+				if (::Process32Next(handle_.get(), &pe))
+				{
+					process_ = std::shared_ptr<Process>(new Process(pe.th32ProcessID));
+				}
+				else
+				{
+					process_.reset();
+				}
+
+				return *this;
+			}
+
+			bool ProcessesManager::iterator::operator==(const iterator& iter) const
+			{
+				if ((!process_ && !iter.process_)
+					|| (process_ && iter.process_ && process_->GetId() == iter.process_->GetId()))
+				{
+					return true;
+				}
+
+				return false;
+			}
+
+			bool ProcessesManager::iterator::operator!=(const iterator& iter) const
+			{
+				return !(*this == iter);
+			}
+
+			std::shared_ptr<daxia::system::windows::Process> ProcessesManager::iterator::operator->()
+			{
+				return process_;
+			}
+
+			std::shared_ptr<daxia::system::windows::Process> ProcessesManager::iterator::operator*()
+			{
+				return process_;
+			}
+
+			ProcessesManager::iterator& ProcessesManager::iterator::operator=(const iterator& iter)
+			{
+				handle_ = iter.handle_;
+				process_ = iter.process_;
+				return *this;
+			}
+
 		}
 	}
 }
