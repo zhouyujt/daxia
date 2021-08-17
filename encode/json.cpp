@@ -80,7 +80,7 @@ namespace daxia
 
 		void Json::putValue(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree &root)
 		{
-			root.put(static_cast<std::string>(tag), static_cast<std::string>(reflectBase->ToString(JSON)));
+			root.put(static_cast<const std::string&>(tag), static_cast<const std::string&>(reflectBase->ToString(JSON)));
 		}
 
 		void Json::putObject(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root)
@@ -88,7 +88,7 @@ namespace daxia
 			boost::property_tree::ptree child;
 			marshal(reinterpret_cast<const char*>(reflectBase->ValueAddr()), layout, child);
 
-			root.put_child(static_cast<std::string>(tag), child);
+			root.put_child(static_cast<const std::string&>(tag), child);
 		}
 
 		void Json::putValueElement(const daxia::reflect::Reflect_base* reflectBase, const daxia::string& tag, boost::property_tree::ptree& root)
@@ -114,13 +114,13 @@ namespace daxia
 				{
 					boost::property_tree::ptree tr;
 
-					tr.put_value(static_cast<std::string>(reflectBase->ToString(JSON, index)));
+					tr.put_value(static_cast<const std::string&>(reflectBase->ToString(JSON, index)));
 
 					child.push_back(make_pair("", tr));
 				}
 			}
 
-			root.put_child(static_cast<std::string>(tag), child);
+			root.put_child(static_cast<const std::string&>(tag), child);
 		}
 
 		void Json::putObjectElement(const daxia::reflect::Reflect_base* reflectBase, const std::string& tag, boost::property_tree::ptree& root)
@@ -194,7 +194,7 @@ namespace daxia
 						{
 							if (!root.empty())
 							{
-								daxia::string str(rootIter->second.get<std::string>(static_cast<std::string>(tag)));
+								daxia::string str(rootIter->second.get<std::string>(static_cast<const std::string&>(tag)));
 								str.Utf8() = true;
 								if (!utf8) str = str.ToAnsi();
 								reflectBase->FromString(JSON, str);
@@ -210,12 +210,12 @@ namespace daxia
 						if (layout.Fields().empty())
 							// value
 						{
-							getValueElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
+							getValueElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<const std::string&>(tag)) : root.get_child(static_cast<const std::string&>(tag)), utf8);
 						}
 						else
 							// object
 						{
-							getObjectElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<std::string>(tag)) : root.get_child(static_cast<std::string>(tag)), utf8);
+							getObjectElement(reflectBase, isVector ? rootIter->second.get_child(static_cast<const std::string&>(tag)) : root.get_child(static_cast<const std::string&>(tag)), utf8);
 						}
 					}
 				}
@@ -224,7 +224,7 @@ namespace daxia
 
 		void Json::getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
 		{
-			daxia::string str(root.get<std::string>(static_cast<std::string>(tag)));
+			daxia::string str(root.get<std::string>(static_cast<const std::string&>(tag)));
 			str.Utf8() = true;
 			if (!utf8) str = str.ToAnsi();
 			reflectBase->FromString(JSON,str);
@@ -232,7 +232,7 @@ namespace daxia
 
 		void Json::getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
 		{
-			ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<std::string>(tag)), utf8);
+			ummarshal(reinterpret_cast<char*>(const_cast<void*>(reflectBase->ValueAddr())), reflectBase->GetLayout(), root.get_child(static_cast<const std::string&>(tag)), utf8);
 		}
 
 		void Json::getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
@@ -342,13 +342,13 @@ namespace daxia
 			Reflect<std::string>::SetFromString(JSON, [](const daxia::string& str, void* data)
 			{
 				std::string& v = *reinterpret_cast<std::string*>(data);
-				v = static_cast<std::string>(str);
+				v = static_cast<const std::string&>(str);
 			});
 
 			Reflect<std::wstring>::SetFromString(JSON, [](const daxia::string& str, void* data)
 			{
 				std::wstring& v = *reinterpret_cast<std::wstring*>(data);
-				v = static_cast<std::wstring>(str.ToUnicode());
+				v = static_cast<const std::wstring&>(str.ToUnicode());
 			});
 
 			Reflect<daxia::string>::SetFromString(JSON, [](const daxia::string& str, void* data)
