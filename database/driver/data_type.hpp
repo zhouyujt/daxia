@@ -281,7 +281,8 @@ namespace daxia
 				Reflect<DataType<daxia::buffer>>::SetFromString(ORM, [](const daxia::string& str, void* data)
 				{
 					DataType<daxia::buffer>& v = *reinterpret_cast<DataType<daxia::buffer>*>(data);
-					v = daxia::encode::Hex::FromString(str);
+					//v = daxia::encode::Hex::FromString(str);
+					v = static_cast<const daxia::buffer&>(str);
 				});
 
 				Reflect<DataType<daxia::buffer>>::SetToString(JSON, [](const void* data)
