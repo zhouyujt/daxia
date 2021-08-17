@@ -1,7 +1,6 @@
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <Psapi.h>
-#include <tlhelp32.h>
 #include "process.h"
 #include "path.h"
 
@@ -12,11 +11,17 @@ namespace daxia
 		namespace windows
 		{
 			Process::Process()
+				: handle_(nullptr)
+				, id_(0)
 			{
 				handle_ = ::GetCurrentProcess();
+				id_ = ::GetCurrentProcessId();
+				initModules();
 			}
 
 			Process::Process(unsigned long id)
+				: handle_(nullptr)
+				, id_(id)
 			{
 				handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
 
@@ -28,6 +33,7 @@ namespace daxia
 					token->EnablePrivilege(SE_DEBUG_NAME, true);
 					handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
 				}
+				initModules();
 			}
 
 			Process::~Process()
@@ -54,7 +60,7 @@ namespace daxia
 
 			unsigned long Process::GetId() const
 			{
-				return ::GetProcessId(handle_);
+				return id_;
 			}
 
 			void* Process::GetHandle() const
@@ -66,17 +72,10 @@ namespace daxia
 			{
 				daxia::tstring name;
 
-				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
-				if (hSnapshot == INVALID_HANDLE_VALUE) return name;
-
-				MODULEENTRY32 me;
-				me.dwSize = sizeof(me);
-				if (::Module32FirstW(hSnapshot, &me))
+				if (!modules_.empty())
 				{
-					name = me.szModule;
+					name = modules_.front().szModule;
 				}
-
-				::CloseHandle(hSnapshot);
 
 				return name;
 			}
@@ -85,17 +84,10 @@ namespace daxia
 			{
 				daxia::tstring path;
 
-				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetId());
-				if (hSnapshot == INVALID_HANDLE_VALUE) return path;
-
-				MODULEENTRY32 me;
-				me.dwSize = sizeof(me);
-				if (::Module32FirstW(hSnapshot, &me))
+				if (!modules_.empty())
 				{
-					path = me.szExePath;
+					path = modules_.front().szExePath;
 				}
-
-				::CloseHandle(hSnapshot);
 
 				return path;
 			}
@@ -103,10 +95,15 @@ namespace daxia
 			daxia::tstring Process::GetDirectory() const
 			{
 				daxia::tstring dir;
-				::GetCurrentDirectoryW(MAX_PATH, dir.GetBuffer(MAX_PATH));
+				::GetCurrentDirectory(MAX_PATH, dir.GetBuffer(MAX_PATH));
 				dir.ReleaseBuffer();
 
 				return dir;
+			}
+
+			const std::vector<MODULEENTRY32>& Process::GetModules() const
+			{
+				return modules_;
 			}
 
 			std::shared_ptr<AccessToken> Process::GetAccessToken()
@@ -423,6 +420,31 @@ namespace daxia
 
 				main((HINSTANCE)address, reason, NULL);
 			}
+
+			void Process::initModules()
+			{
+				modules_.clear();
+				if (handle_)
+				{
+					HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, id_);
+					if (hSnapshot != INVALID_HANDLE_VALUE)
+					{
+						MODULEENTRY32 me;
+						me.dwSize = sizeof(me);
+						if (::Module32FirstW(hSnapshot, &me))
+						{
+							modules_.push_back(me);
+							while (::Module32Next(hSnapshot, &me))
+							{
+								modules_.push_back(me);
+							}
+						}
+
+						::CloseHandle(hSnapshot);
+					}
+				}
+			}
+
 		}
 	}
 }

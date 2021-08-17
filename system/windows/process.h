@@ -15,6 +15,8 @@
 #define __DAXIA_SYSTEM_WINDOWS_PROCESS_H
 
 #include <memory>
+#include <vector>
+#include <tlhelp32.h>
 #include "../../string.hpp"
 #include "access_token.h"
 
@@ -45,6 +47,8 @@ namespace daxia
 				daxia::tstring GetPath() const;
 				// 获取进程当前环境目录
 				daxia::tstring GetDirectory() const;
+				// 获取所有模块
+				const std::vector<MODULEENTRY32>& GetModules() const;
 				// 获取AccessToken
 				std::shared_ptr<AccessToken> GetAccessToken();
 				// 从内存中加载Dll
@@ -64,9 +68,13 @@ namespace daxia
 				void adjustImport(char* address) const;
 				void setImageBase(char* address) const;
 				void callDllMain(char* address, int reason) const;
+				void initModules();
 			private:
 				void* handle_;
+				unsigned long id_;
 				std::shared_ptr<AccessToken> token_;
+				daxia::tstring user_;
+				std::vector<MODULEENTRY32> modules_;
 			};
 		}
 	}

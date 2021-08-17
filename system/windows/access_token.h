@@ -13,7 +13,7 @@
 #ifdef _MSC_VER
 #ifndef __DAXIA_SYSTEM_WINDOWS_ACCESSTOKEN_H
 #define __DAXIA_SYSTEM_WINDOWS_ACCESSTOKEN_H
-#include <string>
+#include "../../string.hpp"
 
 namespace daxia
 {
@@ -40,7 +40,7 @@ namespace daxia
 				void* GetHandle() const;
 
 				// 获取所属域及用户名。例如： hello-world\\Administrator
-				std::wstring GetUser() const;
+				daxia::tstring GetUser() const;
 
 				// 当前线程token模拟为该token
 				bool Impersonate() const;
