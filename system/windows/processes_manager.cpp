@@ -25,12 +25,11 @@ namespace daxia
 			ProcessesManager::iterator ProcessesManager::begin()
 			{
 				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-				if (hSnapshot == INVALID_HANDLE_VALUE) return iterator();
+				if (hSnapshot == INVALID_HANDLE_VALUE) return end();
 
 				PROCESSENTRY32 pe;
 				pe.dwSize = sizeof(PROCESSENTRY32);
-				BOOL bRet = ::Process32First(hSnapshot, &pe);
-				if (bRet)
+				if (::Process32First(hSnapshot, &pe))
 				{
 					auto handle = std::shared_ptr<void>(hSnapshot, [](void* handle)
 					{
@@ -54,7 +53,12 @@ namespace daxia
 				return iterator();
 			}
 
-			ProcessesManager::iterator ProcessesManager::find(const daxia::tstring& name, const ProcessesManager::iterator& pos)
+			ProcessesManager::iterator ProcessesManager::find(const char* name, const ProcessesManager::iterator& pos)
+			{
+				return find(daxia::string(name).ToUnicode().GetString());
+			}
+
+			ProcessesManager::iterator ProcessesManager::find(const wchar_t* name, const ProcessesManager::iterator& pos)
 			{
 				ProcessesManager::iterator result = end();
 
@@ -62,7 +66,23 @@ namespace daxia
 				if (pos != end()) ++iter;
 				for (; iter != end(); ++iter)
 				{
-					if (iter->GetName().CompareNoCase(name.GetString()) == 0)
+					if (iter->GetName().CompareNoCase(name) == 0)
+					{
+						result = iter;
+						break;
+					}
+				}
+
+				return result;
+			}
+
+			ProcessesManager::iterator ProcessesManager::find(unsigned long pid)
+			{
+				ProcessesManager::iterator result = end();
+
+				for (auto iter = begin(); iter != end(); ++iter)
+				{
+					if (iter->GetId() == pid)
 					{
 						result = iter;
 						break;
@@ -201,6 +221,16 @@ namespace daxia
 			bool ProcessesManager::iterator::operator!=(const iterator& iter) const
 			{
 				return !(*this == iter);
+			}
+
+			const std::shared_ptr<daxia::system::windows::Process> ProcessesManager::iterator::operator->() const
+			{
+				return process_;
+			}
+
+			const std::shared_ptr<daxia::system::windows::Process> ProcessesManager::iterator::operator*() const
+			{
+				return process_;
 			}
 
 			std::shared_ptr<daxia::system::windows::Process> ProcessesManager::iterator::operator->()

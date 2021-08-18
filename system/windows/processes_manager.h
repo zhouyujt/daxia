@@ -43,6 +43,8 @@ namespace daxia
 					iterator& operator++();
 					bool operator==(const iterator& iter) const;
 					bool operator!=(const iterator& iter) const;
+					const std::shared_ptr<Process> operator->() const;
+					const std::shared_ptr<Process> operator*() const;
 					std::shared_ptr<Process> operator->();
 					std::shared_ptr<Process> operator*();
 					iterator& operator=(const iterator& iter);
@@ -52,7 +54,9 @@ namespace daxia
 				};
 				static iterator begin();
 				static iterator end();
-				static iterator find(const daxia::tstring& name, const iterator& pos = end());
+				static iterator find(const char* name, const iterator& pos = end());
+				static iterator find(const wchar_t* name, const iterator& pos = end());
+				static iterator find(unsigned long pid);
 			public:
 				enum EnumType
 				{

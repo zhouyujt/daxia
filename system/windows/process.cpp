@@ -16,7 +16,11 @@ namespace daxia
 			{
 				handle_ = ::GetCurrentProcess();
 				id_ = ::GetCurrentProcessId();
-				initModules();
+
+				modules_ = std::shared_ptr<Process::Modules>(new Process::Modules(id_));
+				Modules::iterator iter = modules_->begin();
+				name_ = iter->szModule;
+				path_ = iter->szExePath;
 			}
 
 			Process::Process(unsigned long id)
@@ -33,7 +37,11 @@ namespace daxia
 					token->EnablePrivilege(SE_DEBUG_NAME, true);
 					handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
 				}
-				initModules();
+
+				modules_ = std::shared_ptr<Process::Modules>(new Process::Modules(id_));
+				Modules::iterator iter = modules_->begin();
+				name_ = iter->szModule;
+				path_ = iter->szExePath;
 			}
 
 			Process::~Process()
@@ -70,26 +78,12 @@ namespace daxia
 
 			daxia::tstring Process::GetName() const
 			{
-				daxia::tstring name;
-
-				if (!modules_.empty())
-				{
-					name = modules_.front().szModule;
-				}
-
-				return name;
+				return name_;
 			}
 
 			daxia::tstring Process::GetPath() const
 			{
-				daxia::tstring path;
-
-				if (!modules_.empty())
-				{
-					path = modules_.front().szExePath;
-				}
-
-				return path;
+				return path_;
 			}
 
 			daxia::tstring Process::GetDirectory() const
@@ -99,11 +93,6 @@ namespace daxia
 				dir.ReleaseBuffer();
 
 				return dir;
-			}
-
-			const std::vector<MODULEENTRY32>& Process::GetModules() const
-			{
-				return modules_;
 			}
 
 			std::shared_ptr<AccessToken> Process::GetAccessToken()
@@ -118,6 +107,11 @@ namespace daxia
 				}
 
 				return token_;
+			}
+
+			const std::shared_ptr<Process::Modules> Process::GetModules() const
+			{
+				return modules_;
 			}
 
 			void* Process::LoadMemLibrary(const char* data, size_t len) const
@@ -421,30 +415,147 @@ namespace daxia
 				main((HINSTANCE)address, reason, NULL);
 			}
 
-			void Process::initModules()
+			Process::Modules::Modules(unsigned long pid)
+				: pid_(pid)
 			{
-				modules_.clear();
-				if (handle_)
-				{
-					HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, id_);
-					if (hSnapshot != INVALID_HANDLE_VALUE)
-					{
-						MODULEENTRY32 me;
-						me.dwSize = sizeof(me);
-						if (::Module32FirstW(hSnapshot, &me))
-						{
-							modules_.push_back(me);
-							while (::Module32Next(hSnapshot, &me))
-							{
-								modules_.push_back(me);
-							}
-						}
 
-						::CloseHandle(hSnapshot);
-					}
-				}
 			}
 
+			Process::Modules::iterator Process::Modules::begin() const
+			{
+				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, pid_);
+				if (hSnapshot == INVALID_HANDLE_VALUE) return end();
+
+
+				MODULEENTRY32 me;
+				me.dwSize = sizeof(me);
+				if (::Module32First(hSnapshot, &me))
+				{
+					auto handle = std::shared_ptr<void>(hSnapshot, [](void* handle)
+					{
+						::CloseHandle(handle);
+					});
+					return Process::Modules::iterator(handle, me);
+				}
+
+				return end();
+			}
+
+			Process::Modules::iterator Process::Modules::end() const
+			{
+				return Process::Modules::iterator();
+			}
+
+			Process::Modules::iterator Process::Modules::find(const char* name, const Process::Modules::iterator& pos) const
+			{
+				Process::Modules::iterator result = end();
+				daxia::wstring str = daxia::string(name).ToUnicode();
+
+				auto iter = pos == end() ? begin() : pos;
+				if (pos != end()) ++iter;
+				for (; iter != end(); ++iter)
+				{
+					if (str.CompareNoCase(iter->szModule) == 0)
+					{
+						result = iter;
+						break;
+					}
+				}
+
+				return result;
+			}
+
+			Process::Modules::iterator Process::Modules::find(const wchar_t* name, const Process::Modules::iterator& pos) const
+			{
+				Process::Modules::iterator result = end();
+				daxia::wstring str(name);
+
+				auto iter = pos == end() ? begin() : pos;
+				if (pos != end()) ++iter;
+				for (; iter != end(); ++iter)
+				{
+					if (str.CompareNoCase(iter->szModule) == 0)
+					{
+						result = iter;
+						break;
+					}
+				}
+
+				return result;
+			}
+
+
+			Process::Modules::iterator::iterator()
+			{
+				memset(&me_, 0, sizeof(me_));
+			}
+
+			Process::Modules::iterator::iterator(std::shared_ptr<void> handle, const MODULEENTRY32& me)
+				: handle_(handle)
+				, me_(me)
+			{
+
+			}
+
+			Process::Modules::iterator& Process::Modules::iterator::operator++()
+			{
+				MODULEENTRY32 me;
+				me.dwSize = sizeof(me);
+				if (::Module32Next(handle_.get(), &me))
+				{
+					me_ = me;
+				}
+				else
+				{
+					memset(&me_, 0, sizeof(me_));
+				}
+
+				return *this;
+			}
+
+			bool Process::Modules::iterator::operator==(const iterator& iter) const
+			{
+				if ((me_.dwSize == 0 && iter->dwSize == 0)
+					|| (me_.dwSize != 0 && iter->dwSize != 0 && me_.modBaseAddr == iter->modBaseAddr))
+				{
+					return true;
+				}
+
+				return false;
+			}
+
+			bool Process::Modules::iterator::operator!=(const iterator& iter) const
+			{
+				return !(*this == iter);
+			}
+
+			const tagMODULEENTRY32W* Process::Modules::iterator::operator->() const
+			{
+				return &me_;
+			}
+
+			const tagMODULEENTRY32W& Process::Modules::iterator::operator*() const
+			{
+				return me_;
+			}
+
+			tagMODULEENTRY32W* Process::Modules::iterator::operator->()
+			{
+				return &me_;
+			}
+
+			tagMODULEENTRY32W& Process::Modules::iterator::operator*()
+			{
+				return me_;
+			}
+
+			Process::Modules::iterator& Process::Modules::iterator::operator=(const iterator& iter)
+			{
+				handle_ = iter.handle_;
+				me_ = iter.me_;
+
+				return *this;
+			}
 		}
 	}
 }

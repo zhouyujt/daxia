@@ -35,6 +35,57 @@ namespace daxia
 				Process(const Process&) = delete;
 				~Process();
 			public:
+				class Modules
+				{
+					friend Process;
+				private:
+					Modules(unsigned long pid);
+				public:
+					class iterator
+					{
+						friend Modules;
+					public:
+						iterator();
+					private:
+						iterator(std::shared_ptr<void> handle, const MODULEENTRY32& me);
+					public:
+						iterator& operator++();
+						bool operator==(const iterator& iter) const;
+						bool operator!=(const iterator& iter) const;
+						const tagMODULEENTRY32W*  operator->() const;
+						const tagMODULEENTRY32W& operator*() const;
+						tagMODULEENTRY32W*  operator->();
+						tagMODULEENTRY32W& operator*();
+						iterator& operator=(const iterator& iter);
+					private:
+						std::shared_ptr<void> handle_;
+						tagMODULEENTRY32W me_;
+					};
+				public:
+					iterator begin() const;
+					iterator end() const;
+					iterator find(const char* name, const iterator& pos) const;
+					iterator find(const wchar_t* name, const iterator& pos) const;
+				private:
+					unsigned long pid_;
+				};
+
+				class Threads
+				{
+					friend Process;
+				private:
+					Threads();
+				public:
+					class iterator
+					{
+
+					};
+				public:
+					iterator begin();
+					iterator end();
+					iterator find();
+				};
+			public:
 				// 杀死进程
 				bool Kill();
 				// 获取进程ID
@@ -47,10 +98,10 @@ namespace daxia
 				daxia::tstring GetPath() const;
 				// 获取进程当前环境目录
 				daxia::tstring GetDirectory() const;
-				// 获取所有模块
-				const std::vector<MODULEENTRY32>& GetModules() const;
 				// 获取AccessToken
 				std::shared_ptr<AccessToken> GetAccessToken();
+				// 获取Modules
+				const std::shared_ptr<Modules> GetModules() const;
 				// 从内存中加载Dll
 				void* LoadMemLibrary(const char* data, size_t len) const;
 				FARPROC GetMemProcAddress(void* address, const char* name) const;
@@ -68,13 +119,13 @@ namespace daxia
 				void adjustImport(char* address) const;
 				void setImageBase(char* address) const;
 				void callDllMain(char* address, int reason) const;
-				void initModules();
 			private:
 				void* handle_;
 				unsigned long id_;
 				std::shared_ptr<AccessToken> token_;
-				daxia::tstring user_;
-				std::vector<MODULEENTRY32> modules_;
+				daxia::tstring name_;
+				daxia::tstring path_;
+				std::shared_ptr<Modules> modules_;
 			};
 		}
 	}
