@@ -53,6 +53,7 @@ namespace daxia
 		bool IsEmpty() const;
 		size_t Find(Elem ch, size_t start = 0) const;
 		size_t Find(const Elem* str, size_t start = 0) const;
+		size_t Find(const void* str, size_t len, size_t start = 0) const;
 		void Format(const Elem* format, ...);
 		void FormatV(const char* format, va_list valist);
 		void FormatV(const wchar_t* format, va_list valist);
@@ -60,6 +61,7 @@ namespace daxia
 		String_base Right(size_t count) const;
 		String_base Mid(size_t start, size_t count) const;
 		String_base Tokenize(const Elem* sub, size_t& start) const;
+		String_base Tokenize(const void* sub, size_t len, size_t& start) const;
 		int Replace(Elem oldch, Elem newch);
 		int Replace(const Elem* oldstr, const Elem* newstr);
 		String_base& MakeLower();
@@ -81,6 +83,7 @@ namespace daxia
 		std::size_t Hash() const;
 		// ·Ö¸î×Ö·û´®
 		void Split(const Elem* sub, std::vector<String_base>& strings) const;
+		void Split(const void* sub, size_t len, std::vector<String_base>& strings) const;
 
 		// ×Ö·û¼¯±àÂë×ª»»
 		bool& Utf8() { return utf8_; }
@@ -382,6 +385,12 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Find(const void* str, size_t len, size_t start /*= 0*/) const
+	{
+		return v_.find(static_cast<const Elem*>(str), start, len);
+	}
+
+	template<class Elem, class Traits, class Alloc>
 	void daxia::String_base<Elem, Traits, Alloc>::Format(const Elem* format, ...)
 	{
 		va_list valist;
@@ -477,6 +486,33 @@ namespace daxia
 			return Mid(from, -1);
 		}
 	}
+
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Tokenize(const void* sub, size_t len, size_t& start) const
+	{
+		if (start >= v_.size())
+		{
+			start = -1;
+			return String_base<Elem, Traits, Alloc>();
+		}
+
+		size_t pos = Find(sub, len, start);
+		if (pos != -1)
+		{
+			size_t from = start;
+			size_t count = pos - start;
+			start = pos + 1;
+			return Mid(from, count);
+		}
+		else
+		{
+			size_t from = start;
+			start = v_.size() + 1;
+			return Mid(from, -1);
+		}
+	}
+
 
 	template<class Elem, class Traits, class Alloc>
 	int daxia::String_base<Elem, Traits, Alloc>::Replace(Elem oldch, Elem newch)
@@ -641,7 +677,6 @@ namespace daxia
 		return std::hash<std::basic_string<Elem, Traits, Alloc>>()(v_);
 	}
 
-
 	template<class Elem, class Traits, class Alloc>
 	void daxia::String_base<Elem, Traits, Alloc>::Split(const Elem* sub, std::vector<String_base>& strings) const
 	{
@@ -650,6 +685,21 @@ namespace daxia
 		while (pos != -1)
 		{
 			String_base<Elem, Traits, Alloc> str = Tokenize(sub, pos);
+			if (!str.IsEmpty())
+			{
+				strings.push_back(str);
+			}
+		}
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	void daxia::String_base<Elem, Traits, Alloc>::Split(const void* sub, size_t len, std::vector<String_base>& strings) const
+	{
+		strings.clear();
+		size_t pos = 0;
+		while (pos != -1)
+		{
+			String_base<Elem, Traits, Alloc> str = Tokenize(sub, len, pos);
 			if (!str.IsEmpty())
 			{
 				strings.push_back(str);
