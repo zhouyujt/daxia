@@ -93,11 +93,11 @@ namespace daxia
 				// 获取进程句柄
 				void* GetHandle() const;
 				// 获取进程名
-				daxia::tstring GetName() const;
+				daxia::wstring GetName() const;
 				// 获取进程执行文件路径
-				daxia::tstring GetPath() const;
+				daxia::wstring GetPath() const;
 				// 获取进程当前环境目录
-				daxia::tstring GetDirectory() const;
+				daxia::wstring GetDirectory() const;
 				// 获取AccessToken
 				std::shared_ptr<AccessToken> GetAccessToken();
 				// 获取Modules
@@ -123,8 +123,8 @@ namespace daxia
 				void* handle_;
 				unsigned long id_;
 				std::shared_ptr<AccessToken> token_;
-				daxia::tstring name_;
-				daxia::tstring path_;
+				daxia::wstring name_;
+				daxia::wstring path_;
 				std::shared_ptr<Modules> modules_;
 			};
 		}

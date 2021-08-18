@@ -76,20 +76,20 @@ namespace daxia
 				return handle_;
 			}
 
-			daxia::tstring Process::GetName() const
+			daxia::wstring Process::GetName() const
 			{
 				return name_;
 			}
 
-			daxia::tstring Process::GetPath() const
+			daxia::wstring Process::GetPath() const
 			{
 				return path_;
 			}
 
-			daxia::tstring Process::GetDirectory() const
+			daxia::wstring Process::GetDirectory() const
 			{
-				daxia::tstring dir;
-				::GetCurrentDirectory(MAX_PATH, dir.GetBuffer(MAX_PATH));
+				daxia::wstring dir;
+				::GetCurrentDirectoryW(MAX_PATH, dir.GetBuffer(MAX_PATH));
 				dir.ReleaseBuffer();
 
 				return dir;

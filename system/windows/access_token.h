@@ -40,7 +40,7 @@ namespace daxia
 				void* GetHandle() const;
 
 				// 获取所属域及用户名。例如： hello-world\\Administrator
-				daxia::tstring GetUser() const;
+				daxia::wstring GetUser() const;
 
 				// 当前线程token模拟为该token
 				bool Impersonate() const;

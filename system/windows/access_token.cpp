@@ -77,9 +77,9 @@ namespace daxia
 				return token_;
 			}
 
-			daxia::tstring AccessToken::GetUser() const
+			daxia::wstring AccessToken::GetUser() const
 			{
-				daxia::tstring user;
+				daxia::wstring user;
 
 				// 获取缓冲区大小
 				DWORD copied = 0;
