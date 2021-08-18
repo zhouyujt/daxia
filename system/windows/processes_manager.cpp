@@ -27,9 +27,9 @@ namespace daxia
 				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 				if (hSnapshot == INVALID_HANDLE_VALUE) return end();
 
-				PROCESSENTRY32 pe;
-				pe.dwSize = sizeof(PROCESSENTRY32);
-				if (::Process32First(hSnapshot, &pe))
+				PROCESSENTRY32W pe;
+				pe.dwSize = sizeof(PROCESSENTRY32W);
+				if (::Process32FirstW(hSnapshot, &pe))
 				{
 					auto handle = std::shared_ptr<void>(hSnapshot, [](void* handle)
 					{
@@ -113,16 +113,16 @@ namespace daxia
 				}
 			}
 
-			bool ProcessesManager::HasProcess(const daxia::tstring& name)
+			bool ProcessesManager::HasProcess(const daxia::wstring& name)
 			{
 				bool has = false;
 
 				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 				if (hSnapshot == INVALID_HANDLE_VALUE) return has;
 
-				PROCESSENTRY32 pe;
-				pe.dwSize = sizeof(PROCESSENTRY32);
-				BOOL bRet = ::Process32First(hSnapshot, &pe);
+				PROCESSENTRY32W pe;
+				pe.dwSize = sizeof(PROCESSENTRY32W);
+				BOOL bRet = ::Process32FirstW(hSnapshot, &pe);
 				while (bRet)
 				{
 					if (name.CompareNoCase(pe.szExeFile) == 0)
@@ -131,7 +131,7 @@ namespace daxia
 						break;
 					}
 
-					bRet = ::Process32Next(hSnapshot, &pe);
+					bRet = ::Process32NextW(hSnapshot, &pe);
 				}
 
 				::CloseHandle(hSnapshot);
@@ -144,9 +144,9 @@ namespace daxia
 				HANDLE  hSnapshot = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 				if (hSnapshot == INVALID_HANDLE_VALUE) return;
 
-				PROCESSENTRY32 pe;
-				pe.dwSize = sizeof(PROCESSENTRY32);
-				BOOL bRet = ::Process32First(hSnapshot, &pe);
+				PROCESSENTRY32W pe;
+				pe.dwSize = sizeof(PROCESSENTRY32W);
+				BOOL bRet = ::Process32FirstW(hSnapshot, &pe);
 				while (bRet)
 				{
 					auto process = std::shared_ptr<Process>(new Process(pe.th32ProcessID));
@@ -158,7 +158,7 @@ namespace daxia
 						}
 					}
 
-					bRet = ::Process32Next(hSnapshot, &pe);
+					bRet = ::Process32NextW(hSnapshot, &pe);
 				}
 
 				::CloseHandle(hSnapshot);
@@ -193,9 +193,9 @@ namespace daxia
 
 			ProcessesManager::iterator& ProcessesManager::iterator::operator++()
 			{
-				PROCESSENTRY32 pe;
-				pe.dwSize = sizeof(PROCESSENTRY32);
-				if (::Process32Next(handle_.get(), &pe))
+				PROCESSENTRY32W pe;
+				pe.dwSize = sizeof(PROCESSENTRY32W);
+				if (::Process32NextW(handle_.get(), &pe))
 				{
 					process_ = std::shared_ptr<Process>(new Process(pe.th32ProcessID));
 				}

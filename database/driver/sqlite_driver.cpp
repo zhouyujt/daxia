@@ -28,7 +28,7 @@ namespace daxia
 			{
 				// windows 需设置临时目录
 #ifdef _MSC_VER
-				daxia::tstring path = daxia::system::windows::Path::GetTempPath();
+				daxia::wstring path = daxia::system::windows::Path::GetTempPath();
 				sqlite3_temp_directory = sqlite3_mprintf("%s", path.ToUtf8().GetString());
 #endif
 			}

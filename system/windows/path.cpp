@@ -16,12 +16,12 @@ namespace daxia
 			{
 			}
 
-			bool Path::CreateDirectory(const daxia::tstring& dir)
+			bool Path::CreateDirectory(const daxia::wstring& dir)
 			{
 				bool created = false;
 
-				daxia::tstring path(dir);
-				daxia::tstring root = path.Left(3);
+				daxia::wstring path(dir);
+				daxia::wstring root = path.Left(3);
 				path = path.Mid(3, -1);
 
 				while (!path.IsEmpty())
@@ -34,7 +34,7 @@ namespace daxia
 					}
 					else
 					{
-						daxia::tstring floder = path.Left(pos);
+						daxia::wstring floder = path.Left(pos);
 						path = path.Mid(pos + 1, -1);
 						root += floder;
 					}
@@ -53,41 +53,41 @@ namespace daxia
 				return created;
 			}
 
-			daxia::tstring Path::GetSpecialPath(int csidl/*АэИзЈє CSIDL_APPDATA*/, bool create /*= false*/)
+			daxia::wstring Path::GetSpecialPath(int csidl/*АэИзЈє CSIDL_APPDATA*/, bool create /*= false*/)
 			{
-				daxia::tstring path;
-				::SHGetSpecialFolderPath(NULL, path.GetBuffer(MAX_PATH), csidl, create ? TRUE : FALSE);
+				daxia::wstring path;
+				::SHGetSpecialFolderPathW(NULL, path.GetBuffer(MAX_PATH), csidl, create ? TRUE : FALSE);
 				path.ReleaseBuffer();
 
 				return path;
 			}
 
-			daxia::tstring Path::GetTempPath()
+			daxia::wstring Path::GetTempPath()
 			{
-				daxia::tstring path;
-				::GetTempPath(MAX_PATH, path.GetBuffer(MAX_PATH));
+				daxia::wstring path;
+				::GetTempPathW(MAX_PATH, path.GetBuffer(MAX_PATH));
 				path.ReleaseBuffer();
 
 				return path;
 			}
 
-			daxia::tstring Path::GetTempFilePath()
+			daxia::wstring Path::GetTempFilePath()
 			{
-				daxia::tstring path;
-				::GetTempFileName(GetTempPath().GetString(), NULL, 0, path.GetBuffer(MAX_PATH));
+				daxia::wstring path;
+				::GetTempFileNameW(GetTempPath().GetString(), NULL, 0, path.GetBuffer(MAX_PATH));
 				path.ReleaseBuffer();
 				
 				return path;
 			}
 
-			daxia::tstring Path::FindFileName(const daxia::tstring& dir)
+			daxia::wstring Path::FindFileName(const daxia::wstring& dir)
 			{
-				return daxia::tstring(::PathFindFileName(dir.GetString()));
+				return daxia::wstring(::PathFindFileNameW(dir.GetString()));
 			}
 
-			daxia::tstring Path::FindExtension(const daxia::tstring& dir)
+			daxia::wstring Path::FindExtension(const daxia::wstring& dir)
 			{
-				return daxia::tstring(::PathFindExtension(dir.GetString()));
+				return daxia::wstring(::PathFindExtensionW(dir.GetString()));
 			}
 		}
 	}
