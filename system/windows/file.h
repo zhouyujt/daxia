@@ -25,19 +25,22 @@ namespace daxia
 			public:
 				enum Type
 				{
-					file,
+					file = 0,
 					directory
 				};
 			public:
-				File(const char* name, Type type = file);
-				File(const wchar_t* name, Type type = file);
+				File(const char* path, Type type = file);
+				File(const wchar_t* path, Type type = file);
 				~File();
 			public:
 				class iterator
 				{
-				protected:
+					friend File;
+				public:
 					iterator();
 					~iterator();
+				private:
+					iterator(std::shared_ptr<void> handle, std::shared_ptr<File> file);
 				public:
 					iterator& operator++();
 					bool operator==(const iterator& iter) const;
@@ -47,6 +50,9 @@ namespace daxia
 					std::shared_ptr<File> operator->();
 					std::shared_ptr<File> operator*();
 					iterator& operator=(const iterator& iter);
+				private:
+					std::shared_ptr<void> handle_;
+					std::shared_ptr<File> file_;
 				};
 
 				class recursion_iterator
@@ -81,6 +87,9 @@ namespace daxia
 			public:
 				bool IsExists() const;
 				size_t Size() const;
+				const daxia::wstring Path() const;
+				daxia::wstring Name();
+				daxia::wstring Extension();
 
 				// 移动、复制、创建、删除
 			public:
@@ -96,7 +105,8 @@ namespace daxia
 				bool Read(daxia::buffer& buffer, size_t pos = 0, size_t len = -1);
 				bool Write(const daxia::buffer& buffer, size_t pos = 0, bool truncate = true);
 			private:
-
+				daxia::wstring path_;
+				Type type_;
 			};
 		}
 	}
