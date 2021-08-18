@@ -23,7 +23,6 @@ namespace daxia
 	{
 		namespace windows
 		{
-			class Process;
 			class ProcessesManager
 			{
 			protected:
