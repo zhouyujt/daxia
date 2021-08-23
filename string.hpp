@@ -285,14 +285,20 @@ namespace daxia
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str)
 		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
-		v_.append(str);
+		if (str)
+		{
+			v_.append(str);
+		}
 	}
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const Elem* str, size_t count)
 		: utf8_(utf8<void,size<sizeof(__utf8Test)>>::value)
 	{
-		v_.append(str, count);
+		if (str)
+		{
+			v_.append(str, count);
+		}
 	}
 
 	template<class Elem, class Traits, class Alloc>
