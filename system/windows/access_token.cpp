@@ -10,6 +10,7 @@ namespace daxia
 		namespace windows
 		{
 			AccessToken::AccessToken(void* process)
+				: token_(nullptr)
 			{
 				if (process)
 				{
