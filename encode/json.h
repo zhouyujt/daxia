@@ -81,6 +81,12 @@ namespace daxia
 
 				return true;
 			}
+
+			template<typename ValueType>
+			static bool Unmarshal(const void* json, size_t len, ValueType& v)
+			{
+				return Unmarshal(daxia::string(static_cast<const char*>(json), len), v);
+			}
 		private:
 			// 使用内存布局缓存进行编码
 			static void marshal(const char* baseaddr, const daxia::reflect::Layout& layout, boost::property_tree::ptree& root);
