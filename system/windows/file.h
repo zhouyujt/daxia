@@ -10,6 +10,7 @@
 *  文件、目录相关的操作
 *
 */
+#ifdef _MSC_VER
 #ifndef __DAXIA_SYSTEM_WINDOWS_FILE_H
 #define __DAXIA_SYSTEM_WINDOWS_FILE_H
 #include "../../string.hpp"
@@ -36,6 +37,7 @@ namespace daxia
 				// 属性
 			public:
 				bool IsExists() const;
+				Type FileType() const;
 				size_t Size() const;
 				const daxia::wstring Path() const;
 				daxia::wstring Name() const;
@@ -62,4 +64,5 @@ namespace daxia
 		}
 	}
 }
-#endif	// !__DAXIA_SYSTEM_WINDOWS_FILE_H
+#endif // !__DAXIA_SYSTEM_WINDOWS_FILE_H
+#endif // !_MSC_VER

@@ -1,3 +1,4 @@
+#ifdef _MSC_VER
 #include <windows.h>
 #include <fileapi.h>
 #include <Shlwapi.h>
@@ -223,3 +224,4 @@ namespace daxia
 		}
 	}
 }
+#endif // !_MSC_VER

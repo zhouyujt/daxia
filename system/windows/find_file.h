@@ -10,6 +10,7 @@
 *  文件、目录相关的操作
 *
 */
+#ifdef _MSC_VER
 #ifndef __DAXIA_SYSTEM_WINDOWS_FIND_FILE_H
 #define __DAXIA_SYSTEM_WINDOWS_FIND_FILE_H
 #include <memory>
@@ -64,4 +65,5 @@ namespace daxia
 		}
 	}
 }
-#endif	// !__DAXIA_SYSTEM_WINDOWS_FIND_FILE_H
+#endif // !__DAXIA_SYSTEM_WINDOWS_FIND_FILE_H
+#endif // !_MSC_VER
