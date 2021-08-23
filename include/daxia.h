@@ -23,6 +23,7 @@
 #include "../system/windows/processes_manager.h"
 #include "../system/windows/path.h"
 #include "../system/windows/file.h"
+#include "../system/windows/find_file.h"
 
 // orm
 #include "../database/orm.h"

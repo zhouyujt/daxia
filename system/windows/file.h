@@ -12,7 +12,6 @@
 */
 #ifndef __DAXIA_SYSTEM_WINDOWS_FILE_H
 #define __DAXIA_SYSTEM_WINDOWS_FILE_H
-#include <memory>
 #include "../../string.hpp"
 namespace daxia
 {
@@ -20,8 +19,10 @@ namespace daxia
 	{
 		namespace windows
 		{
+			class FindFile;
 			class File
 			{
+				friend FindFile;
 			public:
 				enum Type
 				{
@@ -32,64 +33,13 @@ namespace daxia
 				File(const char* path, Type type = file);
 				File(const wchar_t* path, Type type = file);
 				~File();
-			public:
-				class iterator
-				{
-					friend File;
-				public:
-					iterator();
-					~iterator();
-				private:
-					iterator(std::shared_ptr<void> handle, std::shared_ptr<File> file);
-				public:
-					iterator& operator++();
-					bool operator==(const iterator& iter) const;
-					bool operator!=(const iterator& iter) const;
-					const std::shared_ptr<File> operator->() const;
-					const std::shared_ptr<File> operator*() const;
-					std::shared_ptr<File> operator->();
-					std::shared_ptr<File> operator*();
-					iterator& operator=(const iterator& iter);
-				private:
-					std::shared_ptr<void> handle_;
-					std::shared_ptr<File> file_;
-				};
-
-				class recursion_iterator
-				{
-				protected:
-					recursion_iterator();
-					~recursion_iterator();
-				public:
-					recursion_iterator& operator++();
-					bool operator==(const recursion_iterator& iter) const;
-					bool operator!=(const recursion_iterator& iter) const;
-					const std::shared_ptr<File> operator->() const;
-					const std::shared_ptr<File> operator*() const;
-					std::shared_ptr<File> operator->();
-					std::shared_ptr<File> operator*();
-					recursion_iterator& operator=(const recursion_iterator& iter);
-				};
-
-				// STL风格遍历
-			public:
-				iterator begin();
-				iterator end();
-				iterator find(const char* name);
-				iterator find(const wchar_t* name);
-
-				recursion_iterator rbegin();
-				recursion_iterator rend();
-				recursion_iterator rfind(const char* name);
-				recursion_iterator rfind(const wchar_t* name);
-
 				// 属性
 			public:
 				bool IsExists() const;
 				size_t Size() const;
 				const daxia::wstring Path() const;
-				daxia::wstring Name();
-				daxia::wstring Extension();
+				daxia::wstring Name() const;
+				daxia::wstring Extension() const;
 
 				// 移动、复制、创建、删除
 			public:
@@ -107,6 +57,7 @@ namespace daxia
 			private:
 				daxia::wstring path_;
 				Type type_;
+				size_t size_;
 			};
 		}
 	}
