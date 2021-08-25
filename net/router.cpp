@@ -225,9 +225,9 @@ namespace daxia
 				if (header.StartLine.Url == "/")
 				{
 					client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
-					client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());;
+					client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
 
-					std::string html;
+					daxia::string html;
 					html += "<html>\r\n";
 					html += "<body>\r\n";
 					html += "hello world!<br/>\r\n";
