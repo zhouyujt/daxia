@@ -83,6 +83,7 @@ namespace daxia
 					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
 				}
 			}
+			void ServeHtml(const char* file);
 		private:
 			std::weak_ptr<Session> context_;
 		};
