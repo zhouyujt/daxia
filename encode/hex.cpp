@@ -19,11 +19,12 @@ namespace daxia
 		daxia::string Hex::ToString(const void* data, size_t size)
 		{
 			daxia::string result;
-			result.GetBuffer(size * 2);
+			char* pr = result.GetBuffer(size * 2);
+			const char* pt = table_.GetString();
 			for (size_t i = 0; i < size; ++i)
 			{
-				result[i * 2] = table_[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) >> 4];
-				result[i * 2 + 1] = table_[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) & 0x0f];
+				pr[i * 2] = pt[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) >> 4];
+				pr[i * 2 + 1] = pt[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) & 0x0f];
 			}
 			
 			return result;
@@ -33,12 +34,14 @@ namespace daxia
 		{
 			daxia::string temp = str;
 			temp.MakeLower();
+			const char* pch = temp.GetString();
 
 			daxia::buffer result;
+			char* pr = result.GetBuffer(temp.GetLength() / 2 + temp.GetLength() % 2);
+			size_t len = 0;
 			for (size_t i = 0; i < temp.GetLength(); ++i)
 			{
-				const char& ch = temp[i];
-				size_t pos = table_.Find(ch);
+				size_t pos = table_.Find(pch[i]);
 				if (pos == -1)
 				{
 					break;
@@ -46,12 +49,12 @@ namespace daxia
 
 				if (i % 2 == 0)
 				{
-					result += (char)0x00;
-					result[result.GetLength() - 1] = pos << 4;
+					++len;
+					pr[len - 1] = pos << 4;
 				}
 				else
 				{
-					result[result.GetLength() - 1] |= pos;
+					pr[len - 1] |= pos;
 				}
 			}
 

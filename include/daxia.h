@@ -22,6 +22,8 @@
 #include "../system/threadpool/thread_pool.h"
 #include "../system/windows/find_process.h"
 #include "../system/windows/path.h"
+#include "../system/windows/file.h"
+#include "../system/windows/find_file.h"
 
 // orm
 #include "../database/orm.h"
