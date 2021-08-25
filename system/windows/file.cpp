@@ -164,6 +164,53 @@ namespace daxia
 				return ::DeleteFileW(path_.GetString()) != 0;
 			}
 
+			bool File::Read(daxia::buffer& buffer, size_t pos /*= 0*/, size_t len /*= -1*/)
+			{
+				bool result = false;
+				HANDLE file = ::CreateFileW(path_.GetString(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (file == INVALID_HANDLE_VALUE) return false;
+
+				if (len == -1)
+				{
+					LARGE_INTEGER size;
+					GetFileSizeEx(file, &size);
+					len = static_cast<size_t>(size.QuadPart);
+				}
+			
+				if (pos != 0)
+				{
+					LARGE_INTEGER temp;
+					temp.QuadPart = pos;
+					::SetFilePointerEx(file, temp, &temp, FILE_BEGIN);
+				}
+
+				DWORD dwRead = 0;
+				if (::ReadFile(file, buffer.GetBuffer(len), len, &dwRead, NULL))
+				{
+					result = true;
+				}
+
+				::CloseHandle(file);
+				return result;
+			}
+
+			bool File::Write(const daxia::buffer& buffer, bool truncate /*= true*/)
+			{
+				bool result = false;
+				DWORD creationDisposition = truncate ? CREATE_ALWAYS : OPEN_ALWAYS;
+				HANDLE file = ::CreateFileW(path_.GetString(), FILE_APPEND_DATA, 0, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (file == INVALID_HANDLE_VALUE) return false;
+
+				DWORD dwWrite = 0;
+				if (::WriteFile(file,buffer.GetString(),buffer.GetLength(),&dwWrite,NULL))
+				{
+					result = true;
+				}
+
+				::CloseHandle(file);
+				return result;
+			}
+
 		}
 	}
 }

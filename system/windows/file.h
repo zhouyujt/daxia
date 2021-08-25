@@ -55,7 +55,7 @@ namespace daxia
 				// ¶Á¡¢Ð´
 			public:
 				bool Read(daxia::buffer& buffer, size_t pos = 0, size_t len = -1);
-				bool Write(const daxia::buffer& buffer, size_t pos = 0, bool truncate = true);
+				bool Write(const daxia::buffer& buffer, bool truncate = true);
 			private:
 				daxia::wstring path_;
 				Type type_;
