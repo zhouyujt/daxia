@@ -31,7 +31,7 @@ namespace daxia
 			Server();
 			~Server();
 		public:
-			void Run(short port, common::Protocol protcol = common::Protocol_TCP, bool enableFps = false);
+			void Run(short port, common::Protocol protcol = common::Protocol_TCP, bool enableFps = false, const char* root = nullptr);
 			void Stop();
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Handle(int msgId, std::shared_ptr<Controller> controller);
@@ -46,7 +46,6 @@ namespace daxia
 			void UnscheduleAll();
 			SessionsManager& GetSessionManager();
 		private:
-			std::string websocketPath_;
 			Router router_;
 		};
 	}// namespace net

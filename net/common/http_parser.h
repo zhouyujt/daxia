@@ -16,15 +16,18 @@
 
 #ifndef __DAXIA_NET_COMMON_HTTPPARSER_H
 #define __DAXIA_NET_COMMON_HTTPPARSER_H
-#include <map>
+#include <unordered_map>
 #include "parser.h"
 #include "../../reflect/reflect.hpp"
 #include "../../string.hpp"
+#include "../../singleton.hpp"
 
 using  daxia::reflect::Reflect;
 
 #define SESSION_USERDATA_REQUEST_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpRequestHeaderIndex)
 #define SESSION_USERDATA_RESPONSE_INDEX static_cast<daxia::net::common::BasicSession::UserDataIndex>(daxia::net::common::HttpResponseHeaderIndex)
+#define HEADER_HELPER() daxia::Singleton<typename daxia::net::common::HttpParser::HeaderHelp>::Instance()
+#define MIME_HELPER() daxia::Singleton<typename daxia::net::common::HttpParser::MimeHelp>::Instance()
 #define HTTP_STATUS_MAP(XX)						\
 	XX(100, Continue)							\
 	XX(101, Switching Protocols)				\
@@ -32,7 +35,7 @@ using  daxia::reflect::Reflect;
 	XX(200, OK)									\
 	XX(201, Created)							\
 	XX(202, Accepted)							\
-	XX(203, Non - Authoritative Information)		\
+	XX(203, Non - Authoritative Information)	\
 	XX(204, No Content)							\
 	XX(205, Reset Content)						\
 	XX(206, Partial Content)					\
@@ -85,6 +88,197 @@ using  daxia::reflect::Reflect;
 	XX(508, Loop Detected)						\
 	XX(510, Not Extended)						\
 	XX(511, Network Authentication Required)	\
+
+// HTTP MIME 类型
+#define HTTP_MIME_MAP(XX)								\
+	XX(323, "text/h323")								\
+	XX(acx, "application/nternet-property-stream")		\
+	XX(ai, "application/postscript")					\
+	XX(aif, "audio/x-aiff")								\
+	XX(aifc, "audio/x-aiff")							\
+	XX(aiff, "audio/x-aiff")							\
+	XX(asf, "video/x-ms-asf")							\
+	XX(asr, "video/x-ms-asf")							\
+	XX(asx, "video/x-ms-asf")							\
+	XX(au, "audio/basic")								\
+	XX(avi, "video/x-msvideo")							\
+	XX(axs, "application/olescript")					\
+	XX(bas, "text/plain")								\
+	XX(bcpio, "application/x-bcpio")					\
+	XX(bin, "application/octet-stream")					\
+	XX(bmp, "image/bmp")								\
+	XX(c, "text/plain")									\
+	XX(cat, "application/vnd.ms-pkiseccat")				\
+	XX(cdf, "application/x-cdf")						\
+	XX(cer, "application/x-x509-ca-cert")				\
+	XX(class, "application/octet-stream")				\
+	XX(clp, "application/x-msclip")						\
+	XX(cmx, "image/x-cmx")								\
+	XX(cod, "image/cis-cod")							\
+	XX(cpio, "application/x-cpio")						\
+	XX(crd, "application/x-mscardfile")					\
+	XX(crl, "application/pkix-crl")						\
+	XX(crt, "application/x-x509-ca-cert")				\
+	XX(csh, "application/x-csh")						\
+	XX(css, "text/css")									\
+	XX(dcr, "application/x-director")					\
+	XX(der, "application/x-x509-ca-cert")				\
+	XX(dir, "application/x-director")					\
+	XX(dll, "application/x-msdownload")					\
+	XX(dms, "application/octet-stream")					\
+	XX(doc, "application/msword")						\
+	XX(dot, "application/msword")						\
+	XX(dvi, "application/x-dvi")						\
+	XX(dxr, "application/x-director")					\
+	XX(eps, "application/postscript")					\
+	XX(etx, "text/x-setext")							\
+	XX(evy, "application/envoy")						\
+	XX(exe, "application/octet-stream")					\
+	XX(fif, "application/fractals")						\
+	XX(flr, "x-world/x-vrml")							\
+	XX(gif, "image/gif")								\
+	XX(gtar, "application/x-gtar")						\
+	XX(gz, "application/x-gzip")						\
+	XX(h, "text/plain")									\
+	XX(hdf, "application/x-hdf")						\
+	XX(hlp, "application/winhlp")						\
+	XX(hqx, "application/mac-binhex40")					\
+	XX(hta, "application/hta")							\
+	XX(htc, "text/x-component")							\
+	XX(htm, "text/html")								\
+	XX(html, "text/html")								\
+	XX(htt, "text/webviewhtml")							\
+	XX(ico, "image/x-icon")								\
+	XX(ief, "image/ief")								\
+	XX(iii, "application/x-iphone")						\
+	XX(ins, "application/x-internet-signup")			\
+	XX(isp, "application/x-internet-signup")			\
+	XX(jfif, "image/pipeg")								\
+	XX(jpe, "image/jpeg")								\
+	XX(jpeg, "image/jpeg")								\
+	XX(jpg, "image/jpeg")								\
+	XX(js, "application/x-javascript")					\
+	XX(json, "text/json")								\
+	XX(latex, "application/x-latex")					\
+	XX(lha, "application/octet-stream")					\
+	XX(lsf, "video/x-la-asf")							\
+	XX(lsx, "video/x-la-asf")							\
+	XX(lzh, "application/octet-stream")					\
+	XX(m13, "application/x-msmediaview")				\
+	XX(m14, "application/x-msmediaview")				\
+	XX(m3u, "audio/x-mpegurl")							\
+	XX(man, "application/x-troff-man")					\
+	XX(mdb, "application/x-msaccess")					\
+	XX(me, "application/x-troff-me")					\
+	XX(mht, "message/rfc822")							\
+	XX(mhtml, "message/rfc822")							\
+	XX(mid, "audio/mid")								\
+	XX(mny, "application/x-msmoney")					\
+	XX(mov, "video/quicktime")							\
+	XX(movie, "video/x-sgi-movie")						\
+	XX(mp2, "video/mpeg")								\
+	XX(mp3, "audio/mpeg")								\
+	XX(mpa, "video/mpeg")								\
+	XX(mpe, "video/mpeg")								\
+	XX(mpeg, "video/mpeg")								\
+	XX(mpg, "video/mpeg")								\
+	XX(mpp, "application/vnd.ms-project")				\
+	XX(mpv2, "video/mpeg")								\
+	XX(ms, "application/x-troff-ms")					\
+	XX(mvb, "application/x-msmediaview")				\
+	XX(nws, "message/rfc822")							\
+	XX(oda, "application/oda")							\
+	XX(p10, "application/pkcs10")						\
+	XX(p12, "application/x-pkcs12")						\
+	XX(p7b, "application/x-pkcs7-certificates")			\
+	XX(p7c, "application/x-pkcs7-mime")					\
+	XX(p7m, "application/x-pkcs7-mime")					\
+	XX(p7r, "application/x-pkcs7-certreqresp")			\
+	XX(p7s, "application/x-pkcs7-signature")			\
+	XX(pbm, "image/x-portable-bitmap")					\
+	XX(pdf, "application/pdf")							\
+	XX(pfx, "application/x-pkcs12")						\
+	XX(pgm, "image/x-portable-graymap")					\
+	XX(pko, "application/ynd.ms-pkipko")				\
+	XX(pma, "application/x-perfmon")					\
+	XX(pmc, "application/x-perfmon")					\
+	XX(pml, "application/x-perfmon")					\
+	XX(pmr, "application/x-perfmon")					\
+	XX(pmw, "application/x-perfmon")					\
+	XX(pnm, "image/x-portable-anymap")					\
+	XX(pot, "application/vnd.ms-powerpoint")			\
+	XX(ppm, "image/x-portable-pixmap")					\
+	XX(pps, "application/vnd.ms-powerpoint")			\
+	XX(ppt, "application/vnd.ms-powerpoint")			\
+	XX(prf, "application/pics-rules")					\
+	XX(ps, "application/postscript")					\
+	XX(pub, "application/x-mspublisher")				\
+	XX(qt, "video/quicktime")							\
+	XX(ra, "audio/x-pn-realaudio")						\
+	XX(ram, "audio/x-pn-realaudio")						\
+	XX(ras, "image/x-cmu-raster")						\
+	XX(rgb, "image/x-rgb")								\
+	XX(rmi, "audio/mid")								\
+	XX(roff, "application/x-troff")						\
+	XX(rtf, "application/rtf")							\
+	XX(rtx, "text/richtext")							\
+	XX(scd, "application/x-msschedule")					\
+	XX(sct, "text/scriptlet")							\
+	XX(setpay, "application/set-payment-initiation")	\
+	XX(setreg, "application/set-registration-initiation")	\
+	XX(sh, "application/x-sh")							\
+	XX(shar, "application/x-shar")						\
+	XX(sit, "application/x-stuffit")					\
+	XX(snd, "audio/basic")								\
+	XX(spc, "application/x-pkcs7-certificates")			\
+	XX(spl, "application/futuresplash")					\
+	XX(src, "application/x-wais-source")				\
+	XX(sst, "application/vnd.ms-pkicertstore")			\
+	XX(stl, "application/vnd.ms-pkistl")				\
+	XX(stm, "text/html")								\
+	XX(svg, "image/svg+xml")							\
+	XX(sv4cpio, "application/x-sv4cpio")				\
+	XX(sv4crc, "application/x-sv4crc")					\
+	XX(swf, "application/x-shockwave-flash")			\
+	XX(t, "application/x-troff")						\
+	XX(tar, "application/x-tar")						\
+	XX(tcl, "application/x-tcl")						\
+	XX(tex, "application/x-tex")						\
+	XX(texi, "application/x-texinfo")					\
+	XX(texinfo, "application/x-texinfo")				\
+	XX(tgz, "application/x-compressed")					\
+	XX(tif, "image/tiff")								\
+	XX(tiff, "image/tiff")								\
+	XX(tr, "application/x-troff")						\
+	XX(trm, "application/x-msterminal")					\
+	XX(tsv, "text/tab-separated-values")				\
+	XX(txt, "text/plain")								\
+	XX(uls, "text/iuls")								\
+	XX(ustar, "application/x-ustar")					\
+	XX(vcf, "text/x-vcard")								\
+	XX(vrml, "x-world/x-vrml")							\
+	XX(wav, "audio/x-wav")								\
+	XX(wcm, "application/vnd.ms-works")					\
+	XX(wdb, "application/vnd.ms-works")					\
+	XX(wks, "application/vnd.ms-works")					\
+	XX(wmf, "application/x-msmetafile")					\
+	XX(wps, "application/vnd.ms-works")					\
+	XX(wri, "application/x-mswrite")					\
+	XX(wrl, "x-world/x-vrml")							\
+	XX(wrz, "x-world/x-vrml")							\
+	XX(xaf, "x-world/x-vrml")							\
+	XX(xbm, "image/x-xbitmap")							\
+	XX(xla, "application/vnd.ms-excel")					\
+	XX(xlc, "application/vnd.ms-excel")					\
+	XX(xlm, "application/vnd.ms-excel")					\
+	XX(xls, "application/vnd.ms-excel")					\
+	XX(xlt, "application/vnd.ms-excel")					\
+	XX(xlw, "application/vnd.ms-excel")					\
+	XX(xof, "x-world/x-vrml")							\
+	XX(xpm, "image/x-xpixmap")							\
+	XX(xwd, "image/x-xwindowdump")						\
+	XX(z, "application/x-compress")						\
+	XX(zip, "application/zip")							\
 
 namespace daxia
 {
@@ -168,7 +362,7 @@ namespace daxia
 					daxia::string Method;
 					daxia::string Url;
 					daxia::string Version;
-					std::map<daxia::string, daxia::string> Params;
+					std::unordered_map<daxia::string, daxia::string> Params;
 
 					daxia::string GetParam(const char* param) const
 					{
@@ -225,7 +419,7 @@ namespace daxia
 					size_t InitFromData(const void* data, size_t len, bool isRequest);
 				private:
 					// 加快查找的索引
-					std::map<daxia::string/*tag*/, size_t/*offset*/> index_;
+					std::unordered_map<daxia::string/*tag*/, size_t/*offset*/> index_;
 				};
 
 				class RequestHeader : public GeneralHeader
@@ -403,7 +597,34 @@ namespace daxia
 				public:
 					reflect::Reflect<RequestHeader> request_;
 					reflect::Reflect<ResponseHeader> response_;
-					std::map<int, std::string> status_;
+					std::unordered_map<int, std::string> status_;
+				};
+
+				class MimeHelp
+				{
+				public:
+					MimeHelp()
+					{
+#define XX(extension,type)	 mimeMap_[#extension] = type;
+						HTTP_MIME_MAP(XX)
+#undef XX
+					}
+					~MimeHelp() {}
+				public:
+					daxia::string Find(const daxia::string& extension)
+					{
+						std::unordered_map<daxia::string, daxia::string>::const_iterator iter = mimeMap_.find(extension);
+						if (iter != mimeMap_.end())
+						{
+							return iter->second;
+						}
+						else
+						{
+							return daxia::string();
+						}
+					}
+				private:
+					std::unordered_map<daxia::string, daxia::string> mimeMap_;
 				};
 			};
 
@@ -452,7 +673,6 @@ namespace daxia
 	}
 }
 
-#undef OFFSET
-#undef MAKE_INDEX
+#undef HTTP_STATUS_MAP
 
 #endif // !__DAXIA_NET_COMMON_HTTPPARSER_H

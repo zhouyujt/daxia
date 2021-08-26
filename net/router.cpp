@@ -60,9 +60,10 @@ namespace daxia
 		{
 		}
 
-		void Router::RunAsHTTP(short port, bool enableFps)
+		void Router::RunAsHTTP(short port, const daxia::string& root, bool enableFps)
 		{
 			parser_ = std::shared_ptr<common::Parser>(new common::HttpServerParser);
+			httpRoot_ = root;
 
 			endpoint ep(boost::asio::ip::tcp::v4(), port);
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
@@ -192,6 +193,9 @@ namespace daxia
 
 			if (packetLen == -1) return;
 			
+			client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
+			client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
+
 			auto iter = httpControllers_.find(header.StartLine.Url.GetString());
 			if (iter != httpControllers_.end())
 			{
@@ -206,8 +210,6 @@ namespace daxia
 				static const daxia::string methodConnectHelp = daxia::string(methodsHelp.Connect.Tag("http")).MakeLower();
 
 				iter->second->SetContext(client);
-				client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
-				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
 
 				if (msgID == static_cast<int>(methodGetHelp.Hash())) iter->second->Get(client.get(), this, data);
 				else if (msgID == static_cast<int>(methodPostHelp.Hash())) iter->second->Post(client.get(), this, data);
@@ -224,9 +226,6 @@ namespace daxia
 			{
 				if (header.StartLine.Url == "/")
 				{
-					client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
-					client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
-
 					daxia::string html;
 					html += "<html>\r\n";
 					html += "<body>\r\n";
@@ -236,6 +235,56 @@ namespace daxia
 					html += "</body>\r\n";
 					html += "</html>\r\n";
 					client->WriteMessage(html);
+				}
+				else
+				{
+					common::HttpParser::ResponseHeader* response = client->GetUserData<common::HttpParser::ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
+					std::function<void()> serve404 = [&]()
+					{
+						if (response)
+						{
+							response->StartLine.StatusCode = "404";
+							client->WriteMessage(nullptr, 0);
+						}
+					};
+
+					// 获取后缀名
+					size_t pos = header.StartLine.Url.Find(".");
+					if (pos == -1)
+					{
+						serve404();
+						return;
+					}
+
+					daxia::string extension = header.StartLine.Url.Mid(pos + 1, -1);
+					daxia::string type = MIME_HELPER().Find(extension);
+					if (type.IsEmpty())
+					{
+						serve404();
+						return;
+					}
+
+					response->ContentType = type;
+
+					std::ifstream ifs;
+					daxia::string filename = httpRoot_ + header.StartLine.Url;
+					ifs.open(filename);
+					if (ifs.is_open())
+					{
+						ifs.seekg(0, ifs.end);
+						size_t len = static_cast<size_t>(ifs.tellg());
+						ifs.seekg(0, ifs.beg);
+
+						daxia::buffer buffer;
+						ifs.read(buffer.GetBuffer(len), len);
+						ifs.close();
+
+						client->WriteMessage(buffer);
+					}
+					else
+					{
+						serve404();
+					}
 				}
 			}
 		}

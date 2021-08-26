@@ -44,7 +44,7 @@ namespace daxia
 			void RunAsTCP(short port, bool enableFps);
 			void RunAsUDP(short port, bool enableFps);
 			void RunAsWebsocket(short port, const std::string& path, bool enableFps);
-			void RunAsHTTP(short port, bool enableFps);
+			void RunAsHTTP(short port, const daxia::string& root, bool enableFps);
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Stop();
 			void Handle(int msgID, std::shared_ptr<Controller> controller);
@@ -68,6 +68,7 @@ namespace daxia
 			long long heartbeatSchedulerId_;
 			long long nextSessionId_;
 			std::mutex sessionIdLocker_;
+			daxia::string httpRoot_;
 		};
 	}// namespace net
 }// namespace daxia

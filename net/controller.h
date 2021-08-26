@@ -51,23 +51,6 @@ namespace daxia
 		public:
 			void SetContext(std::shared_ptr<Session> session);
 			void ResetContext();
-		public:
-			class ContentTypeHelper
-			{
-			public:
-				ContentTypeHelper()
-					: json("application/json;charset=gbk")
-					, xml("text/xml")
-					, stream("application/octet-stream")
-				{
-				}
-				~ContentTypeHelper() {}
-			public:
-				std::string json;
-				std::string xml;
-				std::string stream;
-			};
-			static ContentTypeHelper ContentType;
 		protected:
 			const common::HttpParser::RequestHeader& Request() const;
 			common::HttpParser::ResponseHeader& Response();
@@ -79,14 +62,15 @@ namespace daxia
 				if (!context_.expired())
 				{
 					Response().StartLine.StatusCode = "200";
-					Response().ContentType = ContentType.json;
+					Response().ContentType = MIME_HELPER().Find("json");
 					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
 				}
 			}
-			void ServeHtml(const char* file);
+			void ServeFile(const daxia::string& filename);
 		private:
 			std::weak_ptr<Session> context_;
 		};
+#undef HTTP_MIME_MAP
 
 	}// namespace net
 }// namespace daxia

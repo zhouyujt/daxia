@@ -16,7 +16,7 @@ namespace daxia
 		{
 			Stop();
 		}
-		void Server::Run(short port, common::Protocol protcol, bool enableFps)
+		void Server::Run(short port, common::Protocol protcol, bool enableFps, const char* root)
 		{
 			switch (protcol)
 			{
@@ -27,10 +27,10 @@ namespace daxia
 				router_.RunAsUDP(port, enableFps);
 				break;
 			case common::Protocol_Websocket:
-				router_.RunAsWebsocket(port, websocketPath_, enableFps);
+				router_.RunAsWebsocket(port, root, enableFps);
 				break;
 			case common::Protocol_HTTP:
-				router_.RunAsHTTP(port, enableFps);
+				router_.RunAsHTTP(port, root, enableFps);
 				break;
 			default:
 				break;

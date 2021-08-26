@@ -5,8 +5,6 @@ namespace daxia
 {
 	namespace net
 	{
-		daxia::net::HttpController::ContentTypeHelper HttpController::ContentType;
-
 		void HttpController::SetContext(std::shared_ptr<Session> session)
 		{
 			context_ = session;
@@ -75,14 +73,31 @@ namespace daxia
 			}
 		}
 
-		void HttpController::ServeHtml(const char* file)
+		void HttpController::ServeFile(const daxia::string& filename)
 		{
 			if (!context_.expired())
 			{
+				// 获取后缀名
+				size_t pos = filename.Find(".");
+				if (pos == -1)
+				{
+					ServeNone(404);
+					return;
+				}
+
+				daxia::string extension = filename.Mid(pos + 1, -1);
+				daxia::string type = MIME_HELPER().Find(extension);
+				if (type.IsEmpty())
+				{
+					ServeNone(404);
+					return;
+				}
+
 				Response().StartLine.StatusCode = "200";
+				Response().ContentType = type;
 				
 				std::ifstream ifs;
-				ifs.open(file);
+				ifs.open(filename);
 				if (ifs.is_open())
 				{
 					ifs.seekg(0, ifs.end);
@@ -92,7 +107,12 @@ namespace daxia
 					daxia::buffer buffer;
 					ifs.read(buffer.GetBuffer(len), len);
 					ifs.close();
+
 					context_.lock()->WriteMessage(buffer);
+				}
+				else
+				{
+					ServeNone(404);
 				}
 			}
 		}
