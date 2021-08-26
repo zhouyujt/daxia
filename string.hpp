@@ -893,6 +893,7 @@ namespace daxia
 
 	typedef String_base<char, std::char_traits<char>, std::allocator<char>> string;
 	typedef String_base<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> wstring;
+
 	class buffer : public string
 	{
 	public:
@@ -908,5 +909,18 @@ namespace daxia
 #endif // UNICODE
 
 }
+
+namespace std
+{
+	template <typename ValueType>
+	class hash<daxia::String_base<ValueType, std::char_traits<ValueType>, std::allocator<ValueType>>>
+	{
+	public:
+		size_t operator()(const daxia::String_base<ValueType, std::char_traits<ValueType>, std::allocator<ValueType>>& obj) const
+		{
+			return obj.Hash();
+		}
+	};
+};
 
 #endif // !__DAXIA_STRING_HPP
