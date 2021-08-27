@@ -190,9 +190,9 @@ namespace daxia
 			if (data.size() == 0) return;
 
 			common::HttpParser::RequestHeader header;
-			size_t packetLen = header.InitFromData(data.get(), data.size());
+			size_t headerLen = header.InitFromData(data.get(), data.size());
 
-			if (packetLen == -1) return;
+			if (headerLen == -1) return;
 			
 			client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
 			client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
@@ -212,14 +212,14 @@ namespace daxia
 
 				iter->second->SetContext(client);
 
-				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, data); }
-				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, data); }
+				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::shared_buffer(data.get() + headerLen, data.size() - headerLen)); }
 
 				iter->second->ResetContext();
 			}
