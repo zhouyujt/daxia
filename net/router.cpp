@@ -212,14 +212,14 @@ namespace daxia
 
 				iter->second->SetContext(client);
 
-				if (msgID == static_cast<int>(methodGetHelp.Hash())) if (iter->second->Get) iter->second->Get(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodPostHelp.Hash())) if (iter->second->Post) iter->second->Post(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodPutHelp.Hash()))if (iter->second->Put)  iter->second->Put(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodHeadHelp.Hash())) if (iter->second->Head) iter->second->Head(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodDeleteHelp.Hash()))if (iter->second->Delete)  iter->second->Delete(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())) if (iter->second->Options) iter->second->Options(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodTraceHelp.Hash())) if (iter->second->Trace) iter->second->Trace(client.get(), this, data);
-				else if (msgID == static_cast<int>(methodConnectHelp.Hash())) if (iter->second->Trace) iter->second->Trace(client.get(), this, data);
+				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, data); }
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, data); }
 
 				iter->second->ResetContext();
 			}
