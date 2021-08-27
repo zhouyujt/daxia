@@ -224,10 +224,14 @@ namespace daxia
 
 		void Json::getValue(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
 		{
-			daxia::string str(root.get<std::string>(static_cast<const std::string&>(tag)));
-			str.Utf8() = true;
-			if (!utf8) str = str.ToAnsi();
-			reflectBase->FromString(JSON,str);
+			auto iter = root.find(static_cast<const std::string&>(tag));
+			if (iter != root.not_found())
+			{
+				daxia::string str(iter->second.data());
+				str.Utf8() = true;
+				if (!utf8) str = str.ToAnsi();
+				reflectBase->FromString(JSON, str);
+			}
 		}
 
 		void Json::getObject(daxia::reflect::Reflect_base* reflectBase, daxia::string tag, const boost::property_tree::ptree &root, bool utf8)
