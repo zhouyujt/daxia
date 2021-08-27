@@ -82,7 +82,7 @@ namespace daxia
 
 					if (address)
 					{
-						*address = line.Mid(pos, -1);
+						*address = line.Mid(pos, -1).Trim();
 					}
 
 					lastLineEndPos = lineEndPos;
