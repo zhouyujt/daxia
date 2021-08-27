@@ -73,11 +73,14 @@ namespace daxia
 			try
 			{
 				std::string temp = str;
-				for (int i = 0; i < 2; ++i)
+				if (temp.length() >= 2)
 				{
-					if (temp.back() == '=')
+					for (int i = 0; i < 2; ++i)
 					{
-						temp.pop_back();
+						if (temp.back() == '=')
+						{
+							temp.pop_back();
+						}
 					}
 				}
 
