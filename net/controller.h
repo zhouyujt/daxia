@@ -447,7 +447,7 @@ namespace daxia
 				if (!context_.expired())
 				{
 					Response().StartLine.StatusCode = "200";
-					Response().ContentType = MIME_HELPER().Find("json");
+					Response().ContentType = MIME_HELPER().Find("json") + ";charset=UTF-8";
 					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
 				}
 			}
