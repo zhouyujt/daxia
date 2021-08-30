@@ -158,7 +158,7 @@ using  daxia::reflect::Reflect;
 	XX(jpeg, "image/jpeg")								\
 	XX(jpg, "image/jpeg")								\
 	XX(js, "application/x-javascript")					\
-	XX(json, "text/json")								\
+	XX(json, "application/json")						\
 	XX(latex, "application/x-latex")					\
 	XX(lha, "application/octet-stream")					\
 	XX(lsf, "video/x-la-asf")							\
