@@ -111,7 +111,7 @@ namespace daxia
 					for(const daxia::string& kv : key_value)
 					{
 						size_t pos = 0;
-						auto key = kv.Tokenize("=", pos).MakeLower();
+						auto key = kv.Tokenize("=", pos);
 						StartLine.Params[key] = kv.Mid(pos, -1);
 					}
 				}
