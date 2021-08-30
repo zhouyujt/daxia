@@ -156,7 +156,7 @@ namespace daxia
 
 			// 查询一条
 			// fields: 需要查询的字段。nullptr则查询所有字段。
-			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
+			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 。nullptr则根据具有primary_key属性且已初始化的字段进行查询。
 			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
 			template<typename ValueType>
 			daxia::string Query(ValueType& obj,
@@ -167,9 +167,8 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				ValueType helper;
 				auto layout = Reflect<ValueType>::GetLayoutFast();
-				std::shared_ptr<Recordset> recordset = query(layout, &helper, fields, suffix, prefix);
+				std::shared_ptr<Recordset> recordset = query(layout, &obj, fields, suffix, prefix);
 
 				if (recordset && !recordset->Eof())
 				{
@@ -181,7 +180,7 @@ namespace daxia
 
 			// 查询多条
 			// fields: 需要查询的字段。nullptr则查询所有字段。
-			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 
+			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 。nullptr则根据具有primary_key属性且已初始化的字段进行查询。
 			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
 			template<typename ValueType>
 			daxia::string Query(std::vector<ValueType>& objs,

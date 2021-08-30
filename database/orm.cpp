@@ -199,6 +199,7 @@ namespace daxia
 
 			daxia::string tableName;
 			daxia::string fieldList;
+			daxia::string conditionList;
 			for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
 			{
 				const Reflect_base* reflectBase = cast(baseaddr, iter->offset);
@@ -224,16 +225,62 @@ namespace daxia
 					if (!fieldList.IsEmpty())  fieldList += ',';
 					fieldList += tag;
 				}
+
+				// 构造条件语句
+				if (suffix == nullptr)
+				{
+					// 默认只用主键做查询条件
+					auto attribute = reflectBase->TagAttribute(ORM);
+					if (attribute.find(PRIMARY_KEY) == attribute.end())
+					{
+						continue;
+					}
+
+					// 排除未初始化字段
+					if (!reinterpret_cast<const daxia::database::driver::BasicDataType*>(reflectBase->ValueAddr())->IsAssign())
+					{
+						continue;
+					}
+
+					if (!conditionList.IsEmpty())  conditionList += " AND ";
+					conditionList += tag;
+					conditionList += '=';
+					conditionList += reflectBase->ToString(ORM);
+				}
 			}
 
 			// 拼接
 			daxia::string sql;
-			sql.Format("SELECT %s %s FROM %s WHERE %s",
-				prefix == nullptr ? "" : prefix,
-				fieldList.GetString(),
-				tableName.GetString(),
-				suffix == nullptr ? "1=1" : suffix
-				);
+			if (suffix == nullptr)
+			{
+				if (conditionList.IsEmpty())
+				{
+					sql.Format("SELECT %s %s FROM %s",
+						prefix == nullptr ? "" : prefix,
+						fieldList.GetString(),
+						tableName.GetString()
+						);
+				}
+				else
+				{
+					sql.Format("SELECT %s %s FROM %s WHERE %s",
+						prefix == nullptr ? "" : prefix,
+						fieldList.GetString(),
+						tableName.GetString(),
+						conditionList.GetString()
+						);
+				}
+
+			}
+			else
+			{
+				sql.Format("SELECT %s %s FROM %s WHERE %s",
+					prefix == nullptr ? "" : prefix,
+					fieldList.GetString(),
+					tableName.GetString(),
+					suffix
+					);
+			}
 
 			// 执行
 			return command_->Excute(sql);
