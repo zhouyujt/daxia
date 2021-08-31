@@ -69,7 +69,7 @@ namespace daxia
 				try
 				{
 					ptree root;
-					stringstream ss(json.Utf8() ? static_cast<std::string>(json) : static_cast<std::string>(json.ToUtf8()));
+					stringstream ss(json.Utf8() ? static_cast<const std::string&>(json) : static_cast<const std::string&>(json.ToUtf8()));
 					json_parser::read_json(ss, root);
 
 					ummarshal(reinterpret_cast<char*>(&v), layout, root, json.Utf8());
