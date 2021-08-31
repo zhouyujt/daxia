@@ -3,6 +3,7 @@
 #include "../../string.hpp"
 #include "../../encode/json.h"
 #include "../../singleton.hpp"
+#include "../../encode/url.h"
 
 using daxia::encode::Json;
 
@@ -50,9 +51,10 @@ namespace daxia
 				if (startLineEndPos == -1) return -1;
 
 				// 获取起始行各个参数并校验
-				daxia::string stratLine = header.Left(startLineEndPos);
+				daxia::string startLine = header.Left(startLineEndPos);
+				startLine = daxia::encode::Url::Unmarshal(startLine);
 				std::vector<daxia::string> params;
-				stratLine.Split(" ", params);
+				startLine.Split(" ", params);
 
 				// 校验参数个数
 				if (params.size() != RequstLineIndex_End && params.size() != ResponseLineIndex_End) return -1;

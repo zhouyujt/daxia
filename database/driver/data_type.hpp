@@ -290,7 +290,7 @@ namespace daxia
 					const daxia::buffer& v = static_cast<const daxia::buffer&>(*reinterpret_cast<const DataType<daxia::buffer>*>(data));
 
 					daxia::string result = "\"";
-					result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\"";
+					result += daxia::encode::Hex::Marshal(v.GetString(), v.GetLength()) + "\"";
 
 					return result;
 				});
@@ -298,7 +298,7 @@ namespace daxia
 				Reflect<DataType<daxia::buffer>>::SetFromString(JSON, [](const daxia::string& str, void* data)
 				{
 					DataType<daxia::buffer>& v = *reinterpret_cast<DataType<daxia::buffer>*>(data);
-					v = daxia::encode::Hex::FromString(str);
+					v = daxia::encode::Hex::Unmarshal(str);
 				});
 			}
 
