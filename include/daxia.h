@@ -13,6 +13,7 @@
 #include "../encode/md5.h"
 #include "../encode/uuid.h"
 #include "../encode/hex.h"
+#include "../encode/url.h"
 
 // reflect
 #include "../reflect/reflect.hpp"
