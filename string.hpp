@@ -117,6 +117,7 @@ namespace daxia
 		String_base& operator=(const String_base& str)
 		{
 			v_ = str.v_;
+			utf8_ = str.utf8_;
 			return *this;
 		}
 
@@ -310,7 +311,7 @@ namespace daxia
 
 	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const daxia::String_base<Elem, Traits, Alloc>& str)
-		: utf8_(utf8<void, size<sizeof(__utf8Test)>>::value)
+		: utf8_(str.utf8_)
 	{
 		v_ = str.v_;
 	}
