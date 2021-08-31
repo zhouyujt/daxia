@@ -53,12 +53,15 @@ namespace daxia
 
 			std::stringstream result;
 			std::string temp(str);
-			try
+			if (temp.length() % 4 == 0)
 			{
-				copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
-			}
-			catch (...)
-			{
+				try
+				{
+					copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
+				}
+				catch (...)
+				{
+				}
 			}
 			
 			return result.str();
@@ -70,24 +73,27 @@ namespace daxia
 			typedef transform_width<binary_from_base64<std::string::const_iterator>, 8, 6> Base64DecodeIter;
 
 			std::stringstream result;
-			try
+			if (str.length() % 4 == 0)
 			{
-				std::string temp = str;
-				if (temp.length() >= 2)
+				try
 				{
-					for (int i = 0; i < 2; ++i)
+					std::string temp = str;
+					if (temp.length() >= 2)
 					{
-						if (temp.back() == '=')
+						for (int i = 0; i < 2; ++i)
 						{
-							temp.pop_back();
+							if (temp.back() == '=')
+							{
+								temp.pop_back();
+							}
 						}
 					}
-				}
 
-				copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
-			}
-			catch (...)
-			{
+					copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
+				}
+				catch (...)
+				{
+				}
 			}
 
 			return result.str();
