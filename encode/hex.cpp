@@ -16,7 +16,7 @@ namespace daxia
 
 		}
 
-		daxia::string Hex::ToString(const void* data, size_t size)
+		daxia::string Hex::Marshal(const void* data, size_t size)
 		{
 			daxia::string result;
 			char* pr = result.GetBuffer(size * 2);
@@ -30,7 +30,7 @@ namespace daxia
 			return result;
 		}
 
-		daxia::buffer Hex::FromString(const daxia::string& str)
+		daxia::buffer Hex::Unmarshal(const daxia::string& str)
 		{
 			daxia::string temp = str;
 			temp.MakeLower();

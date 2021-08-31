@@ -31,7 +31,7 @@ namespace daxia
 
 		Uuid& Uuid::FromString(const daxia::string& str)
 		{
-			daxia::buffer buff = daxia::encode::Hex::FromString(str);
+			daxia::buffer buff = daxia::encode::Hex::Unmarshal(str);
 			if (buff.GetLength() == sizeof(data))
 			{
 				memcpy(data, buff.GetBuffer(), sizeof(data));

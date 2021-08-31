@@ -23,8 +23,8 @@ namespace daxia
 			Hex();
 			~Hex();
 		public:
-			static daxia::string ToString(const void* data, size_t size);
-			static daxia::buffer FromString(const daxia::string& str);
+			static daxia::string Marshal(const void* data, size_t size);
+			static daxia::buffer Unmarshal(const daxia::string& str);
 		private:
 			static daxia::string table_;
 		};
