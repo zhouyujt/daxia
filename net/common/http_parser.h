@@ -297,13 +297,13 @@ namespace daxia
 				class HeaderHelp;
 			public:
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					daxia::net::common::shared_buffer& buffer
 					) const = 0;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					int& msgID,
 					daxia::net::common::shared_buffer& buffer,
@@ -635,13 +635,13 @@ namespace daxia
 				~HttpServerParser(){}
 			public:
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					daxia::net::common::shared_buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					int& msgID,
 					daxia::net::common::shared_buffer& buffer,
@@ -656,13 +656,13 @@ namespace daxia
 				~HttpClientParser(){}
 			public:
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					daxia::net::common::shared_buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
-					const daxia::net::common::byte* data,
+					const void* data,
 					size_t len,
 					int& msgID,
 					daxia::net::common::shared_buffer& buffer,

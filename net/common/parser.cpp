@@ -11,7 +11,7 @@ namespace daxia
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, daxia::net::common::shared_buffer& buffer) const
+			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, const void* data, size_t len, daxia::net::common::shared_buffer& buffer) const
 			{
 				buffer.clear();
 				buffer.resize(sizeof(PacketHead) + len);
@@ -19,7 +19,7 @@ namespace daxia
 				PacketHead head;
 				head.magic = 88;
 				head.hearbeat = (data == nullptr && len == 0) ? 1 : 0;
-				head.len = ByteOrder::hton(static_cast<int>(len));
+				head.contentLength = ByteOrder::hton(static_cast<int>(len));
 				head.reserve = 0;
 
 				memcpy(buffer.get(), &head, sizeof(head));
@@ -32,7 +32,7 @@ namespace daxia
 				return true;
 			}
 
-			Parser::Result DefaultParser::Unmarshal(daxia::net::common::BasicSession* session, const daxia::net::common::byte* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
+			Parser::Result DefaultParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
 			{
 				buffer.clear();
 
@@ -40,11 +40,11 @@ namespace daxia
 				if (len < sizeof(PacketHead)) return Parser::Result::Result_Uncomplete;
 
 				// 非法数据
-				if (data[0] != 88) return Parser::Result::Result_Fail;
+				if (reinterpret_cast<const char*>(data)[0] != 88) return Parser::Result::Result_Fail;
 
 				// 数据不足
 				const PacketHead* head = reinterpret_cast<const PacketHead*>(data);
-				int contentLen = ByteOrder::ntoh(head->len);
+				int contentLen = ByteOrder::ntoh(head->contentLength);
 				if (contentLen + sizeof(PacketHead) > static_cast<unsigned int>(len))  return Parser::Result::Result_Uncomplete;
 			
 				if (!head->hearbeat)
@@ -76,7 +76,7 @@ namespace daxia
 				}
 
 				buffer.resize(contentLen);
-				memcpy(buffer.get(), data + sizeof(PacketHead), contentLen);
+				memcpy(buffer.get(), reinterpret_cast<const char*>(data) + sizeof(PacketHead), contentLen);
 
 				packetLen = sizeof(PacketHead) + contentLen;
 

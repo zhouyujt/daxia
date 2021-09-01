@@ -32,7 +32,7 @@ namespace daxia
 			public:
 				shared_buffer();
 				shared_buffer(size_t capacity);
-				shared_buffer(const byte data[], size_t size);
+				shared_buffer(const char data[], size_t size);
 			public:
 				void clear();
 				size_t size() const;
@@ -40,10 +40,10 @@ namespace daxia
 				void resize(size_t size);
 				void reserve(size_t capacity);
 				bool empty() const;
-				byte* get() const;
+				char* get() const;
 				boost::asio::mutable_buffers_1 asio_buffer(size_t offset = 0) const;
 			private:
-				std::shared_ptr<byte> buff_;
+				std::shared_ptr<char> buff_;
 				size_t size_;
 				size_t capacity_;
 			};

@@ -18,14 +18,14 @@ namespace daxia
 			}
 
 			shared_buffer::shared_buffer(size_t capacity)
-				: buff_(new byte[capacity])
+				: buff_(new char[capacity])
 				, capacity_(capacity)
 				, size_(0)
 			{
 			}
 
-			shared_buffer::shared_buffer(const byte data[], size_t size)
-				: buff_(new byte[size])
+			shared_buffer::shared_buffer(const char data[], size_t size)
+				: buff_(new char[size])
 				, size_(size)
 				, capacity_(size)
 			{
@@ -70,7 +70,7 @@ namespace daxia
 						}
 					}
 
-					std::shared_ptr<byte> temp(new byte[newCapacity]);
+					std::shared_ptr<char> temp(new char[newCapacity]);
 
 					if (buff_.get())
 					{
@@ -94,7 +94,7 @@ namespace daxia
 				{
 					if (capacity > capacity_)
 					{
-						std::shared_ptr<byte> temp(new byte[capacity]);
+						std::shared_ptr<char> temp(new char[capacity]);
 						memcpy(temp.get(), buff_.get(), size_);
 						buff_ = temp;
 					}
@@ -108,7 +108,7 @@ namespace daxia
 				return size_ == 0;
 			}
 
-			byte* shared_buffer::get() const
+			char* shared_buffer::get() const
 			{
 				return buff_.get();
 			}

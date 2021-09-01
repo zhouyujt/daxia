@@ -18,8 +18,6 @@ namespace daxia
 	{
 		namespace common
 		{
-			typedef unsigned char byte;
-
 			enum Protocol
 			{
 				Protocol_TCP,

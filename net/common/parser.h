@@ -41,18 +41,18 @@ namespace daxia
 			public:
 				// 封装消息
 				virtual bool Marshal(daxia::net::common::BasicSession* session,	// 会话指针
-					const daxia::net::common::byte* data,							// 需封装的数据
+					const void* data,												// 需封装的数据
 					size_t len,														// data大小，单位字节
 					daxia::net::common::shared_buffer& buffer						// 封装后的数据
 					) const = 0;
 
 				// 解析消息
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,	// 会话指针 
-					const daxia::net::common::byte* data,								// 解封的数据
+					const void* data,													// 解封的数据
 					size_t len,															// data大小，单位字节
 					int& msgID,															// 解析出的消息ID
 					daxia::net::common::shared_buffer& buffer,							// 解析后的数据			
-					size_t& packetLen													// 封包长度，单位字节
+					size_t& packetLen													// 封包长度(包括头跟正文)，单位字节
 					) const = 0;
 			};
 
@@ -74,10 +74,10 @@ namespace daxia
 				// 数据包头
 				struct ATTRIBUTE_PACKED PacketHead
 				{
-					byte	magic;			// 恒定为88
-					byte	hearbeat;		// 心跳包标识
-					unsigned int len;		// 数据长度，不包括本包头
-					unsigned int reserve;	// 保留数据
+					char	magic;					// 恒定为88
+					char	hearbeat;				// 心跳包标识
+					unsigned int contentLength;		// 数据长度，不包括本包头
+					unsigned int reserve;			// 保留数据
 				};
 
 #ifdef _MSC_VER
@@ -87,13 +87,13 @@ namespace daxia
 #undef ATTRIBUTE_PACKED
 			public:
 				virtual bool Marshal(daxia::net::common::BasicSession* session, 
-					const daxia::net::common::byte* data, 
+					const void* data, 
 					size_t len,
 					daxia::net::common::shared_buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session, 
-					const daxia::net::common::byte* data, 
+					const void* data, 
 					size_t len,
 					int& msgID,
 					daxia::net::common::shared_buffer& buffer, 
