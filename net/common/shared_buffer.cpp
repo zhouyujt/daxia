@@ -57,9 +57,17 @@ namespace daxia
 						newCapacity = 1;
 					}
 
+					// 1.5倍增长，直到1G，然后每次增长1M
 					while (newCapacity < size)
 					{
-						newCapacity *= 2;
+						if (newCapacity < 1024 * 1024 * 1024)
+						{
+							newCapacity = newCapacity + newCapacity / 2;
+						}
+						else
+						{
+							newCapacity += 1024 * 1024;
+						}
 					}
 
 					std::shared_ptr<byte> temp(new byte[newCapacity]);
