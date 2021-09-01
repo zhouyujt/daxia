@@ -32,29 +32,29 @@ namespace daxia
 				memcpy(buff_.get(), data, size);
 			}
 
-			void shared_buffer::clear()
+			void shared_buffer::Clear()
 			{
 				size_ = 0;
 			}
 
-			size_t shared_buffer::size() const
+			size_t shared_buffer::Size() const
 			{
 				return size_;
 			}
 
-			size_t shared_buffer::capacity() const
+			size_t shared_buffer::Capacity() const
 			{
 				return capacity_;
 			}
 
-			void shared_buffer::resize(size_t size)
+			void shared_buffer::Resize(size_t size)
 			{
 				if (size > capacity_)
 				{
 					size_t newCapacity = capacity_;
 					if (newCapacity == 0)
 					{
-						newCapacity = 1;
+						newCapacity = size;
 					}
 
 					// 1.5倍增长，直到1G，然后每次增长1M
@@ -84,7 +84,7 @@ namespace daxia
 				size_ = size;
 			}
 
-			void shared_buffer::reserve(size_t capacity)
+			void shared_buffer::Reserve(size_t capacity)
 			{
 				if (size_ > capacity)
 				{
@@ -103,17 +103,12 @@ namespace daxia
 				capacity_ = capacity;
 			}
 
-			bool shared_buffer::empty() const
+			bool shared_buffer::IsEmpty() const
 			{
 				return size_ == 0;
 			}
 
-			char* shared_buffer::get() const
-			{
-				return buff_.get();
-			}
-
-			boost::asio::mutable_buffers_1 shared_buffer::asio_buffer(size_t offset) const
+			boost::asio::mutable_buffers_1 shared_buffer::GetAsioBuffer(size_t offset) const
 			{
 				return boost::asio::buffer(buff_.get() + offset, capacity_ - offset);
 			}

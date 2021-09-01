@@ -336,14 +336,14 @@ namespace daxia
 					auto iter = handler_.find(msg.msgID);
 					if (iter != handler_.end())
 					{
-						iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+						iter->second(msg.msgID, msg.error, msg.buffer, msg.buffer.Size());
 					}
 					else
 					{
 						auto iter = handler_.find(common::DefMsgID_UnHandle);
 						if (iter != handler_.end())
 						{
-							iter->second(msg.msgID, msg.error, msg.buffer.get(), msg.buffer.size());
+							iter->second(msg.msgID, msg.error, msg.buffer, msg.buffer.Size());
 						}
 					}
 					handlerLocker_.unlock();

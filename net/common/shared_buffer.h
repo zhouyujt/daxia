@@ -34,14 +34,17 @@ namespace daxia
 				shared_buffer(size_t capacity);
 				shared_buffer(const char data[], size_t size);
 			public:
-				void clear();
-				size_t size() const;
-				size_t capacity() const;
-				void resize(size_t size);
-				void reserve(size_t capacity);
-				bool empty() const;
-				char* get() const;
-				boost::asio::mutable_buffers_1 asio_buffer(size_t offset = 0) const;
+				void Clear();
+				size_t Size() const;
+				size_t Capacity() const;
+				void Resize(size_t size);
+				void Reserve(size_t capacity);
+				bool IsEmpty() const;
+				boost::asio::mutable_buffers_1 GetAsioBuffer(size_t offset = 0) const;
+				operator char* () const
+				{
+					return buff_.get();
+				}
 			private:
 				std::shared_ptr<char> buff_;
 				size_t size_;

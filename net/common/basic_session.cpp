@@ -125,12 +125,12 @@ namespace daxia
 				if (parser_)
 				{
 					parser_->Marshal(this, static_cast<const unsigned char*>(data), len, buffer);
-					buffer.reserve(buffer.size());
+					buffer.Reserve(buffer.Size());
 				}
 				else
 				{
-					buffer.reserve(len);
-					memcpy(buffer.get(), data, len);
+					buffer.Reserve(len);
+					memcpy(buffer, data, len);
 				}
 
 				lock_guard locker(writeLocker_);
@@ -174,7 +174,7 @@ namespace daxia
 
 			void BasicSession::postRead()
 			{
-				sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+				sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 			}
 
 			BasicSession::socket_ptr BasicSession::getSocket()
@@ -190,21 +190,21 @@ namespace daxia
 				{
 					lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
 					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
-					buffer_.clear();
+					buffer_.Clear();
 					return;
 				}
 
-				buffer_.resize(buffer_.size() + len);
+				buffer_.Resize(buffer_.Size() + len);
 
 				Parser::Result result = Parser::Result::Result_Success;
-				while (!buffer_.empty())
+				while (!buffer_.IsEmpty())
 				{
 					if (parser_)
 					{
 						int msgID = 0;
 						size_t packetLen = 0;
 						common::shared_buffer msg;
-						result = parser_->Unmarshal(this, buffer_.get(), buffer_.size(), msgID, msg, packetLen);
+						result = parser_->Unmarshal(this, buffer_, buffer_.Size(), msgID, msg, packetLen);
 
 						if (result != Parser::Result::Result_Success)
 						{
@@ -219,25 +219,25 @@ namespace daxia
 						if (recvPacketCount_ == 0) ++recvPacketCount_;
 
 						// 整理数据后继续接收
-						if (buffer_.size() > packetLen)
+						if (buffer_.Size() > packetLen)
 						{
-							size_t remain = buffer_.size() - packetLen;
-							memmove(buffer_.get(), buffer_.get() + packetLen, remain);
-							buffer_.resize(remain);
+							size_t remain = buffer_.Size() - packetLen;
+							memmove(buffer_, buffer_ + packetLen, remain);
+							buffer_.Resize(remain);
 						}
 						else
 						{
-							buffer_.clear();
+							buffer_.Clear();
 						}
 					}
 					else
 					{
-						buffer_.clear();
+						buffer_.Clear();
 					}
 				}
 
 				// 不允许超过限定的缓冲区最大值，服务器不缓存过多数据，交由通讯双方自行拆包处理
-				if (buffer_.size() >= MaxBufferSize)
+				if (buffer_.Size() >= MaxBufferSize)
 				{
 					result = Parser::Result::Result_Fail;
 				}
@@ -245,17 +245,17 @@ namespace daxia
 				switch (result)
 				{
 				case Parser::Result::Result_Success:
-					sock_->async_read_some(buffer_.asio_buffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 					break;
 				case Parser::Result::Result_Fail:
 					// 断开连接
-					buffer_.clear();
+					buffer_.Clear();
 					Close();
 					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
 					break;
 				case Parser::Result::Result_Uncomplete:
 					// 继续接收完整的报文
-					sock_->async_read_some(buffer_.asio_buffer(buffer_.size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					sock_->async_read_some(buffer_.GetAsioBuffer(buffer_.Size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
 					break;
 				default:
 					break;
@@ -265,7 +265,7 @@ namespace daxia
 			void BasicSession::doWriteMessage(const common::shared_buffer msg)
 			{
 				using namespace std::chrono;
-				boost::asio::async_write(*sock_, msg.asio_buffer(), [&](const boost::system::error_code& ec, std::size_t size)
+				boost::asio::async_write(*sock_, msg.GetAsioBuffer(), [&](const boost::system::error_code& ec, std::size_t size)
 				{
 					lock_guard locker(writeLocker_);
 

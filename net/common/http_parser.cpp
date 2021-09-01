@@ -144,8 +144,8 @@ namespace daxia
 				// 不写响应头(分段数据)
 				if (response->isNoHeader)
 				{
-					buffer.resize(len);
-					memcpy(buffer.get(), data, len);
+					buffer.Resize(len);
+					memcpy(buffer, data, len);
 					return true;
 				}
 
@@ -190,10 +190,10 @@ namespace daxia
 				msg += CRLF;
 
 				// 设置content
-				msg.Append(reinterpret_cast<const char*>(data), len);
+				msg.Append(static_cast<const char*>(data), len);
 
-				buffer.resize(msg.GetLength());
-				memcpy(buffer.get(), msg.GetString(), msg.GetLength());
+				buffer.Resize(msg.GetLength());
+				memcpy(buffer, msg.GetString(), msg.GetLength());
 				return true;
 			}
 
@@ -271,8 +271,8 @@ namespace daxia
 				msgID = static_cast<int>(params[0].MakeLower().Hash());
 
 				// 构造消息
-				buffer.resize(packetLen);
-				memcpy(buffer.get(), data, packetLen);
+				buffer.Resize(packetLen);
+				memcpy(buffer, data, packetLen);
 
 				return Parser::Result::Result_Success;
 			}
@@ -353,8 +353,8 @@ namespace daxia
 				msgID = params[ResponseLineIndex_StatusCode].NumericCast<int>();
 
 				// 构造消息
-				buffer.resize(packetLen);
-				memcpy(buffer.get(), data, packetLen);
+				buffer.Resize(packetLen);
+				memcpy(buffer, data, packetLen);
 
 				return Parser::Result::Result_Success;
 			}
