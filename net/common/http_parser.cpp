@@ -135,7 +135,7 @@ namespace daxia
 				return packetLen;
 			}
 
-			bool HttpServerParser::Marshal(daxia::net::common::BasicSession* session, const void* data, size_t len, daxia::net::common::shared_buffer& buffer) const
+			bool HttpServerParser::Marshal(daxia::net::common::BasicSession* session, const void* data, size_t len, daxia::net::common::Buffer& buffer) const
 			{
 				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
 				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
@@ -197,7 +197,7 @@ namespace daxia
 				return true;
 			}
 
-			daxia::net::common::Parser::Result HttpServerParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
+			daxia::net::common::Parser::Result HttpServerParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, const daxia::net::common::PageInfo& lastPageInfo, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const
 			{
 				daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
 
@@ -277,12 +277,12 @@ namespace daxia
 				return Parser::Result::Result_Success;
 			}
 
-			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, const void* data, size_t len, daxia::net::common::shared_buffer& buffer) const
+			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, const void* data, size_t len, daxia::net::common::Buffer& buffer) const
 			{
 				throw "ипн╢й╣ож";
 			}
 
-			daxia::net::common::Parser::Result HttpClientParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::shared_buffer& buffer, size_t& packetLen) const
+			daxia::net::common::Parser::Result HttpClientParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, const daxia::net::common::PageInfo& lastPageInfo, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const
 			{
 				daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
 

@@ -15,7 +15,7 @@
 #define __DAXIA_NET_COMMON_PARSER_H
 
 #include "define.h"
-#include "shared_buffer.h"
+#include "buffer.h"
 
 namespace daxia
 {
@@ -43,15 +43,16 @@ namespace daxia
 				virtual bool Marshal(daxia::net::common::BasicSession* session,	// 会话指针
 					const void* data,												// 需封装的数据
 					size_t len,														// data大小，单位字节
-					daxia::net::common::shared_buffer& buffer						// 封装后的数据
+					daxia::net::common::Buffer& buffer						// 封装后的数据
 					) const = 0;
 
 				// 解析消息
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,	// 会话指针 
 					const void* data,													// 解封的数据
 					size_t len,															// data大小，单位字节
+					const daxia::net::common::PageInfo& lastPageInfo,					// 上次解包的分页信息
 					int& msgID,															// 解析出的消息ID
-					daxia::net::common::shared_buffer& buffer,							// 解析后的数据			
+					daxia::net::common::Buffer& buffer,							// 解析后的数据			
 					size_t& packetLen													// 封包长度(包括头跟正文)，单位字节
 					) const = 0;
 			};
@@ -89,14 +90,15 @@ namespace daxia
 				virtual bool Marshal(daxia::net::common::BasicSession* session, 
 					const void* data, 
 					size_t len,
-					daxia::net::common::shared_buffer& buffer
+					daxia::net::common::Buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session, 
 					const void* data, 
 					size_t len,
+					const daxia::net::common::PageInfo& lastPageInfo,
 					int& msgID,
-					daxia::net::common::shared_buffer& buffer, 
+					daxia::net::common::Buffer& buffer, 
 					size_t& packetLen
 					) const override;
 			};

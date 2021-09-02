@@ -138,7 +138,7 @@ namespace daxia
 			return count == 0 ? 1 : count;
 		}
 
-		void Client::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
+		void Client::onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer)
 		{
 			pushLogciMessage(LogicMessage(error, msgId, buffer));
 		}
@@ -273,7 +273,7 @@ namespace daxia
 		{
 			getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
 			{
-				pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::shared_buffer()));
+				pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
 
 				if (!ec)
 				{
@@ -336,14 +336,14 @@ namespace daxia
 					auto iter = handler_.find(msg.msgID);
 					if (iter != handler_.end())
 					{
-						iter->second(msg.msgID, msg.error, msg.buffer, msg.buffer.Size());
+						iter->second(msg.msgID, msg.error, msg.buffer);
 					}
 					else
 					{
 						auto iter = handler_.find(common::DefMsgID_UnHandle);
 						if (iter != handler_.end())
 						{
-							iter->second(msg.msgID, msg.error, msg.buffer, msg.buffer.Size());
+							iter->second(msg.msgID, msg.error, msg.buffer);
 						}
 					}
 					handlerLocker_.unlock();

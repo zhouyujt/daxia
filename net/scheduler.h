@@ -16,7 +16,7 @@
 #include <mutex>
 #include <queue>
 #include <chrono>
-#include "common/shared_buffer.h"
+#include "common/buffer.h"
 
 namespace daxia
 {
@@ -29,7 +29,7 @@ namespace daxia
 		{
 		public:
 			typedef std::function<void()> scheduleFunc;
-			typedef std::function<void(std::shared_ptr<Session>, int, const common::shared_buffer)> netDispatchFunc;
+			typedef std::function<void(std::shared_ptr<Session>, int, const common::Buffer)> netDispatchFunc;
 			typedef std::lock_guard<std::mutex> lock_guard;
 		public:
 			Scheduler();
@@ -40,11 +40,11 @@ namespace daxia
 			{
 				std::shared_ptr<Session> session;
 				int msgId;
-				common::shared_buffer data;
+				common::Buffer data;
 				std::function<void()> finishCallback;
 
 				NetRequest(){}
-				NetRequest(std::shared_ptr<Session> session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback)
+				NetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer data, std::function<void()> finishCallback)
 					: session(session)
 					, msgId(msgId)
 					, data(data)
@@ -61,7 +61,7 @@ namespace daxia
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
-			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback = nullptr);
+			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer data, std::function<void()> finishCallback = nullptr);
 			void Run(bool enableFps);
 			void Stop();
 		private:

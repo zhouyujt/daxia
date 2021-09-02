@@ -36,7 +36,7 @@ namespace daxia
 
 			enum BuffSize : int
 			{
-				MaxBufferSize = 1024 * 128
+				MaxBufferSize = 1024 * 16
 			};
 
 			enum ReserveUserDataIndex

@@ -121,7 +121,7 @@ namespace daxia
 
 			void BasicSession::WriteMessage(const void* data, size_t len)
 			{
-				shared_buffer buffer;
+				Buffer buffer;
 				if (parser_)
 				{
 					parser_->Marshal(this, static_cast<const unsigned char*>(data), len, buffer);
@@ -152,6 +152,33 @@ namespace daxia
 			void BasicSession::WriteMessage(const daxia::string& data)
 			{
 				WriteMessage(data.GetString(), data.GetLength());
+			}
+
+			void BasicSession::WriteRawData(const void* data, size_t len)
+			{
+				Buffer buffer;
+				buffer.Reserve(len);
+				memcpy(buffer, data, len);
+
+				lock_guard locker(writeLocker_);
+				++sendPacketCount_;
+				if (sendPacketCount_ == 0) ++sendPacketCount_;
+				bool isWriting = !writeBufferCache_.empty();
+				writeBufferCache_.push(buffer);
+				if (!isWriting)
+				{
+					doWriteMessage(writeBufferCache_.front());
+				}
+			}
+
+			void BasicSession::WriteRawData(const std::string& data)
+			{
+				WriteRawData(data.c_str(), data.size());
+			}
+
+			void BasicSession::WriteRawData(const daxia::string& data)
+			{
+				WriteRawData(data.GetString(), data.GetLength());
 			}
 
 			void BasicSession::Close()
@@ -189,7 +216,7 @@ namespace daxia
 				if (err)
 				{
 					lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
-					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
+					onPacket(err, common::DefMsgID_DisConnect, common::Buffer());
 					buffer_.Clear();
 					return;
 				}
@@ -203,8 +230,9 @@ namespace daxia
 					{
 						int msgID = 0;
 						size_t packetLen = 0;
-						common::shared_buffer msg;
-						result = parser_->Unmarshal(this, buffer_, buffer_.Size(), msgID, msg, packetLen);
+						common::Buffer msg;
+						result = parser_->Unmarshal(this, buffer_, buffer_.Size(), lastPageInfo_, msgID, msg, packetLen);
+						lastPageInfo_ = msg.Page();
 
 						if (result != Parser::Result::Result_Success)
 						{
@@ -215,8 +243,11 @@ namespace daxia
 						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
 						onPacket(err, msgID, msg);
 
-						++recvPacketCount_;
-						if (recvPacketCount_ == 0) ++recvPacketCount_;
+						if (msg.Page().Count() == 0 || msg.Page().Index() == msg.Page().Count() - 1)
+						{
+							++recvPacketCount_;
+							if (recvPacketCount_ == 0) ++recvPacketCount_;
+						}
 
 						// 整理数据后继续接收
 						if (buffer_.Size() > packetLen)
@@ -251,7 +282,7 @@ namespace daxia
 					// 断开连接
 					buffer_.Clear();
 					Close();
-					onPacket(err, common::DefMsgID_DisConnect, common::shared_buffer());
+					onPacket(err, common::DefMsgID_DisConnect, common::Buffer());
 					break;
 				case Parser::Result::Result_Uncomplete:
 					// 继续接收完整的报文
@@ -262,7 +293,7 @@ namespace daxia
 				}
 			}
 
-			void BasicSession::doWriteMessage(const common::shared_buffer msg)
+			void BasicSession::doWriteMessage(const common::Buffer& msg)
 			{
 				using namespace std::chrono;
 				boost::asio::async_write(*sock_, msg.GetAsioBuffer(), [&](const boost::system::error_code& ec, std::size_t size)
@@ -272,7 +303,7 @@ namespace daxia
 					if (ec)
 					{
 						// clear writeBufferCache_
-						std::queue<shared_buffer> empty;
+						std::queue<Buffer> empty;
 						swap(empty, writeBufferCache_);
 					}
 					else

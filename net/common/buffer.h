@@ -3,7 +3,7 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file shared_buffer.h
+ * \file buffer.h
  * \author 漓江里的大虾
  * \date 三月 2018
  *
@@ -26,13 +26,34 @@ namespace daxia
 	{
 		namespace common
 		{
+			// 分页信息（大数据需分页传送）
+			struct PageInfo
+			{
+				int msgId{ common::DefMsgID_UnHandle };			// 消息ID
+				size_t startPos{ 0 };	// 起始位置
+				size_t endPos{ 0 };		// 结束位置
+				size_t total{ 0 };		// 总大小
+
+				// 获取总页数
+				size_t Count() const
+				{
+					return (total + (common::MaxBufferSize - 1)) / common::MaxBufferSize;
+				}
+
+				// 获取当前页数基于0
+				size_t Index() const
+				{
+					return endPos / common::MaxBufferSize;
+				}
+			};
+
 			// 缓冲区类
-			class shared_buffer
+			class Buffer
 			{
 			public:
-				shared_buffer();
-				shared_buffer(size_t capacity);
-				shared_buffer(const char data[], size_t size);
+				Buffer();
+				Buffer(size_t capacity);
+				Buffer(const char data[], size_t size);
 			public:
 				void Clear();
 				size_t Size() const;
@@ -45,10 +66,21 @@ namespace daxia
 				{
 					return buff_.get();
 				}
+
+				PageInfo& Page()
+				{
+					return pageInfo_;
+				}
+
+				const PageInfo& Page() const
+				{
+					return pageInfo_;
+				}
 			private:
 				std::shared_ptr<char> buff_;
 				size_t size_;
 				size_t capacity_;
+				PageInfo pageInfo_;
 			};
 
 		}// namespace common

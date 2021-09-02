@@ -26,7 +26,7 @@ namespace daxia
 			friend Router;
 		public:
 			typedef std::shared_ptr<Session> ptr;
-			typedef std::function<void(const boost::system::error_code&, long long, int, common::shared_buffer)> handler;
+			typedef std::function<void(const boost::system::error_code&, long long, int, common::Buffer)> handler;
 		protected:
 			Session(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id);
 		public:
@@ -35,7 +35,7 @@ namespace daxia
 			// 获取客户端ID
 			long long GetSessionID() const;
 		protected:
-			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
+			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer) override;
 		private:
 			long long id_;
 			handler onMessage_;

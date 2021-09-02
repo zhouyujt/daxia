@@ -13,13 +13,13 @@
 #define __DAXIA_NET_SERVER_CONTROLLER_H
 
 #include <memory>
-#include "common/shared_buffer.h"
+#include "common/buffer.h"
 #include "common/http_parser.h"
 #include "session.h"
 #include "sessions_manager.h"
 #include "../encode/json.h"
 
-#define DECLARE_OVERRIDE_METHODS() virtual void Proc(int msgId, daxia::net::Session* session, daxia::net::SessionsManager* sessionsMgr, const daxia::net::common::shared_buffer data) override;
+#define DECLARE_OVERRIDE_METHODS() virtual void Proc(int msgId, daxia::net::Session* session, daxia::net::SessionsManager* sessionsMgr, const daxia::net::common::Buffer& data) override;
 
 #define DECLARE_CONTROLLER(name)\
 class name##: public daxia::net::Controller\
@@ -414,7 +414,7 @@ namespace daxia
 			Controller(){}
 			virtual ~Controller(){}
 		public:
-			virtual void Proc(int msgId, daxia::net::Session* session, daxia::net::SessionsManager* sessionsMgr, const daxia::net::common::shared_buffer data) = 0;
+			virtual void Proc(int msgId, daxia::net::Session* session, daxia::net::SessionsManager* sessionsMgr, const daxia::net::common::Buffer& data) = 0;
 		};
 
 		// HTTP逻辑控制器接口类
@@ -424,14 +424,14 @@ namespace daxia
 			HttpController(){}
 			virtual ~HttpController(){}
 		public:
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Get;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Post;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Put;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Head;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Delete;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Options;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Trace;
-			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::shared_buffer)> Connect;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Get;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Post;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Put;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Head;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Delete;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Options;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Trace;
+			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Connect;
 			virtual void InitMethods() = 0;
 		public:
 			void SetContext(std::shared_ptr<Session> session);

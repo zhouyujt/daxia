@@ -25,7 +25,7 @@ namespace daxia
 			return id_;
 		}
 
-		void Session::onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer)
+		void Session::onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer)
 		{
 			if (onMessage_)
 			{

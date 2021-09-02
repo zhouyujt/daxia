@@ -166,7 +166,7 @@ namespace daxia
 			return scheduler_;
 		}
 
-		void Router::dispatchMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
+		void Router::dispatchMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer data)
 		{
 			auto iter = controllers_.find(msgID);
 			if (iter != controllers_.end())
@@ -183,7 +183,7 @@ namespace daxia
 			}
 		}
 
-		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::shared_buffer data)
+		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer data)
 		{
 			using daxia::net::common::BasicSession;
 
@@ -212,14 +212,14 @@ namespace daxia
 
 				iter->second->SetContext(client);
 
-				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::shared_buffer(data + headerLen, data.Size() - headerLen)); }
+				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
 
 				iter->second->ResetContext();
 			}
@@ -316,15 +316,15 @@ namespace daxia
 				session->UpdateConnectTime();
 				AddSession(session);
 
-				scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::shared_buffer());
+				scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::Buffer());
 			}
 		}
 
-		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::shared_buffer msg)
+		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::Buffer msg)
 		{
 			if (err || msgId == common::DefMsgID_DisConnect)
 			{
-				scheduler_.PushNetRequest(GetSession(sessionId), common::DefMsgID_DisConnect, common::shared_buffer(), [&, sessionId]()
+				scheduler_.PushNetRequest(GetSession(sessionId), common::DefMsgID_DisConnect, common::Buffer(), [&, sessionId]()
 				{
 					DeleteSession(sessionId);
 				});

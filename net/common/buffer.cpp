@@ -1,7 +1,7 @@
 #ifdef _MSC_VER
 #include <sdkddkver.h>
 #endif
-#include "shared_buffer.h"
+#include "buffer.h"
 #include "define.h"
 
 namespace daxia
@@ -11,20 +11,20 @@ namespace daxia
 		namespace common
 		{
 
-			shared_buffer::shared_buffer()
+			Buffer::Buffer()
 				: size_(0)
 				, capacity_(0)
 			{
 			}
 
-			shared_buffer::shared_buffer(size_t capacity)
+			Buffer::Buffer(size_t capacity)
 				: buff_(new char[capacity])
 				, capacity_(capacity)
 				, size_(0)
 			{
 			}
 
-			shared_buffer::shared_buffer(const char data[], size_t size)
+			Buffer::Buffer(const char data[], size_t size)
 				: buff_(new char[size])
 				, size_(size)
 				, capacity_(size)
@@ -32,22 +32,22 @@ namespace daxia
 				memcpy(buff_.get(), data, size);
 			}
 
-			void shared_buffer::Clear()
+			void Buffer::Clear()
 			{
 				size_ = 0;
 			}
 
-			size_t shared_buffer::Size() const
+			size_t Buffer::Size() const
 			{
 				return size_;
 			}
 
-			size_t shared_buffer::Capacity() const
+			size_t Buffer::Capacity() const
 			{
 				return capacity_;
 			}
 
-			void shared_buffer::Resize(size_t size)
+			void Buffer::Resize(size_t size)
 			{
 				if (size > capacity_)
 				{
@@ -84,7 +84,7 @@ namespace daxia
 				size_ = size;
 			}
 
-			void shared_buffer::Reserve(size_t capacity)
+			void Buffer::Reserve(size_t capacity)
 			{
 				if (size_ > capacity)
 				{
@@ -103,12 +103,12 @@ namespace daxia
 				capacity_ = capacity;
 			}
 
-			bool shared_buffer::IsEmpty() const
+			bool Buffer::IsEmpty() const
 			{
 				return size_ == 0;
 			}
 
-			boost::asio::mutable_buffers_1 shared_buffer::GetAsioBuffer(size_t offset) const
+			boost::asio::mutable_buffers_1 Buffer::GetAsioBuffer(size_t offset) const
 			{
 				return boost::asio::buffer(buff_.get() + offset, capacity_ - offset);
 			}

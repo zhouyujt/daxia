@@ -201,7 +201,7 @@ namespace daxia
 			dispatch_ = func;
 		}
 
-		void Scheduler::PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::shared_buffer data, std::function<void()> finishCallback)
+		void Scheduler::PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer data, std::function<void()> finishCallback)
 		{
 			lock_guard locker(netRequestLocker_);
 			netRequests_.push(NetRequest(session, msgId, data, finishCallback));

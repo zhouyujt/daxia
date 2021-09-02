@@ -299,14 +299,15 @@ namespace daxia
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
-					daxia::net::common::shared_buffer& buffer
+					daxia::net::common::Buffer& buffer
 					) const = 0;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo& lastPageInfo,
 					int& msgID,
-					daxia::net::common::shared_buffer& buffer,
+					daxia::net::common::Buffer& buffer,
 					size_t& packetLen
 					) const = 0;
 			public:
@@ -637,14 +638,15 @@ namespace daxia
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
-					daxia::net::common::shared_buffer& buffer
+					daxia::net::common::Buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo& lastPageInfo,
 					int& msgID,
-					daxia::net::common::shared_buffer& buffer,
+					daxia::net::common::Buffer& buffer,
 					size_t& packetLen
 					) const override;
 			};
@@ -658,14 +660,15 @@ namespace daxia
 				virtual bool Marshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
-					daxia::net::common::shared_buffer& buffer
+					daxia::net::common::Buffer& buffer
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo& lastPageInfo,
 					int& msgID,
-					daxia::net::common::shared_buffer& buffer,
+					daxia::net::common::Buffer& buffer,
 					size_t& packetLen
 					) const override;
 			};

@@ -20,9 +20,7 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include "common/basic_session.h"
-#include "common/shared_buffer.h"
-
-#define DXG_CLIENT_HANDLER(id,error,data,len) [&](int id, const boost::system::error_code& error, const void* data, size_t len)
+#include "common/buffer.h"
 
 namespace daxia
 {
@@ -34,7 +32,7 @@ namespace daxia
 		public:
 			typedef boost::asio::ip::tcp::endpoint endpoint;
 			typedef boost::asio::ip::tcp::socket socket;
-			typedef std::function<void(int, const boost::system::error_code&, const void*, size_t)> handler;
+			typedef std::function<void(int, const boost::system::error_code&, const common::Buffer& data)> handler;
 			typedef std::lock_guard<std::mutex> lock_guard;
 			typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
 			typedef std::function<void()> scheduleFunc;
@@ -43,7 +41,7 @@ namespace daxia
 			~Client();
 			Client(const Client&) = delete;
 		protected:
-			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) override;
+			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer) override;
 		public:
 			void Handle(int msgId, handler h);
 			void EnableHeartbeat(unsigned long milliseconds);
@@ -58,11 +56,11 @@ namespace daxia
 			{
 				boost::system::error_code error;
 				int msgID;
-				common::shared_buffer buffer;
+				common::Buffer buffer;
 
 				LogicMessage(){}
 
-				LogicMessage(const boost::system::error_code& error, int msgID, const common::shared_buffer& buffer)
+				LogicMessage(const boost::system::error_code& error, int msgID, const common::Buffer& buffer)
 					: error(error)
 					, msgID(msgID)
 					, buffer(buffer)

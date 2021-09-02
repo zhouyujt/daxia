@@ -20,7 +20,7 @@
 #endif
 #include <boost/asio.hpp>
 #include <boost/any.hpp>
-#include "shared_buffer.h"
+#include "buffer.h"
 #include "../../string.hpp"
 
 namespace daxia
@@ -108,16 +108,21 @@ namespace daxia
 				void WriteMessage(const std::string& data);
 				void WriteMessage(const daxia::string& data);
 
+				// 发送不经过解析器打包的原始数据
+				void WriteRawData(const void* data, size_t len);
+				void WriteRawData(const std::string& data);
+				void WriteRawData(const daxia::string& data);
+
 				// 关闭会话
 				void Close();
 			protected:
-				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::shared_buffer& buffer) = 0;
+				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer) = 0;
 				void initSocket(socket_ptr sock);
 				void postRead();
 				socket_ptr getSocket();
 			private:
 				void onRead(const boost::system::error_code& err, size_t len);
-				void doWriteMessage(const common::shared_buffer msg);
+				void doWriteMessage(const common::Buffer& msg);
 			private:
 				socket_ptr sock_;
 				std::map<unsigned int, boost::any> userData_;
@@ -126,13 +131,14 @@ namespace daxia
 				std::shared_ptr<Parser> parser_;
 				std::mutex writeLocker_;
 				std::mutex closeLocker_;
-				std::queue<shared_buffer> writeBufferCache_;
+				std::queue<Buffer> writeBufferCache_;
 				timepoint connectTime_;
 				timepoint lastReadTime_;
 				timepoint lastWriteTime_;
 				unsigned long long sendPacketCount_;
 				unsigned long long recvPacketCount_;
-				common::shared_buffer buffer_;
+				common::Buffer buffer_;
+				common::PageInfo lastPageInfo_;
 			};
 
 			template<typename T>
