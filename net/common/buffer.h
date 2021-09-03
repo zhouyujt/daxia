@@ -26,26 +26,39 @@ namespace daxia
 	{
 		namespace common
 		{
+#ifdef _MSC_VER
+#define ATTRIBUTE_PACKED
+#else
+#define ATTRIBUTE_PACKED  __attribute__ ((__packed__))
+#endif // _MSC_VER
+
+#ifdef _MSC_VER
+#pragma pack(1)
+#endif
 			// 分页信息（大数据需分页传送）
-			struct PageInfo
+			struct ATTRIBUTE_PACKED PageInfo
 			{
-				int msgId{ common::DefMsgID_UnHandle };			// 消息ID
-				size_t startPos{ 0 };	// 起始位置
-				size_t endPos{ 0 };		// 结束位置
-				size_t total{ 0 };		// 总大小
+				unsigned int startPos{ 0 };	// 起始位置
+				unsigned int endPos{ 0 };		// 结束位置
+				unsigned int total{ 0 };		// 总大小
 
 				// 获取总页数
-				size_t Count() const
+				unsigned int Count() const
 				{
 					return (total + (common::MaxBufferSize - 1)) / common::MaxBufferSize;
 				}
 
 				// 获取当前页数基于0
-				size_t Index() const
+				unsigned int Index() const
 				{
 					return endPos / common::MaxBufferSize;
 				}
 			};
+#ifdef _MSC_VER
+#pragma pack()
+#endif
+
+#undef ATTRIBUTE_PACKED
 
 			// 缓冲区类
 			class Buffer

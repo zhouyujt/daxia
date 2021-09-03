@@ -44,14 +44,14 @@ namespace daxia
 			return session;
 		}
 
-		void SessionsManager::Broadcast(const std::string& name, const std::string& msg)
+		void SessionsManager::Broadcast(int msgId, const std::string& name, const std::string& msg)
 		{
 			auto group = GetGroup(name);
 			if (group)
 			{
 				group->EnumSession([&](Session::ptr session)
 				{
-					session->WriteMessage(msg);
+					session->WriteMessage(msgId, msg);
 					return true;
 				});
 			}

@@ -69,7 +69,7 @@ namespace daxia
 
 			if (!context_.expired())
 			{
-				context_.lock()->WriteMessage(nullptr,0);
+				context_.lock()->WriteMessage(0,nullptr,0);
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace daxia
 					ifs.read(buffer.GetBuffer(len), len);
 					ifs.close();
 
-					context_.lock()->WriteMessage(buffer);
+					context_.lock()->WriteMessage(0,buffer);
 				}
 				else
 				{

@@ -41,7 +41,7 @@ namespace daxia
 			template<typename T>
 			Session::ptr GetSession(const std::string& key, const T& data);
 			// 向一个客户端组广播一条消息
-			void Broadcast(const std::string& name,const std::string& msg);
+			void Broadcast(int msgId, const std::string& name,const std::string& msg);
 			// 创建一个客户端组
 			SessionsManager::ptr CreateGroup(const std::string& name);
 			// 删除一个客户端组

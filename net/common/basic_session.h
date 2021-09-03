@@ -104,9 +104,9 @@ namespace daxia
 				unsigned long long GetRecvPacketCount() const;
 
 				// 发送消息
-				void WriteMessage(const void* data, size_t len);
-				void WriteMessage(const std::string& data);
-				void WriteMessage(const daxia::string& data);
+				void WriteMessage(int msgId, const void* data, size_t len);
+				void WriteMessage(int msgId, const std::string& data);
+				void WriteMessage(int msgId, const daxia::string& data);
 
 				// 发送不经过解析器打包的原始数据
 				void WriteRawData(const void* data, size_t len);
@@ -138,7 +138,6 @@ namespace daxia
 				unsigned long long sendPacketCount_;
 				unsigned long long recvPacketCount_;
 				common::Buffer buffer_;
-				common::PageInfo lastPageInfo_;
 			};
 
 			template<typename T>

@@ -235,7 +235,7 @@ namespace daxia
 					html += "<a href=\"https://github.com/zhouyujt/daxia\">https://github.com/zhouyujt/daxia</a>\r\n";
 					html += "</body>\r\n";
 					html += "</html>\r\n";
-					client->WriteMessage(html);
+					client->WriteMessage(0,html);
 				}
 				else
 				{
@@ -245,7 +245,7 @@ namespace daxia
 						if (response)
 						{
 							response->StartLine.StatusCode = "404";
-							client->WriteMessage(nullptr, 0);
+							client->WriteMessage(0, nullptr, 0);
 						}
 					};
 
@@ -280,7 +280,7 @@ namespace daxia
 						ifs.read(buffer.GetBuffer(len), len);
 						ifs.close();
 
-						client->WriteMessage(buffer);
+						client->WriteMessage(0, buffer);
 					}
 					else
 					{

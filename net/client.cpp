@@ -292,7 +292,7 @@ namespace daxia
 				time_point<system_clock, milliseconds> now = time_point_cast<milliseconds>(system_clock::now());
 				if ((now - GetLastWriteTime()).count() >= hearbeatInterval_)
 				{
-					WriteMessage(nullptr, 0);
+					WriteMessage(common::DefMsgID_Heartbeat,nullptr, 0);
 				}
 			}
 		}

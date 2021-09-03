@@ -448,7 +448,7 @@ namespace daxia
 				{
 					Response().StartLine.StatusCode = "200";
 					Response().ContentType = MIME_HELPER().Find("json") + ";charset=UTF-8";
-					context_.lock()->WriteMessage(daxia::encode::Json::Marshal(v));
+					context_.lock()->WriteMessage(0, daxia::encode::Json::Marshal(v));
 				}
 			}
 			void ServeFile(const daxia::string& filename);

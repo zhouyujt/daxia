@@ -119,39 +119,38 @@ namespace daxia
 				return recvPacketCount_;
 			}
 
-			void BasicSession::WriteMessage(const void* data, size_t len)
+			void BasicSession::WriteMessage(int msgId, const void* data, size_t len)
 			{
-				Buffer buffer;
+				std::vector<Buffer> buffers;
 				if (parser_)
 				{
-					parser_->Marshal(this, static_cast<const unsigned char*>(data), len, buffer);
-					buffer.Reserve(buffer.Size());
-				}
-				else
-				{
-					buffer.Reserve(len);
-					memcpy(buffer, data, len);
-				}
+					parser_->Marshal(this, msgId, data, len, buffers);
 
-				lock_guard locker(writeLocker_);
-				++sendPacketCount_;
-				if (sendPacketCount_ == 0) ++sendPacketCount_;
-				bool isWriting = !writeBufferCache_.empty();
-				writeBufferCache_.push(buffer);
-				if (!isWriting)
-				{
-					doWriteMessage(writeBufferCache_.front());
+					lock_guard locker(writeLocker_);
+					bool isWriting = !writeBufferCache_.empty();
+
+					for (const Buffer& buffer : buffers)
+					{
+						writeBufferCache_.push(buffer);
+						++sendPacketCount_;
+						if (sendPacketCount_ == 0) ++sendPacketCount_;
+					}
+
+					if (!isWriting)
+					{
+						doWriteMessage(writeBufferCache_.front());
+					}
 				}
 			}
 
-			void BasicSession::WriteMessage(const std::string& data)
+			void BasicSession::WriteMessage(int msgId, const std::string& data)
 			{
-				WriteMessage(data.c_str(), data.size());
+				WriteMessage(msgId, data.c_str(), data.size());
 			}
 
-			void BasicSession::WriteMessage(const daxia::string& data)
+			void BasicSession::WriteMessage(int msgId, const daxia::string& data)
 			{
-				WriteMessage(data.GetString(), data.GetLength());
+				WriteMessage(msgId, data.GetString(), data.GetLength());
 			}
 
 			void BasicSession::WriteRawData(const void* data, size_t len)
@@ -231,8 +230,7 @@ namespace daxia
 						int msgID = 0;
 						size_t packetLen = 0;
 						common::Buffer msg;
-						result = parser_->Unmarshal(this, buffer_, buffer_.Size(), lastPageInfo_, msgID, msg, packetLen);
-						lastPageInfo_ = msg.Page();
+						result = parser_->Unmarshal(this, buffer_, buffer_.Size(), msgID, msg, packetLen);
 
 						if (result != Parser::Result::Result_Success)
 						{
@@ -243,11 +241,8 @@ namespace daxia
 						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
 						onPacket(err, msgID, msg);
 
-						if (msg.Page().Count() == 0 || msg.Page().Index() == msg.Page().Count() - 1)
-						{
-							++recvPacketCount_;
-							if (recvPacketCount_ == 0) ++recvPacketCount_;
-						}
+						++recvPacketCount_;
+						if (recvPacketCount_ == 0) ++recvPacketCount_;
 
 						// 整理数据后继续接收
 						if (buffer_.Size() > packetLen)

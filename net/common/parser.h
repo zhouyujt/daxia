@@ -14,6 +14,7 @@
 #ifndef __DAXIA_NET_COMMON_PARSER_H
 #define __DAXIA_NET_COMMON_PARSER_H
 
+#include <vector>
 #include "define.h"
 #include "buffer.h"
 
@@ -32,7 +33,7 @@ namespace daxia
 				Parser(){}
 				~Parser(){}
 			public:
-				enum Result : int
+				enum Result : int		
 				{
 					Result_Success = 0,		// 解析成功
 					Result_Fail,			// 格式错误，解析失败
@@ -41,19 +42,19 @@ namespace daxia
 			public:
 				// 封装消息
 				virtual bool Marshal(daxia::net::common::BasicSession* session,	// 会话指针
-					const void* data,												// 需封装的数据
-					size_t len,														// data大小，单位字节
-					daxia::net::common::Buffer& buffer						// 封装后的数据
+					int msgId,													// 消息ID				
+					const void* data,											// 需封装的数据
+					size_t len,													// data大小，单位字节
+					std::vector<daxia::net::common::Buffer>& buffers			// 封装后的数据
 					) const = 0;
 
 				// 解析消息
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,	// 会话指针 
-					const void* data,													// 解封的数据
-					size_t len,															// data大小，单位字节
-					const daxia::net::common::PageInfo& lastPageInfo,					// 上次解包的分页信息
-					int& msgID,															// 解析出的消息ID
-					daxia::net::common::Buffer& buffer,							// 解析后的数据			
-					size_t& packetLen													// 封包长度(包括头跟正文)，单位字节
+					const void* data,												// 解封的数据
+					size_t len,														// data大小，单位字节
+					int& msgID,														// 解析出的消息ID
+					daxia::net::common::Buffer& buffer,								// 解析后的数据			
+					size_t& packetLen												// 封包长度(包括头跟正文)，单位字节
 					) const = 0;
 			};
 
@@ -75,10 +76,10 @@ namespace daxia
 				// 数据包头
 				struct ATTRIBUTE_PACKED PacketHead
 				{
-					char	magic;					// 恒定为88
-					char	hearbeat;				// 心跳包标识
+					char	magic{ 88 };			// 恒定为88
+					int		msgId;					// 消息ID
 					unsigned int contentLength;		// 数据长度，不包括本包头
-					unsigned int reserve;			// 保留数据
+					PageInfo pageInfo;				// 分页数据
 				};
 
 #ifdef _MSC_VER
@@ -88,15 +89,15 @@ namespace daxia
 #undef ATTRIBUTE_PACKED
 			public:
 				virtual bool Marshal(daxia::net::common::BasicSession* session, 
-					const void* data, 
+					int msgId,
+					const void* data,
 					size_t len,
-					daxia::net::common::Buffer& buffer
+					std::vector<daxia::net::common::Buffer>& buffers
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session, 
 					const void* data, 
 					size_t len,
-					const daxia::net::common::PageInfo& lastPageInfo,
 					int& msgID,
 					daxia::net::common::Buffer& buffer, 
 					size_t& packetLen
