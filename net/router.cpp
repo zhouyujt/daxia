@@ -13,7 +13,7 @@ namespace daxia
 	{
 		Router::Router()
 			: heartbeatSchedulerId_(-1)
-			, nextSessionId_(0)
+			, nextSessionId_(1)
 		{
 			
 		}
