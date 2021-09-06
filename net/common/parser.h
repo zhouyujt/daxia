@@ -76,10 +76,10 @@ namespace daxia
 				// 数据包头
 				struct ATTRIBUTE_PACKED PacketHead
 				{
-					char	magic{ 88 };			// 恒定为88
-					int		msgId;					// 消息ID
-					unsigned int contentLength;		// 数据长度，不包括本包头
-					PageInfo pageInfo;				// 分页数据
+					char	magic{ 88 };						// 恒定为88
+					int		msgId{ common::DefMsgID_UnHandle };	// 消息ID
+					unsigned int contentLength{ 0 };			// 数据长度，不包括本包头
+					PageInfo pageInfo;							// 分页数据
 				};
 
 #ifdef _MSC_VER
