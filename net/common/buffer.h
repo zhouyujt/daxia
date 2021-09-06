@@ -53,6 +53,16 @@ namespace daxia
 				{
 					return endPos / common::MaxBufferSize;
 				}
+
+				bool IsStart() const
+				{
+					return startPos == 0;
+				}
+
+				bool IsEnd() const
+				{
+					return endPos == total - 1;
+				}
 			};
 #ifdef _MSC_VER
 #pragma pack()

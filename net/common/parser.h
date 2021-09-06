@@ -45,6 +45,7 @@ namespace daxia
 					int msgId,													// 消息ID				
 					const void* data,											// 需封装的数据
 					size_t len,													// data大小，单位字节
+					const PageInfo* pageInfo,									// 分页信息
 					std::vector<daxia::net::common::Buffer>& buffers			// 封装后的数据
 					) const = 0;
 
@@ -92,6 +93,7 @@ namespace daxia
 					int msgId,
 					const void* data,
 					size_t len,
+					const PageInfo* pageInfo,
 					std::vector<daxia::net::common::Buffer>& buffers
 					) const override;
 

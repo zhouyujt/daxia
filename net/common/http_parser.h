@@ -300,6 +300,7 @@ namespace daxia
 					int msgId,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo* pageInfo,
 					std::vector<daxia::net::common::Buffer>& buffers
 					) const = 0;
 
@@ -639,6 +640,7 @@ namespace daxia
 					int msgId,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo* pageInfo,
 					std::vector<daxia::net::common::Buffer>& buffers
 					) const override;
 
@@ -661,6 +663,7 @@ namespace daxia
 					int msgId,
 					const void* data,
 					size_t len,
+					const daxia::net::common::PageInfo* pageInfo,
 					std::vector<daxia::net::common::Buffer>& buffers
 					) const override;
 

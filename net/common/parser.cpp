@@ -11,7 +11,7 @@ namespace daxia
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, std::vector<daxia::net::common::Buffer>& buffers) const
+			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const PageInfo* pageInfo,std::vector<daxia::net::common::Buffer>& buffers) const
 			{
 #ifndef MIN
 #define MIN(x,y) x < y ? x : y
@@ -36,14 +36,24 @@ namespace daxia
 						unsigned int contentLength = MIN(static_cast<unsigned int>(len)-offset, common::MaxBufferSize - sizeof(PacketHead));
 						buffer.Resize(contentLength + sizeof(PacketHead));
 						head.contentLength = ByteOrder::hton(contentLength);
-						head.pageInfo.startPos = ByteOrder::hton(offset);
-						head.pageInfo.endPos = ByteOrder::hton(offset + contentLength - 1);
-						head.pageInfo.total = ByteOrder::hton(static_cast<unsigned int>(len));
+						if (pageInfo == nullptr)
+						{
+							head.pageInfo.startPos = ByteOrder::hton(offset);
+							head.pageInfo.endPos = ByteOrder::hton(offset + contentLength - 1);
+							head.pageInfo.total = ByteOrder::hton(static_cast<unsigned int>(len));
+							buffer.Page().startPos = offset;
+							buffer.Page().endPos = offset + contentLength - 1;
+							buffer.Page().total = len;
+						}
+						else
+						{
+							head.pageInfo.startPos = ByteOrder::hton(pageInfo->startPos);
+							head.pageInfo.endPos = ByteOrder::hton(pageInfo->endPos);
+							head.pageInfo.total = ByteOrder::hton(pageInfo->total);
+							buffer.Page() = *pageInfo;
+						}
 						memcpy(buffer, &head, sizeof(head));
 						memcpy(buffer + sizeof(head), static_cast<const char*>(data)+offset, contentLength);
-						buffer.Page().startPos = offset;
-						buffer.Page().endPos = offset + contentLength - 1;
-						buffer.Page().total = len;
 						buffers.push_back(buffer);
 					}
 				}
