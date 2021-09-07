@@ -46,7 +46,8 @@ namespace daxia
 					const void* data,											// 需封装的数据
 					size_t len,													// data大小，单位字节
 					const PageInfo* pageInfo,									// 分页信息
-					std::vector<daxia::net::common::Buffer>& buffers			// 封装后的数据
+					std::vector<daxia::net::common::Buffer>& buffers,			// 封装后的数据
+					size_t maxPacketLength										// 封包最大长度限制，传入的数据长度超过此值则数据将被处理成若干个小于等于此长度的封包（存放在buffers中）
 					) const = 0;
 
 				// 解析消息
@@ -94,7 +95,8 @@ namespace daxia
 					const void* data,
 					size_t len,
 					const PageInfo* pageInfo,
-					std::vector<daxia::net::common::Buffer>& buffers
+					std::vector<daxia::net::common::Buffer>& buffers,
+					size_t maxPacketLength
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session, 

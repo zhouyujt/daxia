@@ -11,7 +11,7 @@ namespace daxia
 	{
 		namespace common
 		{
-			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const PageInfo* pageInfo,std::vector<daxia::net::common::Buffer>& buffers) const
+			bool DefaultParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
 			{
 #ifndef MIN
 #define MIN(x,y) x < y ? x : y
@@ -30,10 +30,11 @@ namespace daxia
 				}
 				else
 				{
-					for (unsigned int offset = 0; offset < static_cast<unsigned int>(len); offset += (common::MaxBufferSize - sizeof(PacketHead)))
+					const unsigned int maxContentLength = maxPacketLength - sizeof(PacketHead);
+					for (unsigned int offset = 0; offset < static_cast<unsigned int>(len); offset += maxContentLength)
 					{
 						Buffer buffer;
-						unsigned int contentLength = MIN(static_cast<unsigned int>(len)-offset, common::MaxBufferSize - sizeof(PacketHead));
+						unsigned int contentLength = MIN(static_cast<unsigned int>(len)-offset, maxContentLength);
 						buffer.Resize(contentLength + sizeof(PacketHead));
 						head.contentLength = ByteOrder::hton(contentLength);
 						if (pageInfo == nullptr)

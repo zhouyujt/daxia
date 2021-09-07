@@ -119,12 +119,12 @@ namespace daxia
 				return recvPacketCount_;
 			}
 
-			void BasicSession::WriteMessage(int msgId, const void* data, size_t len, const common::PageInfo* pageInfo)
+			void BasicSession::WriteMessage(int msgId, const void* data, size_t len, const common::PageInfo* pageInfo, size_t maxPacketLength)
 			{
 				std::vector<Buffer> buffers;
 				if (parser_)
 				{
-					parser_->Marshal(this, msgId, data, len, pageInfo, buffers);
+					parser_->Marshal(this, msgId, data, len, pageInfo, buffers, maxPacketLength);
 
 					lock_guard locker(writeLocker_);
 					bool isWriting = !writeBufferCache_.empty();
@@ -143,14 +143,14 @@ namespace daxia
 				}
 			}
 
-			void BasicSession::WriteMessage(int msgId, const std::string& data, const common::PageInfo* pageInfo)
+			void BasicSession::WriteMessage(int msgId, const std::string& data, const common::PageInfo* pageInfo, size_t maxPacketLength)
 			{
-				WriteMessage(msgId, data.c_str(), data.size(), pageInfo);
+				WriteMessage(msgId, data.c_str(), data.size(), pageInfo, maxPacketLength);
 			}
 
-			void BasicSession::WriteMessage(int msgId, const daxia::string& data, const common::PageInfo* pageInfo)
+			void BasicSession::WriteMessage(int msgId, const daxia::string& data, const common::PageInfo* pageInfo, size_t maxPacketLength)
 			{
-				WriteMessage(msgId, data.GetString(), data.GetLength(), pageInfo);
+				WriteMessage(msgId, data.GetString(), data.GetLength(), pageInfo, maxPacketLength);
 			}
 
 			void BasicSession::WriteRawData(const void* data, size_t len)

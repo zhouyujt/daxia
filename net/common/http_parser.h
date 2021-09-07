@@ -301,7 +301,8 @@ namespace daxia
 					const void* data,
 					size_t len,
 					const daxia::net::common::PageInfo* pageInfo,
-					std::vector<daxia::net::common::Buffer>& buffers
+					std::vector<daxia::net::common::Buffer>& buffers,
+					size_t maxPacketLength
 					) const = 0;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
@@ -641,7 +642,8 @@ namespace daxia
 					const void* data,
 					size_t len,
 					const daxia::net::common::PageInfo* pageInfo,
-					std::vector<daxia::net::common::Buffer>& buffers
+					std::vector<daxia::net::common::Buffer>& buffers,
+					size_t maxPacketLength
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
@@ -664,7 +666,8 @@ namespace daxia
 					const void* data,
 					size_t len,
 					const daxia::net::common::PageInfo* pageInfo,
-					std::vector<daxia::net::common::Buffer>& buffers
+					std::vector<daxia::net::common::Buffer>& buffers,
+					size_t maxPacketLength
 					) const override;
 
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
