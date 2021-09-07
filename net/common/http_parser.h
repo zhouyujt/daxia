@@ -507,9 +507,6 @@ namespace daxia
 				class ResponseHeader : public GeneralHeader
 				{
 				public:
-					bool isNoHeader;
-					ResponseHeader() : isNoHeader(false){}
-				public:
 					ResponseStartLine StartLine;
 
 					/*响应首部字段(Response Header Fields) 从服务器端向客户端返回响应报文时使用的首部.补充了响应的附加内容,也会要求客户端附加额外的内容信息

@@ -137,63 +137,67 @@ namespace daxia
 
 			bool HttpServerParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const daxia::net::common::PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
 			{
-				//auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
-				//auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
-				//if (request == nullptr || response == nullptr) return false;
-				//
-				//// 不写响应头(分段数据)
-				//if (response->isNoHeader)
-				//{
-				//	buffer.Resize(len);
-				//	memcpy(buffer, data, len);
-				//	return true;
-				//}
+				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
+				if (request == nullptr || response == nullptr) return false;
+				
+				daxia::buffer msg;
 
-				//daxia::string msg;
+				// 写响应头
+				if (pageInfo == nullptr || pageInfo->IsStart())
+				{
+					// 设置起始行
+					response->StartLine.Version = request->StartLine.Version;
+					if (response->StartLine.StatusCode.IsEmpty()) response->StartLine.StatusCode = "200";
+					auto iter = HEADER_HELPER().status_.find(atoi(response->StartLine.StatusCode.GetString()));
+					if (iter != HEADER_HELPER().status_.end()) response->StartLine.StatusText = iter->second;
+					msg.Format("%s %s %s", response->StartLine.Version.GetString(), response->StartLine.StatusCode.GetString(), response->StartLine.StatusText.GetString());
+					msg += CRLF;
 
-				//// 设置起始行
-				//response->StartLine.Version = request->StartLine.Version;
-				//if (response->StartLine.StatusCode.IsEmpty()) response->StartLine.StatusCode = "200";
-				//auto iter = HEADER_HELPER().status_.find(atoi(response->StartLine.StatusCode.GetString()));
-				//if (iter != HEADER_HELPER().status_.end()) response->StartLine.StatusText = iter->second;
-				//msg.Format("%s %s %s", response->StartLine.Version.GetString(), response->StartLine.StatusCode.GetString(), response->StartLine.StatusText.GetString());
-				//msg += CRLF;
+					// 设置Content-Length
+					if (daxia::string(response->ContentLength).NumericCast<int>() == 0)
+					{
+						if (pageInfo)
+						{
+							response->ContentLength = pageInfo->total;
+						}
+						else
+						{
+							response->ContentLength = daxia::string::ToString(len);
+						}
+					}
 
-				//// 设置Content-Length
-				//if (daxia::string(response->ContentLength).NumericCast<int>() == 0)
-				//{
-				//	response->ContentLength = daxia::string::ToString(len);
-				//}
+					// 设置Server
+					if (response->Server->IsEmpty()) response->Server = "powered by daxia";
 
-				//// 设置Server
-				//if (response->Server->IsEmpty()) response->Server = "powered by daxia";
+					// 设置所有响应头
+					auto layout = HEADER_HELPER().response_.GetLayoutFast();
+					for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
+					{
+						const ref_string* field = nullptr;
+						try{ field = dynamic_cast<const ref_string*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+iter->offset)); }
+						catch (const std::exception&){}
+						if (field == nullptr) continue;
 
-				//// 设置所有响应头
-				//auto layout = HEADER_HELPER().response_.GetLayoutFast();
-				//for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
-				//{
-				//	const ref_string* field = nullptr;
-				//	try{ field = dynamic_cast<const ref_string*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(response)+iter->offset)); }
-				//	catch (const std::exception&){}
-				//	if (field == nullptr) continue;
+						if (!(*field)->IsEmpty())
+						{
+							daxia::string temp;
+							temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<daxia::string>(*field).GetString());
+							msg += temp;
+							msg += CRLF;
+						}
+					}
 
-				//	if (!(*field)->IsEmpty())
-				//	{
-				//		daxia::string temp;
-				//		temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<daxia::string>(*field).GetString());
-				//		msg += temp;
-				//		msg += CRLF;
-				//	}
-				//}
+					// 设置头结束符号
+					msg += CRLF;
+				}
+				
+				// 设置content
+				msg.Append(static_cast<const char*>(data), len);
 
-				//// 设置头结束符号
-				//msg += CRLF;
+				daxia::net::common::Buffer buffer(msg.GetString(), msg.GetLength());
+				buffers.push_back(buffer);
 
-				//// 设置content
-				//msg.Append(static_cast<const char*>(data), len);
-
-				//buffer.Resize(msg.GetLength());
-				//memcpy(buffer, msg.GetString(), msg.GetLength());
 				return true;
 			}
 
