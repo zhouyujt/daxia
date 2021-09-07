@@ -132,16 +132,19 @@ namespace daxia
 					lock_guard locker(writeLocker_);
 					bool isWriting = !writeBufferCache_.empty();
 
-					for (const Buffer& buffer : buffers)
+					if (!buffers.empty())
 					{
-						writeBufferCache_.push(buffer);
-						++sendPacketCount_;
-						if (sendPacketCount_ == 0) ++sendPacketCount_;
-					}
+						for (const Buffer& buffer : buffers)
+						{
+							writeBufferCache_.push(buffer);
+							++sendPacketCount_;
+							if (sendPacketCount_ == 0) ++sendPacketCount_;
+						}
 
-					if (!isWriting)
-					{
-						doWriteMessage(writeBufferCache_.front());
+						if (!isWriting)
+						{
+							doWriteMessage(writeBufferCache_.front());
+						}
 					}
 				}
 			}
