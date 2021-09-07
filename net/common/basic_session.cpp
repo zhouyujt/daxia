@@ -22,6 +22,9 @@ namespace daxia
 			BasicSession::~BasicSession()
 			{
 				Close();
+
+				// 等待写线程处理完毕
+				lock_guard locker(writeLocker_);
 			}
 
 			void BasicSession::SetParser(std::shared_ptr<Parser> parser)
