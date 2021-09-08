@@ -80,6 +80,8 @@ namespace daxia
 
 			daxia::wstring AccessToken::GetUser() const
 			{
+				if (this == nullptr) return L"";
+
 				daxia::wstring user;
 
 				// 获取缓冲区大小

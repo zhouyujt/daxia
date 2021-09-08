@@ -7,6 +7,32 @@ namespace daxia
 {
 	namespace system
 	{
+		DateTimeSpan::DateTimeSpan()
+		{
+
+		}
+
+		DateTimeSpan::DateTimeSpan(int day, int hour, int minute, int second, int millisecond)
+		{
+			std::chrono::milliseconds milli((long long)millisecond + (long long)second * 1000 + (long long)minute * 1000 * 60 + (long long)hour * 1000 * 60 * 60 + (long long)day * 1000 * 60 * 60 * 24);
+			duration_ = std::chrono::duration_cast<std::chrono::system_clock::duration>(milli);
+		}
+
+		DateTimeSpan::DateTimeSpan(const DateTimeSpan& dt)
+		{
+			duration_ = dt.duration_;
+		}
+
+		DateTimeSpan::~DateTimeSpan()
+		{
+
+		}
+
+		size_t DateTimeSpan::Count() const
+		{
+			return duration_.count();
+		}
+
 		DateTime::DateTime()
 		{
 
@@ -31,6 +57,11 @@ namespace daxia
 		DateTime::DateTime(const DateTime& dt)
 		{
 			tp_ = dt.tp_;
+		}
+
+		DateTime::DateTime(const std::chrono::system_clock::time_point& tp)
+		{
+			tp_ = tp;
 		}
 
 		DateTime::~DateTime()
@@ -61,6 +92,36 @@ namespace daxia
 			str.ReleaseBuffer();
 
 			return str;
+		}
+
+		DateTime DateTime::operator+(const DateTimeSpan& span) const
+		{
+			return DateTime(tp_ + span.duration_);
+		}
+
+		DateTime& DateTime::operator+=(const DateTimeSpan& span)
+		{
+			tp_ += span.duration_;
+			return *this;
+		}
+
+		DateTime DateTime::operator-(const DateTimeSpan& span) const
+		{
+			return DateTime(tp_ - span.duration_);
+		}
+
+		daxia::system::DateTimeSpan DateTime::operator-(const DateTime& dt) const
+		{
+			DateTimeSpan span;
+			span.duration_ = tp_ - dt.tp_;
+
+			return span;
+		}
+
+		DateTime& DateTime::operator-=(const DateTimeSpan& span)
+		{
+			tp_ -= span.duration_;
+			return *this;
 		}
 	}
 }
