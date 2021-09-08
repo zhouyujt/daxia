@@ -4,6 +4,7 @@
 #include "client.h"
 #include "common/parser.h"
 #include "../encode/strconv.h"
+#include "common/http_parser.h"
 
 namespace daxia
 {
@@ -267,6 +268,36 @@ namespace daxia
 			}
 
 			timers_.clear();
+		}
+
+		daxia::string Client::GetLocalIpv4()
+		{
+			using boost::asio::ip::tcp;
+
+			daxia::string ip;
+
+			boost::asio::io_service io_service;
+			tcp::resolver resolver(io_service);
+			tcp::resolver::query query(tcp::v4(), boost::asio::ip::host_name(), "");
+			tcp::resolver::iterator iter = resolver.resolve(query);
+			tcp::resolver::iterator end; // End marker. 
+			if (iter != end)
+			{
+				ip = iter->endpoint().address().to_string().c_str();
+			}
+
+			return ip;
+		}
+
+		daxia::string Client::GetIpv4Info(const char* ip)
+		{
+			using daxia::net::common::HttpClientParser;
+
+			Client client;
+			client.SetParser(std::shared_ptr<HttpClientParser>(new HttpClientParser));
+			//client.WriteMessage(0, daxia::string("www.ip138.com"));
+
+			return "";
 		}
 
 		void Client::doConnect()

@@ -283,7 +283,11 @@ namespace daxia
 
 			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const daxia::net::common::PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
 			{
-				throw "ипн╢й╣ож";
+				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
+				if (request == nullptr || response == nullptr) return false;
+
+				return true;
 			}
 
 			daxia::net::common::Parser::Result HttpClientParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const

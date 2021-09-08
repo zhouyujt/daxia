@@ -51,6 +51,8 @@ namespace daxia
 			long long ScheduleOnce(scheduleFunc func, unsigned long duration);
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
+			static daxia::string GetLocalIpv4();
+			static daxia::string GetIpv4Info(const char* ip);
 		private:
 			struct LogicMessage
 			{
