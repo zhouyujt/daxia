@@ -82,6 +82,21 @@ namespace daxia
 				return ::PathFindExtensionW(path_.GetString());
 			}
 
+			const daxia::system::DateTime& File::CreateTime() const
+			{
+				return createTime_;
+			}
+
+			const daxia::system::DateTime& File::AccessTime() const
+			{
+				return accessTime_;
+			}
+
+			const daxia::system::DateTime& File::WriteTime() const
+			{
+				return writeTime_;
+			}
+
 			bool File::Move(const char* path) const
 			{
 				return Move(daxia::string(path).ToUnicode().GetString());

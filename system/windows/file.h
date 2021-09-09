@@ -14,6 +14,7 @@
 #ifndef __DAXIA_SYSTEM_WINDOWS_FILE_H
 #define __DAXIA_SYSTEM_WINDOWS_FILE_H
 #include "../../string.hpp"
+#include "../datetime.h"
 namespace daxia
 {
 	namespace system
@@ -42,6 +43,9 @@ namespace daxia
 				const daxia::wstring Path() const;
 				daxia::wstring Name() const;
 				daxia::wstring Extension() const;
+				const daxia::system::DateTime& CreateTime() const;
+				const daxia::system::DateTime& AccessTime() const;
+				const daxia::system::DateTime& WriteTime() const;
 
 				// 移动、复制、创建、删除
 			public:
@@ -60,6 +64,9 @@ namespace daxia
 				daxia::wstring path_;
 				Type type_;
 				size_t size_;
+				daxia::system::DateTime createTime_;
+				daxia::system::DateTime accessTime_;
+				daxia::system::DateTime writeTime_;
 			};
 		}
 	}

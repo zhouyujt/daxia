@@ -1,3 +1,6 @@
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 #include <iomanip>
 #include <sstream>
 #include <iomanip>
@@ -63,6 +66,22 @@ namespace daxia
 		{
 			tp_ = tp;
 		}
+
+#ifdef _MSC_VER
+		DateTime::DateTime(const _FILETIME& ft)
+		{
+			LONGLONG  ll;
+
+			ULARGE_INTEGER ui;
+			ui.LowPart = ft.dwLowDateTime;
+			ui.HighPart = ft.dwHighDateTime;
+
+			ll = ft.dwHighDateTime << 32 + ft.dwLowDateTime;
+
+			std::time_t t = ((LONGLONG)(ui.QuadPart - 116444736000000000) / 10000000);
+			tp_ = std::chrono::system_clock::from_time_t(t);
+		}
+#endif
 
 		DateTime::~DateTime()
 		{

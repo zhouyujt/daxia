@@ -110,6 +110,9 @@ namespace daxia
 						path += data.cFileName;
 						file_ = std::shared_ptr<File>(new File(path.GetString(), data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? File::directory : File::file));
 						file_->size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+						file_->createTime_ = data.ftCreationTime;
+						file_->accessTime_ = data.ftLastAccessTime;
+						file_->writeTime_ = data.ftLastWriteTime;
 					}
 					else
 					{
@@ -203,6 +206,9 @@ namespace daxia
 					});
 					auto file = std::shared_ptr<File>(new File((path_ + L"\\" + data.cFileName).GetString(), data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? File::directory : File::file));
 					file->size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+					file->createTime_ = data.ftCreationTime;
+					file->accessTime_ = data.ftLastAccessTime;
+					file->writeTime_ = data.ftLastWriteTime;
 					return  FindFile::iterator(h, file);
 				}
 			}

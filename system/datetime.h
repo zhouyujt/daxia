@@ -18,6 +18,10 @@
 #include <ostream>
 #include "../string.hpp"
 
+#ifdef _MSC_VER
+struct _FILETIME;
+#endif
+
 namespace daxia
 {
 	namespace system
@@ -44,6 +48,9 @@ namespace daxia
 			DateTime(const char* time);
 			DateTime(const DateTime& dt);
 			DateTime(const std::chrono::system_clock::time_point& tp);
+#ifdef _MSC_VER
+			DateTime(const _FILETIME& ft);
+#endif
 			~DateTime();
 		public:
 			static DateTime Now();
