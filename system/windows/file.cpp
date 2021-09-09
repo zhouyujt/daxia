@@ -123,7 +123,7 @@ namespace daxia
 				{
 					if (type_ == directory)
 					{
-						bool created = false;
+						bool created = true;
 
 						daxia::wstring path(path_);
 						daxia::wstring root = path.Left(3);
@@ -148,6 +148,7 @@ namespace daxia
 							{
 								if (::GetLastError() != ERROR_ALREADY_EXISTS)
 								{
+									created = false;
 									break;
 								}
 							}
