@@ -159,7 +159,7 @@ namespace daxia
 					{
 						if (pageInfo)
 						{
-							response->ContentLength = pageInfo->total;
+							response->ContentLength = daxia::string::ToString(pageInfo->total);
 						}
 						else
 						{
