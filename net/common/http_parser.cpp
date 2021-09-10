@@ -155,7 +155,7 @@ namespace daxia
 					msg += CRLF;
 
 					// ÉèÖÃContent-Length
-					if (daxia::string(response->ContentLength).NumericCast<int>() == 0)
+					if (response->ContentLength->NumericCast<int>() == 0)
 					{
 						if (pageInfo)
 						{
@@ -182,7 +182,7 @@ namespace daxia
 						if (!(*field)->IsEmpty())
 						{
 							daxia::string temp;
-							temp.Format("%s:%s", field->Tag("http").GetString(), static_cast<daxia::string>(*field).GetString());
+							temp.Format("%s:%s", field->Tag("http").GetString(), (*field)->GetString());
 							msg += temp;
 							msg += CRLF;
 						}
