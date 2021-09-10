@@ -18,7 +18,7 @@
 #include <ostream>
 #include "../string.hpp"
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 struct _FILETIME;
 #endif
 
@@ -48,7 +48,7 @@ namespace daxia
 			DateTime(const char* time);
 			DateTime(const DateTime& dt);
 			DateTime(const std::chrono::system_clock::time_point& tp);
-#ifdef _MSC_VER
+#ifdef _WIN32
 			DateTime(const _FILETIME& ft);
 #endif
 			~DateTime();

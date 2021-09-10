@@ -109,7 +109,7 @@ namespace daxia
 					v = daxia::string(text, size);
 					static_cast<daxia::string>(v).Utf8() = true;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 					v = static_cast<daxia::string>(v).ToAnsi();
 #endif
 				}

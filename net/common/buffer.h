@@ -12,7 +12,7 @@
 #ifndef __DAXIA_NET_COMMON_SHARED_BUFFER_H
 #define __DAXIA_NET_COMMON_SHARED_BUFFER_H
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <sdkddkver.h>
 #endif
 

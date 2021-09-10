@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <algorithm>
 #include <windows.h>
 #include <tlhelp32.h>
@@ -174,5 +174,5 @@ namespace daxia
 		}
 	}
 }
-#endif // !_MSC_VER
+#endif // !_WIN32
 

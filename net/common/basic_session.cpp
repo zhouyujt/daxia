@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <sdkddkver.h>
 #endif
 #include <boost/format.hpp>

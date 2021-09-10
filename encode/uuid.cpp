@@ -1,9 +1,9 @@
 #include <memory.h>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #pragma warning(disable:4996)
 #endif
 #include <boost/uuid/uuid_generators.hpp>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #pragma warning(default:4996)
 #endif
 #include <boost/uuid/uuid_io.hpp>

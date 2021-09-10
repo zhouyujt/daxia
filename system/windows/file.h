@@ -10,7 +10,7 @@
 *  文件、目录相关的操作
 *
 */
-#ifdef _MSC_VER
+#ifdef _WIN32
 #ifndef __DAXIA_SYSTEM_WINDOWS_FILE_H
 #define __DAXIA_SYSTEM_WINDOWS_FILE_H
 #include "../../string.hpp"
@@ -72,4 +72,4 @@ namespace daxia
 	}
 }
 #endif // !__DAXIA_SYSTEM_WINDOWS_FILE_H
-#endif // !_MSC_VER
+#endif // !_WIN32

@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <Windows.h>
 #include <Shlwapi.h>
 #include "path.h"
@@ -92,4 +92,4 @@ namespace daxia
 		}
 	}
 }
-#endif // !_MSC_VER
+#endif // !_WIN32

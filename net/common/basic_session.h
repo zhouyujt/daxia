@@ -15,7 +15,7 @@
 #include <mutex>
 #include <memory>
 #include <queue>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <sdkddkver.h>
 #endif
 #include <boost/asio.hpp>

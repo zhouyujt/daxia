@@ -1,6 +1,6 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <windows.h>
-#endif // _MSC_VER
+#endif // _WIN32
 #include <string>
 #include <string.h>
 #include <algorithm>
@@ -14,7 +14,7 @@ namespace daxia
 		{
 			std::string r;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 			int size = ::WideCharToMultiByte(CP_ACP, 0, str, -1, NULL, 0, NULL, NULL);
 			--size;
 			r.resize(size);
@@ -32,7 +32,7 @@ namespace daxia
 			wcstombs(const_cast<char*>(r.c_str()), str, size);
 
 			setlocale(LC_ALL, old);
-#endif // _MSC_VER
+#endif // _WIN32
 
 			return r;
 		}
@@ -46,7 +46,7 @@ namespace daxia
 		{
 			std::wstring r;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 			int size = ::MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
 			--size;
 			r.resize(size);
@@ -64,7 +64,7 @@ namespace daxia
 			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
 
 			setlocale(LC_ALL, old);
-#endif // _MSC_VER
+#endif // _WIN32
 
 			return r;
 		}
@@ -78,7 +78,7 @@ namespace daxia
 		{
 			std::wstring r;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 			int size = ::MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
 			--size;
 			r.resize(size);
@@ -96,7 +96,7 @@ namespace daxia
 			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
 
 			setlocale(LC_ALL, old);
-#endif // _MSC_VER
+#endif // _WIN32
 
 			return r;
 		}
@@ -125,7 +125,7 @@ namespace daxia
 		{
 			std::string r;
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 			int size = ::WideCharToMultiByte(CP_UTF8, 0, str, -1, NULL, 0, NULL, NULL);
 			--size;
 			r.resize(size);
@@ -143,7 +143,7 @@ namespace daxia
 			wcstombs(const_cast<char*>(r.c_str()), str, size);
 
 			setlocale(LC_ALL, old);
-#endif // _MSC_VER
+#endif // _WIN32
 
 			return r;
 		}

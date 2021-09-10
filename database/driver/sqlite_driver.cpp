@@ -27,7 +27,7 @@ namespace daxia
 			void SqliteDriver::Init()
 			{
 				// windows 需设置临时目录
-#ifdef _MSC_VER
+#ifdef _WIN32
 				daxia::wstring path = daxia::system::windows::Path::GetTempPath();
 				sqlite3_temp_directory = sqlite3_mprintf("%s", path.ToUtf8().GetString());
 #endif
@@ -35,7 +35,7 @@ namespace daxia
 
 			void SqliteDriver::Uninit()
 			{
-#ifdef _MSC_VER
+#ifdef _WIN32
 				if (sqlite3_temp_directory)
 				{
 					sqlite3_free(sqlite3_temp_directory);
@@ -147,7 +147,7 @@ namespace daxia
 				{
 					lastError_ = sqlite3_errmsg(sqlite_);
 					lastError_.Utf8() = true;
-#ifdef _MSC_VER
+#ifdef _WIN32
 					lastError_ = lastError_.ToAnsi();
 #endif
 				}

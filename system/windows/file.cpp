@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <fstream>
 #include <Shlwapi.h>
 #pragma comment(lib,"Shlwapi.lib")
@@ -230,4 +230,4 @@ namespace daxia
 		}
 	}
 }
-#endif // !_MSC_VER
+#endif // !_WIN32

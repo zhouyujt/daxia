@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <Windows.h>
 #include <Psapi.h>
 #include "process.h"
@@ -559,4 +559,4 @@ namespace daxia
 		}
 	}
 }
-#endif // !_MSC_VER
+#endif // !_WIN32

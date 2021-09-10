@@ -196,4 +196,4 @@ namespace daxia
 		}
 	}
 }
-#endif // !_MSC_VER
+#endif // !__linux__

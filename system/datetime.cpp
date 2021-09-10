@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include <iomanip>
@@ -67,7 +67,7 @@ namespace daxia
 			tp_ = tp;
 		}
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 		DateTime::DateTime(const _FILETIME& ft)
 		{
 			LONGLONG  ll;
