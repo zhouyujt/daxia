@@ -85,6 +85,10 @@ namespace daxia
 		void Split(const Elem* sub, std::vector<String_base>& strings) const;
 		void Split(const void* sub, size_t len, std::vector<String_base>& strings) const;
 
+		// ½»»»
+		String_base& Swap(String_base& str);
+		String_base& Swap(std::basic_string<Elem, Traits, Alloc>& str);
+
 		// ×Ö·û¼¯±àÂë×ª»»
 		bool& Utf8() { return utf8_; }
 		bool Utf8() const { return utf8_; }
@@ -234,6 +238,11 @@ namespace daxia
 		}
 
 		operator const std::basic_string<Elem, Traits, Alloc>&() const
+		{
+			return v_;
+		}
+
+		operator std::basic_string<Elem, Traits, Alloc>&()
 		{
 			return v_;
 		}
@@ -531,12 +540,11 @@ namespace daxia
 			Elem* buffer = GetBuffer();
 
 			int length = GetLength();
-			while (count < length)
+			for (; count < length; ++count)
 			{
 				if (buffer[count] == oldch)
 				{
 					buffer[count] = newch;
-					++count;
 				}
 			}
 		}
@@ -712,6 +720,20 @@ namespace daxia
 				strings.push_back(str);
 			}
 		}
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::Swap(String_base<Elem, Traits, Alloc>& str)
+	{
+		v_.swap(str.v_);
+		return *this;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::Swap(std::basic_string<Elem, Traits, Alloc>& str)
+	{
+		v_.swap(str);
+		return *this;
 	}
 
 	template<>
