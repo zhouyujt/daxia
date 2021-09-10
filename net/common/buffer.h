@@ -61,7 +61,7 @@ namespace daxia
 
 				bool IsEnd() const
 				{
-					return endPos == total - 1;
+					return ((endPos == 0 && total == 0) || endPos == total - 1);
 				}
 			};
 #ifdef _MSC_VER

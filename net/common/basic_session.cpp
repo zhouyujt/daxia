@@ -247,8 +247,11 @@ namespace daxia
 						lastReadTime_ = time_point_cast<milliseconds>(system_clock::now());
 						onPacket(err, msgID, msg);
 
-						++recvPacketCount_;
-						if (recvPacketCount_ == 0) ++recvPacketCount_;
+						if (msg.Page().IsEnd())
+						{
+							++recvPacketCount_;
+							if (recvPacketCount_ == 0) ++recvPacketCount_;
+						}
 
 						// 整理数据后继续接收
 						if (buffer_.Size() > packetLen)
