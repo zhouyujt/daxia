@@ -16,6 +16,7 @@ namespace daxia
 				if (path)
 				{
 					path_ = daxia::string(path).ToUnicode();
+					path_.Replace(L'/', L'\\');
 				}
 				else
 				{
@@ -35,6 +36,7 @@ namespace daxia
 				if (path)
 				{
 					path_ = path;
+					path_.Replace(L'/', L'\\');
 				}
 				else
 				{
@@ -126,8 +128,7 @@ namespace daxia
 						bool created = true;
 
 						daxia::wstring path(path_);
-						daxia::wstring root = path.Left(3);
-						path = path.Mid(3, -1);
+						daxia::wstring root;
 
 						while (!path.IsEmpty())
 						{
