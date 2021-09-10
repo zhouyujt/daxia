@@ -189,15 +189,24 @@ namespace daxia
 
 			if (data.Size() == 0) return;
 
-			common::HttpParser::RequestHeader header;
-			size_t headerLen = header.InitFromData(data, data.Size());
+			size_t headerLen = 0;
+			if (data.Page().IsStart())
+			{
+				common::HttpParser::RequestHeader header;
+				headerLen = header.InitFromData(data, data.Size());
 
-			if (headerLen == -1) return;
-			
-			client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
-			client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
+				if (headerLen == -1) return;
 
-			auto iter = httpControllers_.find(header.StartLine.Url.GetString());
+				client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
+				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
+			}
+
+			common::HttpParser::RequestHeader* requestHeader = client->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+			if (requestHeader == nullptr) return;
+
+			const daxia::string& url = requestHeader->StartLine.Url;
+
+			auto iter = httpControllers_.find(url.GetString());
 			if (iter != httpControllers_.end())
 			{
 				static const common::HttpParser::Methods methodsHelp;
@@ -212,20 +221,27 @@ namespace daxia
 
 				iter->second->SetContext(client);
 
-				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
-				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, common::Buffer(data + headerLen, data.Size() - headerLen)); }
+				common::Buffer buffer;
+				if (headerLen != 0)
+				{
+					buffer = common::Buffer(data + headerLen, data.Size() - headerLen);
+					buffer.Page() = data.Page();
+				}
+
+				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, headerLen != 0 ? buffer : data); }
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, headerLen != 0 ? buffer : data); }
 
 				iter->second->ResetContext();
 			}
 			else
 			{
-				if (header.StartLine.Url == "/")
+				if (url == "/")
 				{
 					daxia::string html;
 					html += "<html>\r\n";
@@ -250,14 +266,14 @@ namespace daxia
 					};
 
 					// 获取后缀名
-					size_t pos = header.StartLine.Url.Find(".");
+					size_t pos = url.Find(".");
 					if (pos == -1)
 					{
 						serve404();
 						return;
 					}
 
-					daxia::string extension = header.StartLine.Url.Mid(pos + 1, -1);
+					daxia::string extension = url.Mid(pos + 1, -1);
 					daxia::string type = MIME_HELPER().Find(extension);
 					if (type.IsEmpty())
 					{
@@ -268,7 +284,7 @@ namespace daxia
 					response->ContentType = type;
 
 					std::ifstream ifs;
-					daxia::string filename = httpRoot_ + header.StartLine.Url;
+					daxia::string filename = httpRoot_ + url;
 					ifs.open(filename);
 					if (ifs.is_open())
 					{
