@@ -113,7 +113,7 @@ namespace daxia
 			template<typename T>
 			Reflect& operator=(const Reflect<T>& v)
 			{
-				v_ = static_cast<T>(v);
+				v_ = static_cast<const T&>(v);
 				return *this;
 			}
 
