@@ -161,7 +161,11 @@ namespace daxia
 					else
 					{
 						std::ofstream ofs;
+#ifdef _MSC_VER
 						ofs.open(path_);
+#else
+						ofs.open(path_.ToAnsi());
+#endif
 						if (ofs.is_open())
 						{
 							ofs.close();
