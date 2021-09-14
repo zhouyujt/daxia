@@ -287,7 +287,7 @@ namespace daxia
 
 					buffer.Page().startPos = 0;
 					buffer.Page().endPos = len - 1;
-					buffer.Page().total = contentLength;
+					buffer.Page().total = len + contentLength;
 
 					msgID = static_cast<int>(params[0].MakeLower().Hash());
 

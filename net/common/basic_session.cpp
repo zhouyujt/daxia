@@ -137,9 +137,10 @@ namespace daxia
 						for (const Buffer& buffer : buffers)
 						{
 							writeBufferCache_.push(buffer);
-							++sendPacketCount_;
-							if (sendPacketCount_ == 0) ++sendPacketCount_;
 						}
+
+						++sendPacketCount_;
+						if (sendPacketCount_ == 0) ++sendPacketCount_;
 
 						if (!isWriting)
 						{
