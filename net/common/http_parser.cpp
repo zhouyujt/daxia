@@ -285,9 +285,11 @@ namespace daxia
 						}
 					}
 
+					packetLen = MIN(len, packetLen);
+
 					buffer.Page().startPos = 0;
-					buffer.Page().endPos = len - 1;
-					buffer.Page().total = len + contentLength;
+					buffer.Page().endPos = packetLen - 1;
+					buffer.Page().total = headerEndPos + strlen(CRLFCRLF) + contentLength;
 
 					msgID = static_cast<int>(params[0].MakeLower().Hash());
 
@@ -298,6 +300,7 @@ namespace daxia
 					// ±£´æmsgID
 					if (!buffer.Page().IsEnd())
 					{
+						session->SetUserData(lastPageInfoKey.GetString(), buffer.Page());
 						session->SetUserData(lastMsgIdKey.GetString(), msgID);
 					}
 				}
@@ -317,6 +320,12 @@ namespace daxia
 
 					packetLen = len;
 					msgID = *lastMsgId;
+
+					if (buffer.Page().IsEnd())
+					{
+						session->DeleteUserData(lastPageInfoKey.GetString());
+						session->DeleteUserData(lastMsgIdKey.GetString());
+					}
 				}
 
 				return Parser::Result::Result_Success;
