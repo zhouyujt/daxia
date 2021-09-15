@@ -226,6 +226,18 @@ namespace daxia
 				{
 					buffer = common::Buffer(data + headerLen, data.Size() - headerLen);
 					buffer.Page() = data.Page();
+					buffer.Page().startPos = buffer.Page().startPos == 0 ? 0 : buffer.Page().startPos - headerLen;
+					buffer.Page().endPos -= headerLen;
+					buffer.Page().total -= headerLen;
+				}
+				else
+				{
+					common::HttpParser::RequestHeader* header = client->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
+					if (header == nullptr) return;
+
+					const_cast<common::Buffer&>(data).Page().startPos = data.Page().startPos == 0 ? 0 : data.Page().startPos - header->PacketLen;
+					const_cast<common::Buffer&>(data).Page().endPos -= header->PacketLen;
+					const_cast<common::Buffer&>(data).Page().total -= header->PacketLen;
 				}
 
 				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, headerLen != 0 ? buffer : data); }

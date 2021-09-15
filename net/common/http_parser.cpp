@@ -90,9 +90,9 @@ namespace daxia
 					lastLineEndPos = lineEndPos;
 				}
 
-				size_t packetLen = headerEndPos + strlen(CRLFCRLF);
+				PacketLen = headerEndPos + strlen(CRLFCRLF);
 
-				return packetLen;
+				return PacketLen;
 			}
 
 			size_t HttpParser::RequestHeader::InitFromData(const void* data, size_t len)

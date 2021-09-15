@@ -417,6 +417,8 @@ namespace daxia
 					ref_string Via{ "http:Via" };
 					ref_string Warning{ "http:Warning" };
 				public:
+					size_t PacketLen{ 0 };	// 消息头字符串长度
+				public:
 					ref_string* Find(const daxia::string& key, const void* base) const;
 				protected:
 					size_t InitFromData(const void* data, size_t len, bool isRequest);
