@@ -182,7 +182,14 @@ namespace daxia
 
 			bool File::Delete() const
 			{
-				return ::DeleteFileW(path_.GetString()) != 0;
+				bool result = false;
+				result = ::RemoveDirectory(path_.GetString()) != 0;
+				if (!result)
+				{
+					result = ::DeleteFileW(path_.GetString()) != 0;
+				}
+
+				return result;
 			}
 
 			bool File::Read(daxia::buffer& buffer, size_t pos /*= 0*/, size_t len /*= -1*/)
