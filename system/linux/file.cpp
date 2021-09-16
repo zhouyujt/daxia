@@ -136,6 +136,8 @@ namespace daxia
 
 				close(fin);
 				close(fout);
+
+				return true;
 			}
 
 			bool File::Copy(const wchar_t* path) const
