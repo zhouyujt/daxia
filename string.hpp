@@ -14,6 +14,7 @@
 #ifndef __DAXIA_STRING_HPP
 #define __DAXIA_STRING_HPP
 #include <string>
+#include <cstring>
 #include <vector>
 #include <stdarg.h>
 #include <ostream>

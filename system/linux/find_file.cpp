@@ -86,10 +86,10 @@ namespace daxia
 					struct stat statbuf;
 					stat(ent->d_name, &statbuf);
 					file_ = std::shared_ptr<File>(new File(path.GetString(), S_ISDIR(statbuf.st_mode) ? File::directory : File::file));
-					file->size_ = statbuf.st_size;
+					file_->size_ = statbuf.st_size;
 					//file->createTime_ = statbuf.st_ctime;
-					file->accessTime_ = statbuf.st_atime;
-					file->writeTime_ = statbuf.st_mtime;
+					file_->accessTime_ = statbuf.st_atime;
+					file_->writeTime_ = statbuf.st_mtime;
 				}
 				else
 				{

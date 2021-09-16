@@ -1,4 +1,5 @@
 #ifdef __linux__
+#include <sys/stat.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -169,7 +170,7 @@ namespace daxia
 							}
 
 							int ret;
-							if (mkdir(root.GetString()) != 0)
+							if (mkdir(root.GetString(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0)
 							{
 								if (errno != EEXIST)
 								{
