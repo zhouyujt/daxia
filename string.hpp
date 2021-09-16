@@ -58,6 +58,9 @@ namespace daxia
 		size_t Find(Elem ch, size_t start = 0) const;
 		size_t Find(const Elem* str, size_t start = 0) const;
 		size_t Find(const void* str, size_t len, size_t start = 0) const;
+		size_t Rfind(Elem ch, size_t start = -1) const;
+		size_t Rfind(const Elem* str, size_t start = -1) const;
+		size_t Rfind(const void* str, size_t len, size_t start = -1) const;
 		void Format(const Elem* format, ...);
 		void FormatV(const char* format, va_list valist);
 		void FormatV(const wchar_t* format, va_list valist);
@@ -435,6 +438,24 @@ namespace daxia
 	size_t daxia::String_base<Elem, Traits, Alloc>::Find(const void* str, size_t len, size_t start /*= 0*/) const
 	{
 		return v_.find(static_cast<const Elem*>(str), start, len);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Rfind(Elem ch, size_t start /*= -1*/) const
+	{
+		return v_.rfind(ch, start);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Rfind(const Elem* str, size_t start /*= -1*/) const
+	{
+		return v_.rfind(str, start);
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	size_t daxia::String_base<Elem, Traits, Alloc>::Rfind(const void* str, size_t len, size_t start /*= -1*/) const
+	{
+		return v_.rfind(static_cast<const Elem*>(str), start, len);
 	}
 
 	template<class Elem, class Traits, class Alloc>
