@@ -41,7 +41,10 @@ namespace daxia
 		String_base(const Elem* str);
 		String_base(const Elem* str, size_t count);
 		String_base(const std::basic_string<Elem, Traits, Alloc>& str);
+		String_base(std::basic_string<Elem, Traits, Alloc>&& str);
 		String_base(const String_base& str);
+		String_base(String_base&& str);
+
 
 		// VC里CString的功能
 	public:
@@ -118,9 +121,22 @@ namespace daxia
 			return *this;
 		}
 
+		String_base& operator=(std::basic_string<Elem, Traits, Alloc>&& str)
+		{
+			v_.swap(str);
+			return *this;
+		}
+
 		String_base& operator=(const String_base& str)
 		{
 			v_ = str.v_;
+			utf8_ = str.utf8_;
+			return *this;
+		}
+
+		String_base& operator=(String_base&& str)
+		{
+			v_.swap(str.v_);
 			utf8_ = str.utf8_;
 			return *this;
 		}
@@ -319,10 +335,24 @@ namespace daxia
 	}
 
 	template<class Elem, class Traits, class Alloc>
+	daxia::String_base<Elem, Traits, Alloc>::String_base(std::basic_string<Elem, Traits, Alloc>&& str)
+		: utf8_(utf8<void, size<sizeof(__utf8Test)>>::value)
+	{
+		v_.swap(str);
+	}
+
+	template<class Elem, class Traits, class Alloc>
 	daxia::String_base<Elem, Traits, Alloc>::String_base(const daxia::String_base<Elem, Traits, Alloc>& str)
 		: utf8_(str.utf8_)
 	{
 		v_ = str.v_;
+	}
+
+	template<class Elem, class Traits, class Alloc>
+	daxia::String_base<Elem, Traits, Alloc>::String_base(daxia::String_base<Elem, Traits, Alloc>&& str)
+		: utf8_(str.utf8_)
+	{
+		v_.swap(str.v_);
 	}
 
 	template<class Elem, class Traits, class Alloc>
@@ -923,7 +953,6 @@ namespace daxia
 		buffer(){}
 		buffer(const char* str) : string(str){}
 		buffer(const char* str, size_t count) : string(str, count) {}
-		buffer(const std::string& str) : string(str){}
 	};
 #ifdef UNICODE
 	typedef wstring tstring;
