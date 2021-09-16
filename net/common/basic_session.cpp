@@ -139,8 +139,11 @@ namespace daxia
 							writeBufferCache_.push(buffer);
 						}
 
-						++sendPacketCount_;
-						if (sendPacketCount_ == 0) ++sendPacketCount_;
+						if (pageInfo == nullptr || pageInfo->IsEnd())
+						{
+							++sendPacketCount_;
+							if (sendPacketCount_ == 0) ++sendPacketCount_;
+						}
 
 						if (!isWriting)
 						{
