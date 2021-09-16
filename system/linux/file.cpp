@@ -154,7 +154,7 @@ namespace daxia
 						bool created = true;
 
 						daxia::string path(path_);
-						daxia::string root = "/";
+						daxia::string root;
 
 						while (!path.IsEmpty())
 						{
