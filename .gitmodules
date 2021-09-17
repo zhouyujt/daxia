@@ -1,3 +1,6 @@
 [submodule "database/driver/sqlite3"]
 	path = database/driver/sqlite3
 	url = https://github.com/zhouyujt/sqlite3
+[submodule "encode/zlib/zlib"]
+	path = encode/zlib/zlib
+	url = https://github.com/madler/zlib
