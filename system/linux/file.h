@@ -32,12 +32,12 @@ namespace daxia
 					directory
 				};
 			public:
-				File(const char* path, Type type = file);
-				File(const wchar_t* path, Type type = file);
+				File(const char* path);
 				~File();
+			private:
+				File(const char* path, Type type);
 				// 属性
 			public:
-				bool IsExists() const;
 				Type FileType() const;
 				size_t Size() const;
 				const daxia::string Path() const;
@@ -50,11 +50,10 @@ namespace daxia
 				// 移动、复制、创建、删除
 			public:
 				bool Move(const char* path) const;
-				bool Move(const wchar_t* path) const;
 				bool Copy(const char* path) const;
-				bool Copy(const wchar_t* path) const;
-				bool Create() const;
 				bool Delete() const;
+				static bool IsExists(const char* path);
+				static File Create(const char* path, Type type);
 
 				// 读、写
 			public:
@@ -67,9 +66,6 @@ namespace daxia
 				daxia::system::DateTime createTime_;
 				daxia::system::DateTime accessTime_;
 				daxia::system::DateTime writeTime_;
-			private:
-				bool isDirectoryExists() const;
-				bool isFileExists() const;
 			};
 		}
 	}

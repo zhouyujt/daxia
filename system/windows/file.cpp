@@ -3,60 +3,66 @@
 #include <Shlwapi.h>
 #pragma comment(lib,"Shlwapi.lib")
 #include "file.h"
+#include "find_file.h"
 namespace daxia
 {
 	namespace system
 	{
 		namespace windows
 		{
-			File::File(const char* path, Type type /*= file*/)
+			File::File(const char* path)
+				: size_(0)
+			{
+				if (path)
+				{
+					init(daxia::string(path).ToUnicode().GetString());
+				}
+			}
+
+			File::File(const wchar_t* path)
+				: size_(0)
+			{
+				if (path)
+				{
+					init(path);
+				}
+			}
+
+			File::File(const char* path, Type type)
 				: type_(type)
 				, size_(0)
 			{
 				if (path)
 				{
 					path_ = daxia::string(path).ToUnicode();
-					path_.Replace(L'/', L'\\');
-				}
-				else
-				{
-					type_ = directory;
+
+					while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == L'\\')
+					{
+						path_.Delete(path_.GetLength() - 1);
+					}
 				}
 
-				while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == L'\\')
-				{
-					path_.Delete(path_.GetLength() - 1);
-				}
+
 			}
 
-			File::File(const wchar_t* path, Type type /*= file*/)
+			File::File(const wchar_t* path, Type type)
 				: type_(type)
 				, size_(0)
 			{
 				if (path)
 				{
 					path_ = path;
-					path_.Replace(L'/', L'\\');
-				}
-				else
-				{
-					type_ = directory;
-				}
 
-				while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == L'\\')
-				{
-					path_.Delete(path_.GetLength() - 1);
+					while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == L'\\')
+					{
+						path_.Delete(path_.GetLength() - 1);
+					}
 				}
 			}
 
 			File::~File()
 			{
 
-			}
-
-			bool File::IsExists() const
-			{
-				return ::PathFileExistsW(path_.GetString());
 			}
 
 			File::Type File::FileType() const
@@ -119,15 +125,48 @@ namespace daxia
 				return ::CopyFile(path_.GetString(), path, FALSE);
 			}
 
-			bool File::Create() const
+			bool File::Delete() const
 			{
-				if (!IsExists())
+				if (type_ == file)
 				{
-					if (type_ == directory)
+					return ::DeleteFileW(path_.GetString()) != 0;
+				}
+				else
+				{
+					// µÝ¹éÉ¾³ý
+					FindFile finder(path_.GetString());
+					for (auto iter = finder.begin(); iter != finder.end(); ++ iter)
 					{
-						bool created = true;
+						iter->Delete();
+					}
+					return ::RemoveDirectory(path_.GetString()) != 0;
+				}
+			}
 
-						daxia::wstring path(path_);
+			bool File::IsExists(const char* path)
+			{
+				return ::PathFileExistsA(path);
+			}
+
+			bool File::IsExists(const wchar_t* path)
+			{
+				return ::PathFileExistsW(path);
+			}
+
+			File File::Create(const char* p, Type type)
+			{
+				return Create(daxia::string(p).ToUnicode().GetString(), type);
+			}
+
+			File File::Create(const wchar_t* p, Type type)
+			{
+				if (!IsExists(p))
+				{
+					daxia::wstring path(p);
+					path.Replace(L'/', L'\\');
+
+					if (type == directory)
+					{
 						daxia::wstring root;
 
 						while (!path.IsEmpty())
@@ -149,7 +188,6 @@ namespace daxia
 							{
 								if (::GetLastError() != ERROR_ALREADY_EXISTS)
 								{
-									created = false;
 									break;
 								}
 							}
@@ -157,39 +195,27 @@ namespace daxia
 							root += L"\\";
 						}
 
-						return created;
+						return File(path.GetString());
 					}
 					else
 					{
 						std::ofstream ofs;
 #ifdef _MSC_VER
-						ofs.open(path_);
+						ofs.open(path.GetString());
 #else
-						ofs.open(path_.ToAnsi());
+						ofs.open(path.ToAnsi().GetString());
 #endif
 						if (ofs.is_open())
 						{
 							ofs.close();
-							return true;
+							return File(path.GetString());
 						}
 
-						return false;
+						return File("");
 					}
 				}
 
-				return false;
-			}
-
-			bool File::Delete() const
-			{
-				bool result = false;
-				result = ::RemoveDirectory(path_.GetString()) != 0;
-				if (!result)
-				{
-					result = ::DeleteFileW(path_.GetString()) != 0;
-				}
-
-				return result;
+				return File("");
 			}
 
 			bool File::Read(daxia::buffer& buffer, size_t pos /*= 0*/, size_t len /*= -1*/)
@@ -239,6 +265,29 @@ namespace daxia
 				return result;
 			}
 
+			void File::init(const wchar_t* path)
+			{
+				daxia::wstring newpath(path);
+				newpath.Replace(L'/', L'\\');
+				while (!newpath.IsEmpty() && newpath[newpath.GetLength() - 1] == L'\\')
+				{
+					newpath.Delete(newpath.GetLength() - 1);
+				}
+
+				WIN32_FILE_ATTRIBUTE_DATA data;
+				BOOL ret = ::GetFileAttributesExW(newpath.GetString(), GetFileExInfoStandard, &data);
+
+				if (ret != 0)
+				{
+					path_ = std::move(newpath);
+
+					type_ = data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY ? File::directory : type_ = File::file;
+					size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+					createTime_ = data.ftCreationTime;
+					accessTime_ = data.ftLastAccessTime;
+					writeTime_ = data.ftLastWriteTime;
+				}
+			}
 		}
 	}
 }

@@ -6,42 +6,46 @@
 #include <unistd.h>
 #include <fstream>
 #include "file.h"
+#include "find_file.h"
 namespace daxia
 {
 	namespace system
 	{
 		namespace linux
 		{
-			File::File(const char* path, Type type /*= file*/)
+			File::File(const char* path)
+				: size_(0)
+			{
+				if (path)
+				{
+					daxia::string newpath(path);
+					newpath.Replace("\\","/");
+					while (!newpath.IsEmpty() && newpath[newpath.GetLength() - 1] == '/')
+					{
+						newpath.Delete(newpath.GetLength() - 1);
+					}
+
+					struct stat statbuf;
+					if(lstat(path,&statbuf) == 0)
+					{
+						path_ = std::move(newpath);
+
+						type_ = S_ISDIR(statbuf.st_mode) ? File::directory : File::file;
+						size_ = statbuf.st_size;
+						//createTime_ = statbuf.st_ctime;
+						accessTime_ = statbuf.st_atime;
+						writeTime_ = statbuf.st_mtime;
+					}
+				}
+			}
+
+			File::File(const char* path, Type type)
 				: type_(type)
 				, size_(0)
 			{
 				if (path)
 				{
 					path_ = path;
-				}
-				else
-				{
-					type_ = directory;
-				}
-
-				while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == '/')
-				{
-					path_.Delete(path_.GetLength() - 1);
-				}
-			}
-
-			File::File(const wchar_t* path, Type type /*= file*/)
-				: type_(type)
-				, size_(0)
-			{
-				if (path)
-				{
-					path_ = daxia::wstring(path).ToAnsi();
-				}
-				else
-				{
-					type_ = directory;
 				}
 
 				while (!path_.IsEmpty() && path_[path_.GetLength() - 1] == '/')
@@ -53,18 +57,6 @@ namespace daxia
 			File::~File()
 			{
 
-			}
-
-			bool File::IsExists() const
-			{
-				if (type_ == file)
-				{
-					return isFileExists();
-				}
-				else
-				{
-					return isDirectoryExists();
-				}
 			}
 
 			File::Type File::FileType() const
@@ -84,12 +76,27 @@ namespace daxia
 
 			daxia::string File::Name() const
 			{
-				return path_;
+				daxia::string name;
+				size_t pos = path_.Rfind("/");
+				if (pos != -1)
+				{
+					name = path_.Mid(pos + 1,-1);
+				}
+
+				return name;
 			}
 
 			daxia::string File::Extension() const
 			{
-				return path_;
+				daxia::string ext;
+				daxia::string name = Name();
+				size_t pos = name.Rfind(".");
+				if (pos != -1)
+				{
+					ext = name.Mid(pos,-1);
+				}
+
+				return ext;
 			}
 
 			const daxia::system::DateTime& File::CreateTime() const
@@ -112,14 +119,9 @@ namespace daxia
 				return !rename(path_.GetString(), path);
 			}
 
-			bool File::Move(const wchar_t* path) const
-			{
-				return Move(daxia::wstring(path).ToAnsi().GetString());
-			}
-
 			bool File::Copy(const char* path) const
 			{
-				if (!IsExists())
+				if (!IsExists(path))
 				{
 					return false;
 				}
@@ -140,20 +142,48 @@ namespace daxia
 				return true;
 			}
 
-			bool File::Copy(const wchar_t* path) const
+			bool File::Delete() const
 			{
-				return Copy(daxia::wstring(path).ToAnsi().GetString());
+				if (type_ == file)
+				{
+					return !remove(path_.GetString());
+				}
+				else
+				{
+					// µÝ¹éÉ¾³ý
+					FindFile finder(path_.GetString());
+					for (auto iter = finder.begin(); iter != finder.end(); ++ iter)
+					{
+						iter->Delete();
+					}
+					return !remove(path_.GetString());
+				}
 			}
 
-			bool File::Create() const
+			bool File::IsExists(const char* path)
 			{
-				if (!IsExists())
+				DIR* dir;
+				dir = opendir(path);
+				if (dir == nullptr)
 				{
-					if (type_ == directory)
-					{
-						bool created = true;
+					return !access(path, F_OK);
+				}
+				else
+				{
+					closedir(dir);
+					return true;
+				}
+			}
 
-						daxia::string path(path_);
+			File File::Create(const char* p, Type type)
+			{
+				if (!IsExists(p))
+				{
+					daxia::string path(p);
+					path.Replace("\\","/");
+
+					if (type == directory)
+					{
 						daxia::string root;
 
 						while (!path.IsEmpty())
@@ -176,7 +206,6 @@ namespace daxia
 							{
 								if (errno != EEXIST)
 								{
-									created = false;
 									break;
 								}
 							}
@@ -184,28 +213,23 @@ namespace daxia
 							root += "/";
 						}
 
-						return created;
+						return File(path.GetString());
 					}
 					else
 					{
 						std::ofstream ofs;
-						ofs.open(path_);
+						ofs.open(p);
 						if (ofs.is_open())
 						{
 							ofs.close();
-							return true;
+							return File(path.GetString());
 						}
 
-						return false;
+						return File("");
 					}
 				}
 
-				return false;
-			}
-
-			bool File::Delete() const
-			{
-				return !remove(path_.GetString());
+				return File("");
 			}
 
 			bool File::Read(daxia::buffer& buffer, size_t pos /*= 0*/, size_t len /*= -1*/)
@@ -245,7 +269,7 @@ namespace daxia
 				}
 				else
 				{
-					ofs.open(path_, std::ios::binary);
+					ofs.open(path_, std::ios::binary | std::ios::app);
 				}
 				if (ofs.is_open())
 				{
@@ -259,27 +283,6 @@ namespace daxia
 
 				return result;
 			}
-
-			bool File::isDirectoryExists() const
-			{
-				DIR* dir;
-				dir = opendir(path_.GetString());
-				if (dir == nullptr)
-				{
-					return false;
-				}
-				else
-				{
-					closedir(dir);
-					return true;
-				}
-			}
-
-			bool File::isFileExists() const
-			{
-				return !access(path_.GetString(), F_OK);
-			}
-
 		}
 	}
 }

@@ -76,20 +76,39 @@ namespace daxia
 			FindFile::iterator& FindFile::iterator::operator++()
 			{
 				if (!file_) return *this;
-				dirent* ent = readdir(handle_.get());
+
+				dirent* ent;
+
+				// 过滤当前文件夹以及上级文件夹
+				while ((ent = readdir(handle_.get())) != nullptr)
+				{
+					if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0)
+					{
+						break;
+					}
+				}
+
 				if (ent)
 				{
 					daxia::string path = file_->Path();
-					path.Replace(file_->Name().GetString(), "");
-					path += ent->d_name;
+					size_t pos = path.Rfind("/");
+					if (pos != -1)
+					{
+						path = path.Left(pos + 1);
+						path += ent->d_name;
 
-					struct stat statbuf;
-					stat(ent->d_name, &statbuf);
-					file_ = std::shared_ptr<File>(new File(path.GetString(), S_ISDIR(statbuf.st_mode) ? File::directory : File::file));
-					file_->size_ = statbuf.st_size;
-					//file->createTime_ = statbuf.st_ctime;
-					file_->accessTime_ = statbuf.st_atime;
-					file_->writeTime_ = statbuf.st_mtime;
+						struct stat statbuf;
+						lstat(path.GetString(), &statbuf);
+						file_ = std::shared_ptr<File>(new File(path.GetString(), S_ISDIR(statbuf.st_mode) ? File::directory : File::file));
+						file_->size_ = statbuf.st_size;
+						//file->createTime_ = statbuf.st_ctime;
+						file_->accessTime_ = statbuf.st_atime;
+						file_->writeTime_ = statbuf.st_mtime;
+					}
+					else
+					{
+						file_.reset();
+					}
 				}
 				else
 				{
@@ -154,23 +173,22 @@ namespace daxia
 				// 过滤当前文件夹以及上级文件夹
 				while ((ent = readdir(handle)) != nullptr)
 				{
-					if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
-					{
-						continue;
-					}
-					else
+					if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0)
 					{
 						break;
 					}
 				}
+
+				if (ent == nullptr) return end();
 
 				auto h = std::shared_ptr<DIR>(handle, [](DIR* handle)
 				{
 					closedir(handle);
 				});
 				struct stat statbuf;
-				stat(ent->d_name, &statbuf);
-				auto file = std::shared_ptr<File>(new File((path_ + "/" + ent->d_name).GetString(), S_ISDIR(statbuf.st_mode) ? File::directory : File::file));
+				daxia::string path = path_ + "/" + ent->d_name;
+				lstat(path.GetString(), &statbuf);
+				auto file = std::shared_ptr<File>(new File(path.GetString(), S_ISDIR(statbuf.st_mode) ? File::directory : File::file));
 				file->size_ = statbuf.st_size;
 				//file->createTime_ = statbuf.st_ctime;
 				file->accessTime_ = statbuf.st_atime;

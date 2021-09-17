@@ -32,12 +32,14 @@ namespace daxia
 					directory
 				};
 			public:
-				File(const char* path, Type type = file);
-				File(const wchar_t* path, Type type = file);
+				File(const char* path);
+				File(const wchar_t* path);
 				~File();
+			private:
+				File(const char* path, Type type);
+				File(const wchar_t* path, Type type);
 				//  Ù–‘
 			public:
-				bool IsExists() const;
 				Type FileType() const;
 				size_t Size() const;
 				const daxia::wstring Path() const;
@@ -53,8 +55,11 @@ namespace daxia
 				bool Move(const wchar_t* path) const;
 				bool Copy(const char* path) const;
 				bool Copy(const wchar_t* path) const;
-				bool Create() const;
 				bool Delete() const;
+				static bool IsExists(const char* path);
+				static bool IsExists(const wchar_t* path);
+				static File Create(const char* path, Type type);
+				static File Create(const wchar_t* path, Type type);
 
 				// ∂¡°¢–¥
 			public:
@@ -67,6 +72,8 @@ namespace daxia
 				daxia::system::DateTime createTime_;
 				daxia::system::DateTime accessTime_;
 				daxia::system::DateTime writeTime_;
+			private:
+				void init(const wchar_t* path);
 			};
 		}
 	}
