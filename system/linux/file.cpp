@@ -247,11 +247,12 @@ namespace daxia
 					len = len < datalen - pos ? len : datalen - pos;
 
 					ifs.seekg(pos, ifs.beg);
-					if (ifs.read(buffer.GetBuffer(len), len))
+					if (!ifs.read(buffer.GetBuffer(len), len))
 					{
-						result = true;
+						buffer.ReSize(ifs.gcount());
 					}
 
+					result = true;
 					ifs.close();
 				}
 

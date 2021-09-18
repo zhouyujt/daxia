@@ -241,6 +241,7 @@ namespace daxia
 				DWORD dwRead = 0;
 				if (::ReadFile(file, buffer.GetBuffer(len), len, &dwRead, NULL))
 				{
+					buffer.ReSize(dwRead);
 					result = true;
 				}
 
