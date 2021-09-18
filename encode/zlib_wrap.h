@@ -3,7 +3,7 @@
 * Copyright (c) 2021 漓江里的大虾.
 * All rights reserved.
 *
-* \file zlib.h
+* \file zlib_wrap.h
 * \author 漓江里的大虾
 * \date 九月 2021
 *
@@ -27,12 +27,14 @@ namespace daxia
 			static daxia::buffer Marshal(const void* data, size_t size);
 			static daxia::buffer Marshal(const daxia::string& str);
 			// 压缩文件/文件夹
-			static void MarshalFile(const daxia::string& filename, const daxia::string& destination);
+			static bool MarshalFile(const daxia::string& source, const daxia::string& destination);
 			// 解压内存数据
 			static daxia::buffer Unmarshal(const void* data, size_t size);
 			static daxia::buffer Unmarshal(const daxia::string& str);
 			// 解压文件/文件夹
-			static daxia::buffer UnmarshalFile(const daxia::string& filename, const daxia::string& destination);
+			static bool UnmarshalFile(const daxia::string& source, const daxia::string& destination);
+		private:
+			static bool marshalFile(const daxia::string& source, const daxia::string& destination, const daxia::string& root, bool trunc);
 		};
 	}
 }

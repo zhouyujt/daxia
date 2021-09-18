@@ -14,6 +14,7 @@
 #include "../encode/uuid.h"
 #include "../encode/hex.h"
 #include "../encode/url.h"
+#include "../encode/zlib_wrap.h"
 
 // reflect
 #include "../reflect/reflect.hpp"
@@ -65,6 +66,7 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,system.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,sqlite3.lib)))
+#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,zlib.lib)))
 
 #undef dxPATH
 #undef dxPATH2

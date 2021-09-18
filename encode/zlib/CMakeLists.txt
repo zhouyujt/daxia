@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(encode)
+project(zlib)
 
 file(GLOB local_source
 "zlib/*.h"
