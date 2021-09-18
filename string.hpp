@@ -975,6 +975,11 @@ namespace daxia
 		buffer(){}
 		buffer(const char* str) : string(str){}
 		buffer(const char* str, size_t count) : string(str, count) {}
+	public:
+		void ReSize(size_t size)
+		{
+			static_cast<std::string&>(*this).resize(size);
+		}
 	};
 #ifdef UNICODE
 	typedef wstring tstring;
