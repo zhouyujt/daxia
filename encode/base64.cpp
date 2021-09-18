@@ -48,23 +48,7 @@ namespace daxia
 
 		daxia::string Base64::Unmarshal(const char* str)
 		{
-			using namespace boost::archive::iterators;
-			typedef transform_width<binary_from_base64<std::string::const_iterator>, 8, 6> Base64DecodeIter;
-
-			std::stringstream result;
-			std::string temp(str);
-			if (temp.length() % 4 == 0)
-			{
-				try
-				{
-					copy(Base64DecodeIter(temp.begin()), Base64DecodeIter(temp.end()), std::ostream_iterator<char>(result));
-				}
-				catch (...)
-				{
-				}
-			}
-			
-			return result.str();
+			return Unmarshal(std::string(str));
 		}
 
 		daxia::string Base64::Unmarshal(const std::string& str)
