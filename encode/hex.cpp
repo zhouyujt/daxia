@@ -23,8 +23,8 @@ namespace daxia
 			const char* pt = table_.GetString();
 			for (size_t i = 0; i < size; ++i)
 			{
-				pr[i * 2] = pt[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) >> 4];
-				pr[i * 2 + 1] = pt[static_cast<unsigned char>((*reinterpret_cast<const unsigned char*>(data)+i)) & 0x0f];
+				pr[i * 2] = pt[*(reinterpret_cast<const unsigned char*>(data)+i) >> 4];
+				pr[i * 2 + 1] = pt[*(reinterpret_cast<const unsigned char*>(data)+i) & 0x0f];
 			}
 			
 			return result;
@@ -44,6 +44,7 @@ namespace daxia
 				size_t pos = table_.Find(pch[i]);
 				if (pos == -1)
 				{
+					result.Empty();
 					break;
 				}
 
