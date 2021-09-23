@@ -127,6 +127,8 @@ namespace daxia
 
 			bool File::Delete() const
 			{
+				if (path_.IsEmpty()) return false;
+
 				if (type_ == file)
 				{
 					return ::DeleteFileW(path_.GetString()) != 0;
