@@ -206,6 +206,7 @@ using  daxia::reflect::Reflect;
 	XX(pmr, "application/x-perfmon")					\
 	XX(pmw, "application/x-perfmon")					\
 	XX(pnm, "image/x-portable-anymap")					\
+	XX(png, "image/png")								\
 	XX(pot, "application/vnd.ms-powerpoint")			\
 	XX(ppm, "image/x-portable-pixmap")					\
 	XX(pps, "application/vnd.ms-powerpoint")			\
