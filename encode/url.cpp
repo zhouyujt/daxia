@@ -60,6 +60,10 @@ namespace daxia
 						i += 2;
 					}
 				}
+				else if (ch == '+')
+				{
+					result += ' ';
+				}
 				else
 				{
 					result += ch;
