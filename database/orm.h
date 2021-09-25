@@ -149,7 +149,7 @@ namespace daxia
 			{
 				using namespace daxia::reflect;
 
-				auto layout = Reflect<ValueType>().Layout();
+				auto layout = Reflect<ValueType>().GetLayoutFast();
 				return delette(layout, &obj, condition);
 			}
 

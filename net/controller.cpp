@@ -97,7 +97,7 @@ namespace daxia
 				Response().ContentType = type;
 				
 				std::ifstream ifs;
-				ifs.open(filename);
+				ifs.open(filename,std::ios::binary);
 				if (ifs.is_open())
 				{
 					ifs.seekg(0, ifs.end);
