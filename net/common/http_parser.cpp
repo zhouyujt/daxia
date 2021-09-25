@@ -52,12 +52,18 @@ namespace daxia
 
 				// 获取起始行各个参数并校验
 				daxia::string startLine = header.Left(startLineEndPos);
-				startLine = daxia::encode::Url::Unmarshal(startLine);
 				std::vector<daxia::string> params;
 				startLine.Split(" ", params);
+				startLine = daxia::encode::Url::Unmarshal(startLine);
 
 				// 校验参数个数
 				if (params.size() != RequstLineIndex_End && params.size() != ResponseLineIndex_End) return -1;
+
+				// 参数还原url编码
+				for (auto iter = params.begin(); iter != params.end(); ++iter)
+				{
+					*iter = daxia::encode::Url::Unmarshal(*iter);
+				}
 
 				// 获取整个头
 				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
