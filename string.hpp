@@ -285,7 +285,7 @@ namespace daxia
 		void cast(float& v) const;
 		void cast(double& v) const;
 		void cast(long double& v) const;
-	private:
+	protected:
 		std::basic_string<Elem, Traits, Alloc> v_;
 		bool utf8_;
 	private:
@@ -975,6 +975,22 @@ namespace daxia
 		buffer(){}
 		buffer(const char* str) : string(str){}
 		buffer(const char* str, size_t count) : string(str, count) {}
+		buffer(string&& str) : string(str){}
+		buffer(buffer&& buf) : string(buf){}
+	public:
+		buffer& operator=(const buffer& buf)
+		{
+			v_ = buf.v_;
+			utf8_ = buf.utf8_;
+			return *this;
+		}
+
+		buffer& operator=(buffer&& buf)
+		{
+			v_.swap(buf.v_);
+			utf8_ = buf.utf8_;
+			return *this;
+		}
 	public:
 		void ReSize(size_t size)
 		{
