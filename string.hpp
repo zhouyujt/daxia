@@ -884,8 +884,15 @@ namespace daxia
 		}
 		else
 		{
-			T v;
-			cast(v);
+			T v = 0;
+			try
+			{
+				cast(v);
+			}
+			catch (...)
+			{
+			}
+
 			return v;
 		}
 	}
