@@ -514,7 +514,14 @@ namespace daxia
 	template<class Elem, class Traits, class Alloc>
 	String_base<Elem, Traits, Alloc> daxia::String_base<Elem, Traits, Alloc>::Right(size_t count) const
 	{
-		return String_base<Elem, Traits, Alloc>(v_.substr(v_.size() - count, count));
+		if (v_.size() < count)
+		{
+			return v_;
+		}
+		else
+		{
+			return String_base<Elem, Traits, Alloc>(v_.substr(v_.size() - count, count));
+		}
 	}
 
 
