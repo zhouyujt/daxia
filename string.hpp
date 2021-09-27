@@ -380,18 +380,21 @@ namespace daxia
 		}
 
 		size_t newLength = v_.size();
-		if (newLength > 1024 * 1024 * 1024)
-		{
-			newLength += 1024 * 1024;
-		}
-		else
-		{
-			newLength += newLength / 2;
-		}
-
 		if (newLength < length)
 		{
-			newLength = length;
+			if (newLength > 1024 * 1024 * 1024)
+			{
+				newLength += 1024 * 1024;
+			}
+			else
+			{
+				newLength += newLength / 2;
+			}
+
+			if (newLength < length)
+			{
+				newLength = length;
+			}
 		}
 
 		v_.resize(newLength);
