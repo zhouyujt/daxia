@@ -989,6 +989,7 @@ namespace daxia
 		buffer(){}
 		buffer(const char* str) : string(str){}
 		buffer(const char* str, size_t count) : string(str, count) {}
+		buffer(const buffer& buf) : string(buf){}
 		buffer(string&& str) : string(str){}
 		buffer(buffer&& buf) : string(buf){}
 	public:

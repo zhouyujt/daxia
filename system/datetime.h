@@ -62,6 +62,10 @@ namespace daxia
 			DateTime operator-(const DateTimeSpan& span) const;
 			DateTimeSpan operator-(const DateTime& dt) const;
 			DateTime& operator-=(const DateTimeSpan& span);
+			bool operator>(const DateTime& dt) const;
+			bool operator<(const DateTime& dt) const;
+			bool operator==(const DateTime& dt) const;
+			bool operator!=(const DateTime& dt) const;
 			friend std::ostream& operator<<(std::ostream& os, const DateTime& dt)
 			{
 				os << dt.ToString();

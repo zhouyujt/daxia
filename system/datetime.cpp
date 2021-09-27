@@ -142,5 +142,25 @@ namespace daxia
 			tp_ -= span.duration_;
 			return *this;
 		}
+
+		bool DateTime::operator>(const DateTime& dt) const
+		{
+			return tp_ > dt.tp_;
+		}
+
+		bool DateTime::operator<(const DateTime& dt) const
+		{
+			return tp_ < dt.tp_;
+		}
+
+		bool DateTime::operator==(const DateTime& dt) const
+		{
+			return tp_ == dt.tp_;
+		}
+
+		bool DateTime::operator!=(const DateTime& dt) const
+		{
+			return tp_ != dt.tp_;
+		}
 	}
 }
