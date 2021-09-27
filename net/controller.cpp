@@ -101,14 +101,37 @@ namespace daxia
 				if (ifs.is_open())
 				{
 					ifs.seekg(0, ifs.end);
-					size_t len = static_cast<size_t>(ifs.tellg());
+					size_t total = static_cast<size_t>(ifs.tellg());
 					ifs.seekg(0, ifs.beg);
 
-					daxia::buffer buffer;
-					ifs.read(buffer.GetBuffer(len), len);
-					ifs.close();
+					common::PageInfo pi;
+					pi.total = total;
+					pi.startPos = 0;
+					pi.endPos = 0;
 
-					context_.lock()->WriteMessage(0,buffer);
+					daxia::buffer buffer;
+					const size_t maxlen = common::MaxBufferSize / 2;
+					size_t wrote = 0;
+					while (wrote < pi.total)
+					{
+						size_t readlen = pi.total - wrote < maxlen ? pi.total - wrote : maxlen;
+						if (ifs.read(buffer.GetBuffer(readlen), readlen))
+						{
+							buffer.ReSize(ifs.gcount());
+
+							pi.endPos += buffer.GetLength() - 1;
+							context_.lock()->WriteMessage(0, buffer, &pi);
+							pi.startPos = pi.endPos + 1;
+							++pi.endPos;
+							wrote += buffer.GetLength();
+						}
+						else
+						{
+							break;
+						}
+					}
+
+					ifs.close();
 				}
 				else
 				{
