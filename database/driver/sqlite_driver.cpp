@@ -46,7 +46,13 @@ namespace daxia
 
 			bool SqliteDriver::Connnect()
 			{
-				return sqlite3_open(db_.ToUtf8().GetString(), &sqlite_) == SQLITE_OK;
+				if (sqlite3_open(db_.ToUtf8().GetString(), &sqlite_) == SQLITE_OK)
+				{
+					sqlite3_busy_timeout(sqlite_, 5000);
+					return true;
+				}
+
+				return false;
 			}
 
 			void SqliteDriver::ConnnectAsync(connect_callback cb)
