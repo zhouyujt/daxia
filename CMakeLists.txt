@@ -30,6 +30,14 @@ ENDIF(CMAKE_CL_64)
 #SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -W3 -g -ggdb ")
 #SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -W3")
 
+if(MSVC AND MT STREQUAL 1)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #----------|
+        $<$<CONFIG:Debug>:/MTd>#--|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+    )
+endif()
+
 find_package(Boost)
 include_directories(${Boost_INCLUDE_DIRS})
 #find_package(MySQL)
