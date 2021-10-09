@@ -19,6 +19,7 @@
 #include <stdarg.h>
 #include <ostream>
 #include "encode/strconv.h"
+#include "encode/hash.hpp"
 
 #ifndef _T
 #	ifdef UNICODE
@@ -751,7 +752,7 @@ namespace daxia
 	template<class Elem, class Traits, class Alloc>
 	std::size_t daxia::String_base<Elem, Traits, Alloc>::Hash() const
 	{
-		return std::hash<std::basic_string<Elem, Traits, Alloc>>()(v_);
+		return daxia::encode::Hash::Marshal(v_.c_str(), v_.size());
 	}
 
 	template<class Elem, class Traits, class Alloc>
