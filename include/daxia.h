@@ -55,9 +55,17 @@
 #endif // !_WIN64
 
 #ifdef _DEBUG
-#	define dxPATH2 debug/
+#	ifdef MT
+#		define dxPATH2 debugMT/
+#	else
+#		define dxPATH2 debug/
+#	endif
 #else
-#	define dxPATH2 release/Release/
+#	ifdef MT
+#		define dxPATH2 releaseMT/
+#	else
+#		define dxPATH2 release/
+#	endif
 #endif // !_DEBUG
 
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,net.lib)))
