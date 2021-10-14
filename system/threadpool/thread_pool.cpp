@@ -50,7 +50,7 @@ namespace daxia
 			threads_.clear();
 		}
 
-		void ThreadPool::Dispathch(std::function<void()> work)
+		void ThreadPool::Dispatch(std::function<void()> work)
 		{
 			ios_.post(work);
 		}

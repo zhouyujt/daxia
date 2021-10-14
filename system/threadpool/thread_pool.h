@@ -3,7 +3,7 @@
 * Copyright (c) 2021 漓江里的大虾.
 * All rights reserved.
 *
-* \file datetime.h
+* \file thread_pool.h
 * \author 漓江里的大虾
 * \date 八月 2021
 *
@@ -36,7 +36,7 @@ namespace daxia
 
 			// 分发一个任务。线程池将自动寻找一个空闲的线程执行该任务
 			// work: 需要执行的任务
-			void Dispathch(std::function<void()> work);
+			void Dispatch(std::function<void()> work);
 		public:
 			// 获取CPU核心数量
 			static size_t GetCpuCoreCount();
