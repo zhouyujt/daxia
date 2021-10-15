@@ -89,11 +89,6 @@ namespace daxia
 				daxia::string type = MIME_HELPER().Find(extension);
 				if (type.IsEmpty())
 				{
-					ServeNone(404);
-					return;
-				}
-				else
-				{
 					type = MIME_HELPER().Find("bin");
 				}
 
