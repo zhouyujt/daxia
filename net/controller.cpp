@@ -85,12 +85,16 @@ namespace daxia
 					return;
 				}
 
-				daxia::string extension = filename.Mid(pos + 1, -1);
+				daxia::string extension = filename.Mid(pos + 1, -1).MakeLower();
 				daxia::string type = MIME_HELPER().Find(extension);
 				if (type.IsEmpty())
 				{
 					ServeNone(404);
 					return;
+				}
+				else
+				{
+					type = MIME_HELPER().Find("bin");
 				}
 
 				Response().StartLine.StatusCode = "200";
@@ -112,22 +116,30 @@ namespace daxia
 					daxia::buffer buffer;
 					const size_t maxlen = common::MaxBufferSize / 2;
 					size_t wrote = 0;
-					while (wrote < pi.total)
-					{
-						size_t readlen = pi.total - wrote < maxlen ? pi.total - wrote : maxlen;
-						if (ifs.read(buffer.GetBuffer(readlen), readlen))
-						{
-							buffer.ReSize(ifs.gcount());
 
-							pi.endPos += buffer.GetLength() - 1;
-							context_.lock()->WriteMessage(0, buffer, &pi);
-							pi.startPos = pi.endPos + 1;
-							++pi.endPos;
-							wrote += buffer.GetLength();
-						}
-						else
+					if (pi.total == 0)
+					{
+						context_.lock()->WriteMessage(0, buffer, &pi);
+					}
+					else
+					{
+						while (wrote < pi.total)
 						{
-							break;
+							size_t readlen = pi.total - wrote < maxlen ? pi.total - wrote : maxlen;
+							if (ifs.read(buffer.GetBuffer(readlen), readlen))
+							{
+								buffer.ReSize(ifs.gcount());
+
+								pi.endPos += buffer.GetLength() - 1;
+								context_.lock()->WriteMessage(0, buffer, &pi);
+								pi.startPos = pi.endPos + 1;
+								++pi.endPos;
+								wrote += buffer.GetLength();
+							}
+							else
+							{
+								break;
+							}
 						}
 					}
 
