@@ -198,7 +198,7 @@ namespace daxia
 				if (headerLen == -1) return;
 
 				client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
-				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, common::HttpParser::ResponseHeader());
+				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, daxia::net::HttpController::DefaultResponser);
 			}
 
 			common::HttpParser::RequestHeader* requestHeader = client->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
@@ -240,14 +240,52 @@ namespace daxia
 					const_cast<common::Buffer&>(data).Page().total -= header->PacketLen;
 				}
 
-				if (msgID == static_cast<int>(methodGetHelp.Hash())) { if (iter->second->Get) iter->second->Get(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodPostHelp.Hash())){ if (iter->second->Post) iter->second->Post(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodPutHelp.Hash())){ if (iter->second->Put)  iter->second->Put(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodHeadHelp.Hash())){ if (iter->second->Head) iter->second->Head(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodDeleteHelp.Hash())){ if (iter->second->Delete)  iter->second->Delete(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodOptionsHelp.Hash())){ if (iter->second->Options) iter->second->Options(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodTraceHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, headerLen != 0 ? buffer : data); }
-				else if (msgID == static_cast<int>(methodConnectHelp.Hash())){ if (iter->second->Trace) iter->second->Trace(client.get(), this, headerLen != 0 ? buffer : data); }
+#define CallHttpMethod(xxx) \
+if(iter->second->xxx)\
+{\
+	iter->second->xxx(client.get(), this, headerLen != 0 ? buffer : data);\
+}\
+else\
+{\
+	if (daxia::net::HttpController::Default##xxx)\
+	{\
+		daxia::net::HttpController::Default##xxx(client.get(), this, headerLen != 0 ? buffer : data);\
+	}\
+}
+
+				if (msgID == static_cast<int>(methodGetHelp.Hash()))
+				{
+					CallHttpMethod(Get);
+				}
+				else if (msgID == static_cast<int>(methodPostHelp.Hash()))
+				{ 
+					CallHttpMethod(Post);
+				}
+				else if (msgID == static_cast<int>(methodPutHelp.Hash()))
+				{ 
+					CallHttpMethod(Put);
+					if (iter->second->Put)  iter->second->Put(client.get(), this, headerLen != 0 ? buffer : data);
+				}
+				else if (msgID == static_cast<int>(methodHeadHelp.Hash()))
+				{ 
+					CallHttpMethod(Head);
+				}
+				else if (msgID == static_cast<int>(methodDeleteHelp.Hash()))
+				{ 
+					CallHttpMethod(Delete);
+				}
+				else if (msgID == static_cast<int>(methodOptionsHelp.Hash()))
+				{ 
+					CallHttpMethod(Options);
+				}
+				else if (msgID == static_cast<int>(methodTraceHelp.Hash()))
+				{ 
+					CallHttpMethod(Trace);
+				}
+				else if (msgID == static_cast<int>(methodConnectHelp.Hash()))
+				{ 
+					CallHttpMethod(Connect);
+				}
 
 				iter->second->ResetContext();
 			}
