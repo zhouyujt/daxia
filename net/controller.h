@@ -434,6 +434,16 @@ namespace daxia
 			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Connect;
 			virtual void InitMethods() = 0;
 		public:
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultGet;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultPost;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultPut;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultHead;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultDelete;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultOptions;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultTrace;
+			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultConnect;
+			static common::HttpParser::ResponseHeader DefaultResponser;
+		public:
 			void SetContext(std::shared_ptr<Session> session);
 			void ResetContext();
 		protected:

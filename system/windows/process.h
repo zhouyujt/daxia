@@ -116,7 +116,7 @@ namespace daxia
 				unsigned long getImageSize(const char* imageData) const;
 				void mapImage(const char* imageData, size_t len, char* address, size_t size) const;
 				void adjustRelocation(char* address) const;
-				void adjustImport(char* address) const;
+				bool adjustImport(char* address) const;
 				void setImageBase(char* address) const;
 				void callDllMain(char* address, int reason) const;
 			private:

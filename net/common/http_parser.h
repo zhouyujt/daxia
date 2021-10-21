@@ -562,6 +562,12 @@ namespace daxia
 					ref_string Expires{ "http:Expires" };
 					ref_string LastModified{ "http:Last-Modified" };
 
+					ref_string AccessControlAllowOrigin{ "http:Access-Control-Allow-Origin" };
+					ref_string AccessControlAllowMethods{ "http:Access-Control-Allow-Methods" };
+					ref_string AccessControlMaxAge{ "http:Access-Control-Max-Age" };
+					ref_string AccessControlAllowHeaders{ "http:Access-Control-Allow-Headers" };
+					ref_string AccessControlExposeHeaders{ "http:Access-Control-Expose-Headers" };
+					ref_string AccessControlAllowCredentials{ "http:Access-Control-Allow-Credentials" };
 				public:
 					size_t InitFromData(const void* data, size_t len);
 				};

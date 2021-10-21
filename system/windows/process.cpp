@@ -3,7 +3,7 @@
 #include <Psapi.h>
 #include "process.h"
 #include "path.h"
-
+#include <stdlib.h>
 namespace daxia
 {
 	namespace system
@@ -119,6 +119,7 @@ namespace daxia
 				unsigned long size = getImageSize(data);
 
 				// 分配内存
+
 				char* address = (char*)::VirtualAllocEx(handle_, NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 				if (address == nullptr) return nullptr;
 				memset(address, 0, size);
@@ -130,7 +131,11 @@ namespace daxia
 				adjustRelocation(address);
 
 				// 填写PE文件的导入表信息
-				adjustImport(address);
+				if (!adjustImport(address))
+				{
+					::VirtualFreeEx(handle_, address, 0, MEM_RELEASE);
+					return nullptr;
+				}
 
 				// 修改PE文件的加载基址IMAGE_NT_HEADERS.OptionalHeader.ImageBase
 				setImageBase(address);
@@ -328,7 +333,7 @@ namespace daxia
 				}
 			}
 
-			void Process::adjustImport(char* address) const
+			bool Process::adjustImport(char* address) const
 			{
 				// 获取Dos头
 				PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)address;
@@ -353,8 +358,7 @@ namespace daxia
 						//加载失败
 						if (NULL == module)
 						{
-							import++;
-							continue;
+							return false;
 						}
 					}
 
@@ -388,6 +392,8 @@ namespace daxia
 					}
 					import++;
 				}
+
+				return true;
 			}
 
 			void Process::setImageBase(char* address) const
