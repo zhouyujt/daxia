@@ -5,7 +5,7 @@
 *
 * \file coroutine_scheduler.h
 * \author 漓江里的大虾
-* \date 八月 2021
+* \date 十月 2021
 *
 * 协程调度器
 *
@@ -17,7 +17,9 @@
 #include <functional>
 #include <list>
 #include <mutex>
+#include <setjmp.h>
 #include "coroutine.h"
+#include "co_methods.h"
 #include "../system/threadpool/thread_pool.h"
 
 namespace daxia
@@ -30,15 +32,20 @@ namespace daxia
 			Scheduler();
 			~Scheduler();
 		public:
-			std::shared_ptr<Coroutine> StartCoroutine(std::function<void()> fiber);
+			std::shared_ptr<Coroutine> StartCoroutine(std::function<void(CoMethods& coMethods)> fiber);
 		private:
 			void run();
-			void addCoroutine(std::function<void()> fiber);
+			void addCoroutine(std::shared_ptr<Coroutine> coroutine);
 			void delCoroutine(std::shared_ptr<Coroutine> coroutine);
+			long long makeCoroutineId();
 		private:
 			daxia::system::ThreadPool threadPool_;
 			std::list<std::shared_ptr<Coroutine>> coroutines_;
 			std::mutex couroutinesLocker_;
+			std::mutex idLocker_;
+			bool run_;
+			static long long nextId_;
+			jmp_buf context_;
 		};
 	}
 }
