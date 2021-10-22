@@ -30,13 +30,13 @@ namespace daxia
 				handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
 
 				// ³¢ÊÔ¿ªÆôÈ¨ÏÞ
-				if (handle_ == nullptr)
-				{
-					Process process;
-					auto token = process.GetAccessToken();
-					token->EnablePrivilege(SE_DEBUG_NAME, true);
-					handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
-				}
+				//if (handle_ == nullptr)
+				//{
+				//	Process process;
+				//	auto token = process.GetAccessToken();
+				//	token->EnablePrivilege(SE_DEBUG_NAME, true);
+				//	handle_ = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, id);
+				//}
 
 				modules_ = std::shared_ptr<Process::Modules>(new Process::Modules(id_));
 				Modules::iterator iter = modules_->begin();
