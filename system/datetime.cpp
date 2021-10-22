@@ -31,9 +31,14 @@ namespace daxia
 
 		}
 
-		size_t DateTimeSpan::Count() const
+		size_t DateTimeSpan::Microseconds() const
 		{
-			return duration_.count();
+			return (std::chrono::duration_cast<std::chrono::microseconds>(duration_)).count();
+		}
+
+		size_t DateTimeSpan::Milliseconds() const
+		{
+			return (std::chrono::duration_cast<std::chrono::milliseconds>(duration_)).count();
 		}
 
 		DateTime::DateTime()

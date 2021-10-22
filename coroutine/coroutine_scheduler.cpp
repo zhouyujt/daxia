@@ -1,8 +1,7 @@
 #ifdef _WIN32
-#include <sdkddkver.h>
-#endif
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 #include "coroutine_scheduler.h"
-#include <iostream>
 namespace daxia
 {
 	namespace coroutine
@@ -12,6 +11,7 @@ namespace daxia
 		Scheduler::Scheduler()
 			: threadPool_(false)
 			, run_(true)
+			, mainFiber_(nullptr)
 		{
 			threadPool_.Start(1);
 			threadPool_.Dispatch(std::bind(&Scheduler::run,this));
@@ -25,7 +25,23 @@ namespace daxia
 
 		std::shared_ptr<daxia::coroutine::Coroutine> Scheduler::StartCoroutine(std::function<void(CoMethods& coMethods)> fiber)
 		{
-			std::shared_ptr<daxia::coroutine::Coroutine> co(new Coroutine(fiber, makeCoroutineId(), context_));
+			// 等待Scheduler::run启动完成
+			for (size_t i = 0; i < 10; ++i)
+			{
+				if (mainFiber_ == nullptr)
+				{
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			// 启动失败
+			if (mainFiber_ == nullptr) return nullptr;
+
+			std::shared_ptr<daxia::coroutine::Coroutine> co(new Coroutine(fiber, makeCoroutineId(), mainFiber_));
 			addCoroutine(co);
 
 			return co;
@@ -33,54 +49,91 @@ namespace daxia
 
 		void Scheduler::run()
 		{
-			setjmp(context_);
+			mainFiber_ = ConvertThreadToFiber(nullptr);
+
 			while (run_)
 			{
-				// 寻找需调度的协程
+				// 当没有协程需要调度时的睡眠时间（单位:毫秒）
+				const long idle = 10;
+
+				// 调度协程
 				// 调度规则：
-				// 1.新建的协程立即执行
-				// 2.优先调度挂起时间最久的协程
-				std::shared_ptr<daxia::coroutine::Coroutine> co;
+				// 新建立的协程立即执行
+				// 协程主动让出执行权
+				daxia::system::DateTime now = daxia::system::DateTime::Now();
+				std::shared_ptr<daxia::coroutine::Coroutine> work;
 				{
-					std::lock_guard<std::mutex> locker(couroutinesLocker_);
-					for (auto iter = coroutines_.begin(); iter != coroutines_.end(); ++iter)
+					couroutinesLocker_.lock();
+					for (auto iter = coroutines_.begin(); iter != coroutines_.end();)
 					{
-						// 新建的协程立即执行
-						if ((*iter)->wakeupCount_ == 0)
+						daxia::coroutine::Coroutine& co = *(*iter);
+
+						// 移除完成的协程
+						if (co.complete_)
 						{
-							co = *iter;
-							break;
+							iter = coroutines_.erase(iter);
+							continue;
 						}
 
-						if (co)
+						// 协程是否睡眠中
+						if (co.sleepMilliseconds_ > 0)
 						{
-							if ((*iter)->yieldTimestamp_ > co->yieldTimestamp_)
+							if ((now - co.sleepTimestamp_).Milliseconds() >= co.sleepMilliseconds_)
 							{
-								co = *iter;
+								work = *iter;
+
+								co.sleepMilliseconds_ = 0;
+
+								break;
+							}
+							else
+							{
+								++iter;
+								continue;
 							}
 						}
-						else
+
+						// 协程是否挂起中
+						if (co.yield_)
 						{
-							co = *iter;
+							co.yield_ = false;
+							++iter;
+							continue;
 						}
+
+						// 协程是否等待中
+						if (co.wakeupCondition_)
+						{
+							if (co.wakeupCondition_())
+							{
+								work = *iter;
+
+								// 清空等待状态
+								co.wakeupCondition_ = std::function<bool()>();
+
+								break;
+							}
+							else
+							{
+								++iter;
+								continue;
+							}
+						}
+
+						work = *iter;
+						break;
 					}
+					couroutinesLocker_.unlock();
 				}
 
-				if (co)
+				if (work)
 				{
-					if (co->wakeupCount_ == 0)
-					{
-						++co->wakeupCount_;
-						co->fiber_(co->methods_);
-					}
-					else
-					{
-						longjmp(co->context_, 2);
-					}
+					++work->wakeupCount_;
+					::SwitchToFiber(work->fiber_);
 				}
 				else
 				{
-					std::this_thread::sleep_for(std::chrono::milliseconds(50));
+					std::this_thread::sleep_for(std::chrono::milliseconds(idle));
 				}
 			}
 		}
@@ -115,3 +168,4 @@ namespace daxia
 
 	}
 }
+#endif

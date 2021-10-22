@@ -10,6 +10,7 @@
 * 协程调度器
 *
 */
+#ifdef _WIN32
 #ifndef __DAXIA_COROUTINE_COROUTINE_SCHEDULER_H
 #define __DAXIA_COROUTINE_COROUTINE_SCHEDULER_H
 
@@ -17,7 +18,6 @@
 #include <functional>
 #include <list>
 #include <mutex>
-#include <setjmp.h>
 #include "coroutine.h"
 #include "co_methods.h"
 #include "../system/threadpool/thread_pool.h"
@@ -45,9 +45,10 @@ namespace daxia
 			std::mutex idLocker_;
 			bool run_;
 			static long long nextId_;
-			jmp_buf context_;
+			void* mainFiber_;
 		};
 	}
 }
 
 #endif // !__DAXIA_COROUTINE_COROUTINE_SCHEDULER_H
+#endif // !_WIN32

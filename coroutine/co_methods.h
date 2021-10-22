@@ -14,7 +14,6 @@
 #ifndef __DAXIA_COROUTINE_COMETHODS_H
 #define __DAXIA_COROUTINE_COMETHODS_H
 #include <functional>
-#include <setjmp.h>
 
 namespace daxia
 {
@@ -26,16 +25,17 @@ namespace daxia
 		{
 			friend Coroutine;
 		protected:
-			CoMethods(jmp_buf& root,jmp_buf& context);
+			CoMethods(Coroutine* coroutine);
 			~CoMethods();
 		public:
 			// 睡眠指定的时间（单位:毫秒）
 			void CoSleep(size_t milliseconds);
+			// 放弃当前时间片
+			void CoYield();
 			// 挂起,当满足指定条件时被唤醒
-			void CoYield(std::function<void()> wakeupCondition);
+			void CoWait(std::function<bool()> wakeupCondition);
 		private:
-			jmp_buf& root_;
-			jmp_buf& context_;
+			Coroutine* couroutine_;
 		};
 	}
 }

@@ -35,7 +35,8 @@ namespace daxia
 			DateTimeSpan(int day, int hour, int minute, int second, int millisecond);
 			DateTimeSpan(const DateTimeSpan& dt);
 			~DateTimeSpan();
-			size_t Count() const;
+			size_t Microseconds() const;
+			size_t Milliseconds() const;
 		private:
 			std::chrono::system_clock::duration duration_;
 		};
