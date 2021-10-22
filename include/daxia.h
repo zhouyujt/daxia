@@ -33,7 +33,7 @@
 #include "../database/orm.h"
 
 // coroutine
-#include "../system/coroutine/coroutine_scheduler.h"
+#include "../system/coroutine.h"
 
 #include "../singleton.hpp"
 #include "../string.hpp"
