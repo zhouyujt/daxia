@@ -65,5 +65,4 @@ add_subdirectory(encode)
 add_subdirectory(reflect)
 add_subdirectory(database)
 add_subdirectory(system)
-add_subdirectory(coroutine)
 

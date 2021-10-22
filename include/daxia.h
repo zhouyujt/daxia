@@ -33,7 +33,7 @@
 #include "../database/orm.h"
 
 // coroutine
-#include "../coroutine/coroutine_scheduler.h"
+#include "../system/coroutine/coroutine_scheduler.h"
 
 #include "../singleton.hpp"
 #include "../string.hpp"
@@ -78,7 +78,6 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,sqlite3.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,zlib.lib)))
-#pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,coroutine.lib)))
 
 #undef dxPATH
 #undef dxPATH2
