@@ -36,7 +36,6 @@ namespace daxia
 		private:
 			void run();
 			void addCoroutine(std::shared_ptr<Coroutine> coroutine);
-			void delCoroutine(std::shared_ptr<Coroutine> coroutine);
 			long long makeCoroutineId();
 		private:
 			daxia::system::ThreadPool threadPool_;

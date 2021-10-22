@@ -144,19 +144,6 @@ namespace daxia
 			coroutines_.push_front(coroutine);
 		}
 
-		void Scheduler::delCoroutine(std::shared_ptr<Coroutine> coroutine)
-		{
-			std::lock_guard<std::mutex> locker(couroutinesLocker_);
-			for (auto iter = coroutines_.begin(); iter != coroutines_.end(); ++iter)
-			{
-				if ((*iter)->Id() == coroutine->Id())
-				{
-					coroutines_.erase(iter);
-					break;
-				}
-			}
-		}
-
 		long long Scheduler::makeCoroutineId()
 		{
 			std::lock_guard<std::mutex> locker(idLocker_);
