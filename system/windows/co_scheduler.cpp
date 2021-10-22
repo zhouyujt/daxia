@@ -77,6 +77,14 @@ namespace daxia
 								continue;
 							}
 
+							// 强制结束协程
+							if (co.terminate_)
+							{
+								::SetEvent(co.completeEvent_);
+								iter = coroutines_.erase(iter);
+								continue;
+							}
+
 							// 协程是否睡眠中
 							if (co.sleepMilliseconds_ > 0)
 							{
