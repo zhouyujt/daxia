@@ -3,7 +3,7 @@
 * Copyright (c) 2021 漓江里的大虾.
 * All rights reserved.
 *
-* \file datetime.h
+* \file thread_pool.h
 * \author 漓江里的大虾
 * \date 八月 2021
 *
@@ -15,6 +15,7 @@
 #include <functional>
 #include <thread>
 #include <vector>
+#include <future>
 #include <boost/asio.hpp>
 
 namespace daxia
@@ -24,26 +25,36 @@ namespace daxia
 		class ThreadPool
 		{
 		public:
-			ThreadPool(bool autoStart = true);
+			ThreadPool(size_t threadCount = 0 // 线程数量。如为0则为cpu核数*2
+				);
 			~ThreadPool();
 		public:
-			// 启动指定数量的线程，并等待Dispathch的工作任务
-			// count: 线程数量。推荐系统cpu核数 * ２
-			void Start(size_t count);
+			// 分发一个任务,该任务加入任务列表，线程池将自动寻找一个空闲的线程执行该任务
+			template<typename T>
+			std::future<T> Post(std::function<void()> task)
+			{
+				std::packaged_task<void()> pt(task);
+				ios_.post(pt);
+			}
 
-			// 停止所有的线程
-			void Stop();
-
-			// 分发一个任务。线程池将自动寻找一个空闲的线程执行该任务
-			// work: 需要执行的任务
-			void Dispathch(std::function<void()> work);
+			// 分发一个任务，如果调用此方法的线程为线程池中的线程则立即执行，否则同Post。
+			template<typename T>
+			std::future<T> Dispatch(std::function<void()> task)
+			{
+				std::packaged_task<void()> pt(task);
+				ios_.dispatch(std::ref(pt));
+			}
 		public:
 			// 获取CPU核心数量
 			static size_t GetCpuCoreCount();
 		private:
 			std::vector<std::thread> threads_;
 			boost::asio::io_service ios_;
+		private:
+			void start(size_t count);
+			void stop();
 		};
+
 	}
 }
 
