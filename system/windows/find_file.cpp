@@ -81,7 +81,7 @@ namespace daxia
 					// 排除已经遍历过的盘符
 					std::vector<daxia::wstring> strings;
 					drives.Split(L"\0", 1, strings);
-					int index = -1;
+					size_t index = -1;
 					for (size_t i = 0; i < strings.size(); ++i)
 					{
 						if (file_->Path() + L'\\' == strings[i])
@@ -109,7 +109,7 @@ namespace daxia
 						path.Replace(file_->Name().GetString(), L"");
 						path += data.cFileName;
 						file_ = std::shared_ptr<File>(new File(path.GetString(), data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? File::directory : File::file));
-						file_->size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+						file_->size_ = (data.nFileSizeHigh * (static_cast<size_t>(MAXDWORD) + 1)) + data.nFileSizeLow;
 						file_->createTime_ = data.ftCreationTime;
 						file_->accessTime_ = data.ftLastAccessTime;
 						file_->writeTime_ = data.ftLastWriteTime;
@@ -205,7 +205,7 @@ namespace daxia
 						::FindClose(handle);
 					});
 					auto file = std::shared_ptr<File>(new File((path_ + L"\\" + data.cFileName).GetString(), data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? File::directory : File::file));
-					file->size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+					file->size_ = (data.nFileSizeHigh * (static_cast<size_t>(MAXDWORD) + 1)) + data.nFileSizeLow;
 					file->createTime_ = data.ftCreationTime;
 					file->accessTime_ = data.ftLastAccessTime;
 					file->writeTime_ = data.ftLastWriteTime;

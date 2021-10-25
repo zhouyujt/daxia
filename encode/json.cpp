@@ -242,8 +242,6 @@ namespace daxia
 		void Json::getValueElement(daxia::reflect::Reflect_base* reflectBase, const boost::property_tree::ptree& root, bool utf8)
 		{
 			using namespace daxia::reflect;
-			typedef char unknow;
-			Reflect<std::vector<unknow>>* array = reinterpret_cast<Reflect<std::vector<unknow>>*>(reflectBase);
 			
 			reflectBase->ResizeArray(root.size());
 			size_t index = 0;

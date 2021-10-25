@@ -31,7 +31,7 @@ namespace daxia
 				friend CoScheduler;
 				friend CoMethods;
 			protected:
-				Coroutine(std::function<void(CoMethods& coMethods)> fiber, long long id, void* mainFiber);
+				Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void* mainFiber);
 			public:
 				~Coroutine();
 			public:

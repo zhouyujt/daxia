@@ -9,7 +9,7 @@ namespace daxia
 	{
 		namespace windows
 		{
-			Coroutine::Coroutine(std::function<void(CoMethods& coMethods)> fiber, long long id, void* mainFiber)
+			Coroutine::Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void* mainFiber)
 				: id_(id)
 				, wakeupCount_(0)
 				, complete_(false)

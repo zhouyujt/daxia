@@ -406,7 +406,7 @@ namespace daxia
 	template<class Elem, class Traits, class Alloc>
 	void daxia::String_base<Elem, Traits, Alloc>::ReleaseBuffer(size_t maxCount)
 	{
-		if (maxCount == -1 || maxCount > v_.size())
+		if (maxCount == (size_t)-1 || maxCount > v_.size())
 		{
 			maxCount = v_.size();
 		}
@@ -551,7 +551,7 @@ namespace daxia
 		}
 
 		size_t pos = Find(sub, start);
-		if (pos != -1)
+		if (pos != (size_t)-1)
 		{
 			size_t from = start;
 			size_t count = pos - start;
@@ -602,12 +602,13 @@ namespace daxia
 		{
 			Elem* buffer = GetBuffer();
 
-			int length = GetLength();
-			for (; count < length; ++count)
+			size_t length = GetLength();
+			for (size_t index = 0; index < length; ++index)
 			{
-				if (buffer[count] == oldch)
+				if (buffer[index] == oldch)
 				{
-					buffer[count] = newch;
+					buffer[index] = newch;
+					++count;
 				}
 			}
 		}
@@ -626,7 +627,7 @@ namespace daxia
 		size_t pos;
 		int count = 0;
 		size_t start = 0;
-		while ((pos = Find(oldstr, start)) != -1)
+		while ((pos = Find(oldstr, start)) != (size_t)-1)
 		{
 			++count;
 			buffer += Mid(start, pos - start);
@@ -729,7 +730,7 @@ namespace daxia
 		{
 			size_t newLength = oldLength - count;
 			Elem* buff = GetBuffer();
-			int copied = oldLength - (start + count);
+			size_t copied = oldLength - (start + count);
 			memmove(buff + start, buff + start + count, copied * sizeof(Elem));
 			ReleaseBuffer(newLength);
 		}
@@ -760,7 +761,7 @@ namespace daxia
 	{
 		strings.clear();
 		size_t pos = 0;
-		while (pos != -1)
+		while (pos != (size_t)-1)
 		{
 			String_base<Elem, Traits, Alloc> str = Tokenize(sub, pos);
 			if (!str.IsEmpty())

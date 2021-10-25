@@ -78,7 +78,7 @@ namespace daxia
 			{
 				daxia::string name;
 				size_t pos = path_.Rfind("/");
-				if (pos != -1)
+				if (pos != (size_t)-1)
 				{
 					name = path_.Mid(pos + 1,-1);
 				}
@@ -91,7 +91,7 @@ namespace daxia
 				daxia::string ext;
 				daxia::string name = Name();
 				size_t pos = name.Rfind(".");
-				if (pos != -1)
+				if (pos != (size_t)-1)
 				{
 					ext = name.Mid(pos,-1);
 				}
@@ -130,7 +130,7 @@ namespace daxia
 				int fout = open(path, O_WRONLY | O_CREAT, 0777);
 
 				char buff[1024];
-				int len = 0;
+				size_t len = 0;
 				while ((len = read(fin, buff, sizeof(buff))) > 0)
 				{
 					write(fout, buff, len);
@@ -191,7 +191,7 @@ namespace daxia
 						while (!path.IsEmpty())
 						{
 							size_t pos = path.Find(L'/');
-							if (pos == -1)
+							if (pos == (size_t)-1)
 							{
 								root += path;
 								path.Empty();
@@ -203,7 +203,6 @@ namespace daxia
 								root += floder;
 							}
 
-							int ret;
 							if (mkdir(root.GetString(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0)
 							{
 								if (errno != EEXIST)

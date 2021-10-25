@@ -83,7 +83,7 @@ namespace daxia
 		public:
 			static bool IsValidReflect(const void* addr);
 		private:
-			int typeflag_[4];
+			unsigned int typeflag_[4];
 		};// class reflect_helper
 
 		//////////////////////////////////////////////////////////////////////////

@@ -75,13 +75,9 @@ namespace daxia
 #ifdef _WIN32
 		DateTime::DateTime(const _FILETIME& ft)
 		{
-			LONGLONG  ll;
-
 			ULARGE_INTEGER ui;
 			ui.LowPart = ft.dwLowDateTime;
 			ui.HighPart = ft.dwHighDateTime;
-
-			ll = ft.dwHighDateTime << 32 + ft.dwLowDateTime;
 
 			std::time_t t = ((LONGLONG)(ui.QuadPart - 116444736000000000) / 10000000);
 			tp_ = std::chrono::system_clock::from_time_t(t);

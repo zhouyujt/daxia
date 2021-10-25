@@ -23,7 +23,7 @@ namespace daxia
 				run_ = false;
 			}
 
-			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)> fiber)
+			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)>&& fiber)
 			{
 				// 等待Scheduler::run启动完成
 				for (size_t i = 0; i < 10; ++i)
@@ -41,7 +41,7 @@ namespace daxia
 				// 启动失败
 				if (mainFiber_ == nullptr) return nullptr;
 
-				std::shared_ptr<Coroutine> co(new Coroutine(fiber, makeCoroutineId(), mainFiber_));
+				std::shared_ptr<Coroutine> co(new Coroutine(std::forward<std::function<void(CoMethods& coMethods)>>(fiber), makeCoroutineId(), mainFiber_));
 				addCoroutine(co);
 
 				return co;

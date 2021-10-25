@@ -34,7 +34,7 @@ namespace daxia
 				CoScheduler();
 				~CoScheduler();
 			public:
-				std::shared_ptr<Coroutine> StartCoroutine(std::function<void(CoMethods& coMethods)> fiber);
+				std::shared_ptr<Coroutine> StartCoroutine(std::function<void(CoMethods& coMethods)>&& fiber);
 			private:
 				void run();
 				void addCoroutine(std::shared_ptr<Coroutine> coroutine);

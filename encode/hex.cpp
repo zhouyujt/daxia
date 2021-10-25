@@ -42,7 +42,7 @@ namespace daxia
 			for (size_t i = 0; i < temp.GetLength(); ++i)
 			{
 				size_t pos = table_.Find(pch[i]);
-				if (pos == -1)
+				if (pos == (size_t)-1)
 				{
 					result.Empty();
 					break;
@@ -51,11 +51,11 @@ namespace daxia
 				if (i % 2 == 0)
 				{
 					++len;
-					pr[len - 1] = pos << 4;
+					pr[len - 1] = static_cast<char>(pos << 4);
 				}
 				else
 				{
-					pr[len - 1] |= pos;
+					pr[len - 1] |= static_cast<char>(pos);
 				}
 			}
 

@@ -112,7 +112,7 @@ namespace daxia
 
 			bool File::Move(const wchar_t* path) const
 			{
-				return ::MoveFile(path_.GetString(), path);
+				return ::MoveFile(path_.GetString(), path) == TRUE;
 			}
 
 			bool File::Copy(const char* path) const
@@ -122,7 +122,7 @@ namespace daxia
 
 			bool File::Copy(const wchar_t* path) const
 			{
-				return ::CopyFile(path_.GetString(), path, FALSE);
+				return ::CopyFile(path_.GetString(), path, FALSE) == TRUE;
 			}
 
 			bool File::Delete() const
@@ -147,12 +147,12 @@ namespace daxia
 
 			bool File::IsExists(const char* path)
 			{
-				return ::PathFileExistsA(path);
+				return ::PathFileExistsA(path) == TRUE;
 			}
 
 			bool File::IsExists(const wchar_t* path)
 			{
-				return ::PathFileExistsW(path);
+				return ::PathFileExistsW(path) == TRUE;
 			}
 
 			File File::Create(const char* p, Type type)
@@ -241,7 +241,7 @@ namespace daxia
 				}
 
 				DWORD dwRead = 0;
-				if (::ReadFile(file, buffer.GetBuffer(len), len, &dwRead, NULL))
+				if (::ReadFile(file, buffer.GetBuffer(len), static_cast<DWORD>(len), &dwRead, NULL))
 				{
 					buffer.ReSize(dwRead);
 					result = true;
@@ -259,7 +259,7 @@ namespace daxia
 				if (file == INVALID_HANDLE_VALUE) return false;
 
 				DWORD dwWrite = 0;
-				if (::WriteFile(file,buffer.GetString(),buffer.GetLength(),&dwWrite,NULL))
+				if (::WriteFile(file,buffer.GetString(),static_cast<DWORD>(buffer.GetLength()),&dwWrite,NULL))
 				{
 					result = true;
 				}
@@ -285,7 +285,7 @@ namespace daxia
 					path_ = std::move(newpath);
 
 					type_ = data.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY ? File::directory : type_ = File::file;
-					size_ = (data.nFileSizeHigh * (MAXDWORD + 1)) + data.nFileSizeLow;
+					size_ = (data.nFileSizeHigh * (static_cast<size_t>(MAXDWORD) + 1)) + data.nFileSizeLow;
 					createTime_ = data.ftCreationTime;
 					accessTime_ = data.ftLastAccessTime;
 					writeTime_ = data.ftLastWriteTime;

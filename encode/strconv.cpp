@@ -26,7 +26,7 @@ namespace daxia
 			if (old == nullptr) return r;
 		
 			size_t size = wcstombs(nullptr, str, 0);
-			if (size == -1) return r;
+			if (size == (size_t)-1) return r;
 
 			r.resize(size);
 			wcstombs(const_cast<char*>(r.c_str()), str, size);
@@ -58,7 +58,7 @@ namespace daxia
 			if (old == nullptr) return r;
 
 			size_t size = mbstowcs(nullptr, str, 0);
-			if (size == -1) return r;
+			if (size == (size_t)-1) return r;
 
 			r.resize(size);
 			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
@@ -90,7 +90,7 @@ namespace daxia
 			if (old == nullptr) return r;
 
 			size_t size = mbstowcs(nullptr, str, 0);
-			if (size == -1) return r;
+			if (size == (size_t)-1) return r;
 
 			r.resize(size);
 			mbstowcs(const_cast<wchar_t*>(r.c_str()), str, size);
@@ -137,7 +137,7 @@ namespace daxia
 			if (old == nullptr) return r;
 
 			size_t size = wcstombs(nullptr, str, 0);
-			if (size == -1) return r;
+			if (size == (size_t)-1) return r;
 
 			r.resize(size);
 			wcstombs(const_cast<char*>(r.c_str()), str, size);

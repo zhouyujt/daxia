@@ -92,7 +92,7 @@ namespace daxia
 				{
 					daxia::string path = file_->Path();
 					size_t pos = path.Rfind("/");
-					if (pos != -1)
+					if (pos != (size_t)-1)
 					{
 						path = path.Left(pos + 1);
 						path += ent->d_name;
@@ -149,7 +149,7 @@ namespace daxia
 			bool FindFile::iterator::operator==(const iterator& iter) const
 			{
 				if ((!file_ && !iter.file_)
-					|| file_ && iter.file_ && file_->Path() == iter.file_->Path() )
+					|| (file_ && iter.file_ && file_->Path() == iter.file_->Path()) )
 				{
 					return true;
 				}
