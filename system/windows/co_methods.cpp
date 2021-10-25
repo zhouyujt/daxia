@@ -34,9 +34,9 @@ namespace daxia
 				::SwitchToFiber(couroutine_->mainFiber_);
 			}
 
-			void CoMethods::CoWait(std::function<bool()> wakeupCondition)
+			void CoMethods::CoWait(const std::future<void>* future)
 			{
-				couroutine_->wakeupCondition_ = wakeupCondition;
+				couroutine_->wakeupCondition_ = future;
 				::SwitchToFiber(couroutine_->mainFiber_);
 			}
 		}

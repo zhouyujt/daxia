@@ -14,6 +14,7 @@
 #ifndef __DAXIA_SYSTEM_WINDOWS_COROUTINE_H
 #define __DAXIA_SYSTEM_WINDOWS_COROUTINE_H
 #include <functional>
+#include <future>
 #include "co_methods.h"
 #include "../datetime.h"
 
@@ -67,7 +68,7 @@ namespace daxia
 				// 挂起标志
 				bool yield_;
 				// 唤醒条件
-				std::function<bool()> wakeupCondition_;
+				const std::future<void>* wakeupCondition_;
 			private:
 				static void WINAPI fiberStartRoutine(LPVOID param);
 			};

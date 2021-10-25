@@ -12,7 +12,9 @@
 */
 #ifndef __DAXIA_SYSTEM_COROUTINE_H
 #define __DAXIA_SYSTEM_COROUTINE_H
+#ifdef _WIN32
 #include "windows/co_scheduler.h"
+#endif
 namespace daxia
 {
 	namespace system

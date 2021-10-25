@@ -18,6 +18,7 @@ namespace daxia
 				, terminate_(false)
 				, sleepMilliseconds_(0)
 				, yield_(false)
+				, wakeupCondition_(nullptr)
 			{
 				completeEvent_ = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 

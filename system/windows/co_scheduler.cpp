@@ -15,14 +15,12 @@ namespace daxia
 				, run_(true)
 				, mainFiber_(nullptr)
 			{
-				threadPool_.Start(1);
-				threadPool_.Dispatch(std::bind(&CoScheduler::run, this));
+				threadPool_.Post(std::bind(&CoScheduler::run, this));
 			}
 
 			CoScheduler::~CoScheduler()
 			{
 				run_ = false;
-				threadPool_.Stop();
 			}
 
 			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)> fiber)
@@ -114,12 +112,12 @@ namespace daxia
 							// 协程是否等待中
 							if (co.wakeupCondition_)
 							{
-								if (co.wakeupCondition_())
+								if (co.wakeupCondition_->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
 								{
 									work = *iter;
 
 									// 清空等待状态
-									co.wakeupCondition_ = std::function<bool()>();
+									co.wakeupCondition_ = nullptr;
 
 									break;
 								}
