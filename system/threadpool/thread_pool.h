@@ -15,6 +15,7 @@
 #include <functional>
 #include <thread>
 #include <vector>
+#include <future>
 #include <boost/asio.hpp>
 
 namespace daxia
@@ -24,26 +25,34 @@ namespace daxia
 		class ThreadPool
 		{
 		public:
-			ThreadPool(bool autoStart = true);
+			ThreadPool(size_t threadCount = 0 // 线程数量。如为0则为cpu核数*2
+				);
 			~ThreadPool();
 		public:
-			// 启动指定数量的线程，并等待Dispathch的工作任务
-			// count: 线程数量。推荐系统cpu核数 * ２
-			void Start(size_t count);
+			// 分发一个任务,该任务加入任务列表，线程池将自动寻找一个空闲的线程执行该任务
+			template<typename T>
+			void Post(std::packaged_task<T()>& task)
+			{
+				ios_.post(std::ref(task));
+			}
 
-			// 停止所有的线程
-			void Stop();
-
-			// 分发一个任务。线程池将自动寻找一个空闲的线程执行该任务
-			// work: 需要执行的任务
-			void Dispatch(std::function<void()> work);
+			// 分发一个任务，如果调用此方法的线程为线程池中的线程则立即执行，否则同Post。
+			template<typename T>
+			void Dispatch(std::packaged_task<T()>& task)
+			{
+				ios_.dispatch(std::ref(task));
+			}
 		public:
 			// 获取CPU核心数量
 			static size_t GetCpuCoreCount();
 		private:
 			std::vector<std::thread> threads_;
 			boost::asio::io_service ios_;
+		private:
+			void start(size_t count);
+			void stop();
 		};
+
 	}
 }
 

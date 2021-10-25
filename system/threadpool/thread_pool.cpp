@@ -8,20 +8,25 @@ namespace daxia
 	namespace system
 	{
 
-		ThreadPool::ThreadPool(bool autoStart /*= true*/)
+		ThreadPool::ThreadPool(size_t threadCount)
 		{
-			if (autoStart)
-			{
-				Start(GetCpuCoreCount() * 2);
-			}
+			threadCount = threadCount == 0 ? GetCpuCoreCount() * 2 : threadCount;
+			start(threadCount);	
 		}
 
 		ThreadPool::~ThreadPool()
 		{
-			Stop();
+			stop();
 		}
 
-		void ThreadPool::Start(size_t count)
+		size_t ThreadPool::GetCpuCoreCount()
+		{
+			size_t count = std::thread::hardware_concurrency();
+
+			return count == 0 ? 1 : count;
+		}
+
+		void ThreadPool::start(size_t count)
 		{
 			if (!threads_.empty()) return;
 
@@ -36,7 +41,7 @@ namespace daxia
 			}
 		}
 
-		void ThreadPool::Stop()
+		void ThreadPool::stop()
 		{
 			ios_.stop();
 			for (size_t i = 0; i < threads_.size(); ++i)
@@ -49,18 +54,5 @@ namespace daxia
 			ios_.reset();
 			threads_.clear();
 		}
-
-		void ThreadPool::Dispatch(std::function<void()> work)
-		{
-			ios_.post(work);
-		}
-
-		size_t ThreadPool::GetCpuCoreCount()
-		{
-			size_t count = std::thread::hardware_concurrency();
-
-			return count == 0 ? 1 : count;
-		}
-
 	}
 }
