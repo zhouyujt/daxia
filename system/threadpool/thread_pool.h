@@ -31,18 +31,16 @@ namespace daxia
 		public:
 			// 分发一个任务,该任务加入任务列表，线程池将自动寻找一个空闲的线程执行该任务
 			template<typename T>
-			std::future<T> Post(std::function<void()> task)
+			void Post(std::packaged_task<T()>& task)
 			{
-				std::packaged_task<void()> pt(task);
-				ios_.post(pt);
+				ios_.post(std::ref(task));
 			}
 
 			// 分发一个任务，如果调用此方法的线程为线程池中的线程则立即执行，否则同Post。
 			template<typename T>
-			std::future<T> Dispatch(std::function<void()> task)
+			void Dispatch(std::packaged_task<T()>& task)
 			{
-				std::packaged_task<void()> pt(task);
-				ios_.dispatch(std::ref(pt));
+				ios_.dispatch(std::ref(task));
 			}
 		public:
 			// 获取CPU核心数量
