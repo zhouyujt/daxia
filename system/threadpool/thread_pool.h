@@ -36,9 +36,9 @@ namespace daxia
 				ios_.post(std::ref(task));
 			}
 
-			void Post(std::function<void()> fun)
+			void Post(std::function<void()>&& fun)
 			{
-				ios_.post(std::move(fun));
+				ios_.post(std::forward<std::function<void()>>(fun));
 			}
 
 			// 分发一个任务，如果调用此方法的线程为线程池中的线程则立即执行，否则同Post。
@@ -48,9 +48,9 @@ namespace daxia
 				ios_.dispatch(std::ref(task));
 			}
 
-			void Dispatch(std::function<void()> fun)
+			void Dispatch(std::function<void()>&& fun)
 			{
-				ios_.dispatch(std::move(fun));
+				ios_.dispatch(std::forward<std::function<void()>>(fun));
 			}
 		public:
 			// 获取CPU核心数量
