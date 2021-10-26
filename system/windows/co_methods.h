@@ -17,7 +17,7 @@
 #include <functional>
 #include <future>
 
-#define FUTURE_CAST(x) reinterpret_cast<std::future<void>*>(&x)
+#define WAIT_FUTURE(future) [&](){return future.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;}
 
 namespace daxia
 {
@@ -38,8 +38,8 @@ namespace daxia
 				void CoSleep(size_t milliseconds);
 				// 放弃当前时间片
 				void CoYield();
-				// 挂起,当future状态为std::future_status::ready时恢复
-				void CoWait(const std::future<void>* future);
+				// 挂起,当满足指定条件时被唤醒
+				void CoWait(std::function<bool()>&& wakeupCondition);
 			private:
 				Coroutine* couroutine_;
 			};

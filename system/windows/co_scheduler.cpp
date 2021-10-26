@@ -25,23 +25,7 @@ namespace daxia
 
 			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)>&& fiber)
 			{
-				// 等待Scheduler::run启动完成
-				for (size_t i = 0; i < 10; ++i)
-				{
-					if (mainFiber_ == nullptr)
-					{
-						std::this_thread::sleep_for(std::chrono::milliseconds(10));
-					}
-					else
-					{
-						break;
-					}
-				}
-
-				// 启动失败
-				if (mainFiber_ == nullptr) return nullptr;
-
-				std::shared_ptr<Coroutine> co(new Coroutine(std::forward<std::function<void(CoMethods& coMethods)>>(fiber), makeCoroutineId(), mainFiber_));
+				std::shared_ptr<Coroutine> co(new Coroutine(std::forward<std::function<void(CoMethods& coMethods)>>(fiber), makeCoroutineId(), &mainFiber_));
 				addCoroutine(co);
 
 				return co;
@@ -49,13 +33,14 @@ namespace daxia
 
 			void CoScheduler::run()
 			{
+				// 当没有协程需要调度时的睡眠时间（单位:毫秒）
+				const long idle = 10;
+
+				// 设置主协程入口
 				mainFiber_ = ConvertThreadToFiber(nullptr);
 
 				while (run_)
 				{
-					// 当没有协程需要调度时的睡眠时间（单位:毫秒）
-					const long idle = 10;
-
 					// 调度协程
 					// 调度规则：
 					// 新建立的协程立即执行
@@ -112,12 +97,13 @@ namespace daxia
 							// 协程是否等待中
 							if (co.wakeupCondition_)
 							{
-								if (co.wakeupCondition_->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready)
+								if (co.wakeupCondition_())
 								{
 									work = *iter;
 
 									// 清空等待状态
-									co.wakeupCondition_ = nullptr;
+									std::function<bool()> empty;
+									co.wakeupCondition_.swap(empty);
 
 									break;
 								}

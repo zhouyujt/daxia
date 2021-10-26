@@ -9,7 +9,7 @@ namespace daxia
 	{
 		namespace windows
 		{
-			Coroutine::Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void* mainFiber)
+			Coroutine::Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void** mainFiber)
 				: id_(id)
 				, wakeupCount_(0)
 				, complete_(false)
@@ -22,7 +22,7 @@ namespace daxia
 			{
 				completeEvent_ = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
-				fiberStartRoutine_ = [&, fiber, mainFiber]()
+				fiberStartRoutine_ = [&, fiber]()
 				{
 					// 调用回调
 					fiber(methods_);
@@ -32,7 +32,7 @@ namespace daxia
 					::SetEvent(completeEvent_);
 
 					// 返回主协程
-					::SwitchToFiber(mainFiber);
+					::SwitchToFiber(*mainFiber_);
 				};
 
 				// 设置本协程入口点

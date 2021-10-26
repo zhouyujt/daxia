@@ -25,19 +25,19 @@ namespace daxia
 			{
 				couroutine_->sleepTimestamp_ = daxia::system::DateTime::Now();
 				couroutine_->sleepMilliseconds_ = milliseconds;
-				::SwitchToFiber(couroutine_->mainFiber_);
+				::SwitchToFiber(*couroutine_->mainFiber_);
 			}
 
 			void CoMethods::CoYield()
 			{
 				couroutine_->yield_ = true;
-				::SwitchToFiber(couroutine_->mainFiber_);
+				::SwitchToFiber(*couroutine_->mainFiber_);
 			}
 
-			void CoMethods::CoWait(const std::future<void>* future)
+			void CoMethods::CoWait(std::function<bool()>&& wakeupCondition)
 			{
-				couroutine_->wakeupCondition_ = future;
-				::SwitchToFiber(couroutine_->mainFiber_);
+				couroutine_->wakeupCondition_.swap(wakeupCondition);
+				::SwitchToFiber(*couroutine_->mainFiber_);
 			}
 		}
 	}

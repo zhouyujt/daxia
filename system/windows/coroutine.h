@@ -31,7 +31,7 @@ namespace daxia
 				friend CoScheduler;
 				friend CoMethods;
 			protected:
-				Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void* mainFiber);
+				Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void** mainFiber);
 			public:
 				~Coroutine();
 			public:
@@ -57,7 +57,7 @@ namespace daxia
 				// WIN32 API CreateFiber 返回的协程地址
 				void* fiber_;
 				// 主协程地址(WIN32 API CreateFiber 返回)
-				void* mainFiber_;
+				void** mainFiber_;
 			private:
 				// 强制结束标志
 				bool terminate_;
@@ -68,7 +68,7 @@ namespace daxia
 				// 挂起标志
 				bool yield_;
 				// 唤醒条件
-				const std::future<void>* wakeupCondition_;
+				std::function<bool()> wakeupCondition_;
 			private:
 				static void WINAPI fiberStartRoutine(LPVOID param);
 			};

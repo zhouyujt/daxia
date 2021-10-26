@@ -70,7 +70,7 @@ namespace daxia
 				// 挂起标志
 				bool yield_;
 				// 唤醒条件
-				const std::future<void>* wakeupCondition_;
+				std::function<bool()> wakeupCondition_;
 			private:
 				std::shared_ptr<char> stack_;
 				static void fiberStartRoutine(Coroutine* co);

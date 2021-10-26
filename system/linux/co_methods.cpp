@@ -32,9 +32,9 @@ namespace daxia
 				swapcontext(&couroutine_->ctx_, couroutine_->mainCtx_);
 			}
 
-			void CoMethods::CoWait(const std::future<void>* future)
+			void CoMethods::CoWait(std::function<bool()>&& wakeupCondition)
 			{
-				couroutine_->wakeupCondition_ = future;
+				couroutine_->wakeupCondition_.swap(wakeupCondition);
 				swapcontext(&couroutine_->ctx_, couroutine_->mainCtx_);
 			}
 		}
