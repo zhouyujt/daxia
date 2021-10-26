@@ -14,6 +14,8 @@
 #define __DAXIA_SYSTEM_COROUTINE_H
 #ifdef _WIN32
 #include "windows/co_scheduler.h"
+#else
+#include "linux/co_scheduler.h"
 #endif
 namespace daxia
 {
@@ -24,6 +26,9 @@ namespace daxia
 		using CoMethods = daxia::system::windows::CoMethods;
 		using Coroutine = daxia::system::windows::Coroutine;
 #else
+		using CoScheduler = daxia::system::linux::CoScheduler;
+		using CoMethods = daxia::system::linux::CoMethods;
+		using Coroutine = daxia::system::linux::Coroutine;
 #endif
 	}
 }

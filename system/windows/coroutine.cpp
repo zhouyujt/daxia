@@ -35,6 +35,7 @@ namespace daxia
 					::SwitchToFiber(mainFiber);
 				};
 
+				// 设置本协程入口点
 				fiber_ = ::CreateFiber(0, &Coroutine::fiberStartRoutine, this);
 			}
 
