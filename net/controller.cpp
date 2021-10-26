@@ -89,7 +89,7 @@ namespace daxia
 			{
 				// 获取后缀名
 				size_t pos = filename.Find(".");
-				if (pos == -1)
+				if (pos == (size_t)-1)
 				{
 					ServeNone(404);
 					return;
@@ -114,7 +114,7 @@ namespace daxia
 					ifs.seekg(0, ifs.beg);
 
 					common::PageInfo pi;
-					pi.total = total;
+					pi.total = static_cast<unsigned int>(total);
 					pi.startPos = 0;
 					pi.endPos = 0;
 
@@ -135,7 +135,7 @@ namespace daxia
 							{
 								buffer.ReSize(ifs.gcount());
 
-								pi.endPos += buffer.GetLength() - 1;
+								pi.endPos += static_cast<unsigned int>(buffer.GetLength()) - 1;
 								context_.lock()->WriteMessage(0, buffer, &pi);
 								pi.startPos = pi.endPos + 1;
 								++pi.endPos;

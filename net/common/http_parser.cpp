@@ -48,7 +48,7 @@ namespace daxia
 
 				// 获取起始行结束位置
 				size_t startLineEndPos = header.Find(CRLF);
-				if (startLineEndPos == -1) return -1;
+				if (startLineEndPos == (size_t)-1) return -1;
 
 				// 获取起始行各个参数并校验
 				daxia::string startLine = header.Left(startLineEndPos);
@@ -67,14 +67,14 @@ namespace daxia
 
 				// 获取整个头
 				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
-				if (headerEndPos == -1) return -1;
+				if (headerEndPos == (size_t)-1) return -1;
 
 				StartLine = params;
 
 				// 获取所有请求头信息
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
+				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != (size_t)-1)
 				{
 					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
 					size_t pos = 0;
@@ -105,7 +105,7 @@ namespace daxia
 			{
 				size_t packetLen = GeneralHeader::InitFromData(data, len, true);
 
-				if (packetLen != -1)
+				if (packetLen != (size_t)-1)
 				{
 					StartLine.Method = GeneralHeader::StartLine[RequstLineIndex_Method];
 					size_t pos = 0;
@@ -131,7 +131,7 @@ namespace daxia
 			{
 				size_t packetLen = GeneralHeader::InitFromData(data, len, false);
 
-				if (packetLen != -1)
+				if (packetLen != (size_t)-1)
 				{
 					StartLine.Version = GeneralHeader::StartLine[ResponseLineIndex_Version];
 					StartLine.StatusCode = GeneralHeader::StartLine[ResponseLineIndex_StatusCode];
@@ -218,7 +218,7 @@ namespace daxia
 
 					// 获取起始行结束位置
 					size_t startLineEndPos = header.Find(CRLF);
-					if (startLineEndPos == -1)
+					if (startLineEndPos == (size_t)-1)
 					{
 						if (len >= LIMIT_START_LINE_SIZE)
 						{
@@ -245,7 +245,7 @@ namespace daxia
 
 					// 获取整个头
 					size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
-					if (headerEndPos == -1)
+					if (headerEndPos == (size_t)-1)
 					{
 						if (len >= LIMIT_HEAD_SIZE)
 						{
@@ -267,7 +267,7 @@ namespace daxia
 					ContentLengtTag.MakeLower();
 					size_t lastLineEndPos = startLineEndPos;
 					size_t lineEndPos = -1;
-					while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
+					while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != (size_t)-1)
 					{
 						daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
 						size_t pos = 0;
@@ -294,8 +294,8 @@ namespace daxia
 					packetLen = MIN(len, packetLen);
 
 					buffer.Page().startPos = 0;
-					buffer.Page().endPos = packetLen - 1;
-					buffer.Page().total = headerEndPos + strlen(CRLFCRLF) + contentLength;
+					buffer.Page().endPos = static_cast<unsigned int>(packetLen) - 1;
+					buffer.Page().total = static_cast<unsigned int>(headerEndPos + strlen(CRLFCRLF) + contentLength);
 
 					msgID = static_cast<int>(params[0].MakeLower().Hash());
 
@@ -318,7 +318,7 @@ namespace daxia
 					len = MIN(lastPageInfo->total - lastPageInfo->endPos - 1, len);
 				
 					lastPageInfo->startPos = lastPageInfo->endPos + 1;
-					lastPageInfo->endPos = lastPageInfo->startPos + len - 1;
+					lastPageInfo->endPos = lastPageInfo->startPos + static_cast<unsigned int>(len) - 1;
 
 					buffer.Page() = *lastPageInfo;
 					buffer.Resize(len);
@@ -352,7 +352,7 @@ namespace daxia
 
 				// 获取起始行结束位置
 				size_t startLineEndPos = header.Find(CRLF);
-				if (startLineEndPos == -1)
+				if (startLineEndPos == (size_t)-1)
 				{
 					if (len >= LIMIT_START_LINE_SIZE)
 					{
@@ -376,7 +376,7 @@ namespace daxia
 
 				// 获取整个头
 				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
-				if (headerEndPos == -1)
+				if (headerEndPos == (size_t)-1)
 				{
 					if (len >= LIMIT_HEAD_SIZE)
 					{
@@ -397,7 +397,7 @@ namespace daxia
 				ContentLengtTag.MakeLower();
 				size_t lastLineEndPos = startLineEndPos;
 				size_t lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != -1)
+				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != (size_t)-1)
 				{
 					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
 					size_t pos = 0;

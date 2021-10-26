@@ -50,7 +50,7 @@ namespace daxia
 
 					unsigned char* pr = reinterpret_cast<unsigned char*>(&result);
 					unsigned char* pv = reinterpret_cast<unsigned char*>(&v);
-					for (int i = 0; i < sizeof(v); ++i)
+					for (size_t i = 0; i < sizeof(v); ++i)
 					{
 						pr[i] = pv[sizeof(v) - i - 1];
 					}

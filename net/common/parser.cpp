@@ -30,7 +30,7 @@ namespace daxia
 				}
 				else
 				{
-					const unsigned int maxContentLength = maxPacketLength - sizeof(PacketHead);
+					const unsigned int maxContentLength = static_cast<unsigned int>(maxPacketLength - sizeof(PacketHead));
 					for (unsigned int offset = 0; offset < static_cast<unsigned int>(len); offset += maxContentLength)
 					{
 						Buffer buffer;
@@ -44,7 +44,7 @@ namespace daxia
 							head.pageInfo.total = ByteOrder::hton(static_cast<unsigned int>(len));
 							buffer.Page().startPos = offset;
 							buffer.Page().endPos = offset + contentLength - 1;
-							buffer.Page().total = len;
+							buffer.Page().total = static_cast<unsigned int>(len);
 						}
 						else
 						{

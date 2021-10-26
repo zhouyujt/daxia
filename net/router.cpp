@@ -142,14 +142,14 @@ namespace daxia
 					{
 						if (session->GetLastReadTime().time_since_epoch().count() == 0)
 						{
-							if ((now - session->GetConnectTime()).count() >= interval)
+							if ((now - session->GetConnectTime()).count() >= static_cast<long>(interval))
 							{
 								session->Close();
 							}
 						}
 						else
 						{
-							if ((now - session->GetLastReadTime()).count() >= interval)
+							if ((now - session->GetLastReadTime()).count() >= static_cast<long>(interval))
 							{
 								session->Close();
 							}
@@ -195,7 +195,7 @@ namespace daxia
 				common::HttpParser::RequestHeader header;
 				headerLen = header.InitFromData(data, data.Size());
 
-				if (headerLen == -1) return;
+				if (headerLen == (size_t)-1) return;
 
 				client->SetUserData(SESSION_USERDATA_REQUEST_INDEX, header);
 				client->SetUserData(SESSION_USERDATA_RESPONSE_INDEX, daxia::net::HttpController::DefaultResponser);
@@ -226,18 +226,18 @@ namespace daxia
 				{
 					buffer = common::Buffer(data + headerLen, data.Size() - headerLen);
 					buffer.Page() = data.Page();
-					buffer.Page().startPos = buffer.Page().startPos == 0 ? 0 : buffer.Page().startPos - headerLen;
-					buffer.Page().endPos -= headerLen;
-					buffer.Page().total -= headerLen;
+					buffer.Page().startPos = buffer.Page().startPos == 0 ? 0 : buffer.Page().startPos - static_cast<unsigned int>(headerLen);
+					buffer.Page().endPos -= static_cast<unsigned int>(headerLen);
+					buffer.Page().total -= static_cast<unsigned int>(headerLen);
 				}
 				else
 				{
 					common::HttpParser::RequestHeader* header = client->GetUserData<common::HttpParser::RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
 					if (header == nullptr) return;
 
-					const_cast<common::Buffer&>(data).Page().startPos = data.Page().startPos == 0 ? 0 : data.Page().startPos - header->PacketLen;
-					const_cast<common::Buffer&>(data).Page().endPos -= header->PacketLen;
-					const_cast<common::Buffer&>(data).Page().total -= header->PacketLen;
+					const_cast<common::Buffer&>(data).Page().startPos = data.Page().startPos == 0 ? 0 : data.Page().startPos - static_cast<unsigned int>(header->PacketLen);
+					const_cast<common::Buffer&>(data).Page().endPos -= static_cast<unsigned int>(header->PacketLen);
+					const_cast<common::Buffer&>(data).Page().total -= static_cast<unsigned int>(header->PacketLen);
 				}
 
 #define CallHttpMethod(xxx) \
@@ -317,7 +317,7 @@ else\
 
 					// 获取后缀名
 					size_t pos = url.Find(".");
-					if (pos == -1)
+					if (pos == (size_t)-1)
 					{
 						serve404();
 						return;
@@ -343,7 +343,7 @@ else\
 						ifs.seekg(0, ifs.beg);
 
 						common::PageInfo pi;
-						pi.total = total;
+						pi.total = static_cast<unsigned int>(total);
 						pi.startPos = 0;
 						pi.endPos = 0;
 
@@ -357,7 +357,7 @@ else\
 							{
 								buffer.ReSize(ifs.gcount());
 
-								pi.endPos += buffer.GetLength() - 1;
+								pi.endPos += static_cast<unsigned int>(buffer.GetLength()) - 1;
 								client->WriteMessage(0, buffer, &pi);
 								pi.startPos = pi.endPos + 1;
 								++pi.endPos;

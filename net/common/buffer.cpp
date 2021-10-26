@@ -19,8 +19,8 @@ namespace daxia
 
 			Buffer::Buffer(size_t capacity)
 				: buff_(new char[capacity])
-				, capacity_(capacity)
 				, size_(0)
+				, capacity_(capacity)
 			{
 			}
 

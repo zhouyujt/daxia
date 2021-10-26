@@ -8,8 +8,8 @@ namespace daxia
 	namespace net
 	{
 		Session::Session(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id)
-			: onMessage_(onMessage)
-			, id_(id)
+			: id_(id)
+			, onMessage_(onMessage)
 		{
 			initSocket(sock);
 			SetParser(parser);

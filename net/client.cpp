@@ -69,7 +69,7 @@ namespace daxia
 
 		void Client::initHelper::startLogicThread()
 		{
-			int coreCount = getCoreCount();
+			//int coreCount = getCoreCount();
 
 			//for (int i = 0; i < coreCount * 2; ++i)
 			for (int i = 0; i < 1; ++i)
@@ -173,14 +173,14 @@ namespace daxia
 					time_point<system_clock, std::chrono::milliseconds> now = time_point_cast<std::chrono::milliseconds>(system_clock::now());
 					if (GetLastReadTime().time_since_epoch().count() == 0)
 					{
-						if ((now - GetConnectTime()).count() >= milliseconds * 2)
+						if ((now - GetConnectTime()).count() >= static_cast<long>(milliseconds) * 2)
 						{
 							Close();
 						}
 					}
 					else
 					{
-						if ((now - GetLastReadTime()).count() >= milliseconds * 2)
+						if ((now - GetLastReadTime()).count() >= static_cast<long>(milliseconds) * 2)
 						{
 							Close();
 						}
@@ -321,7 +321,7 @@ namespace daxia
 			if (hearbeatInterval_ != 0)
 			{
 				time_point<system_clock, milliseconds> now = time_point_cast<milliseconds>(system_clock::now());
-				if ((now - GetLastWriteTime()).count() >= hearbeatInterval_)
+				if ((now - GetLastWriteTime()).count() >= static_cast<long>(hearbeatInterval_))
 				{
 					WriteMessage(common::DefMsgID_Heartbeat,nullptr, 0);
 				}

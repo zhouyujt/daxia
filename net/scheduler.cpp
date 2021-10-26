@@ -319,7 +319,7 @@ namespace daxia
 					// 定时调度器
 					for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end();)
 					{
-						if ((beginTime - iter->timestamp).count() >= iter->duration)
+						if ((beginTime - iter->timestamp).count() >= static_cast<long>(iter->duration))
 						{
 							iter->f();
 							iter->timestamp = beginTime;
@@ -367,7 +367,7 @@ namespace daxia
 						// stop time
 						time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
 
-						if ((stopTime - beginTime).count() >= interval)
+						if ((stopTime - beginTime).count() >= static_cast<long>(interval))
 						{
 							break;
 						}
