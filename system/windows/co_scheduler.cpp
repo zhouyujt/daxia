@@ -11,7 +11,7 @@ namespace daxia
 			long long CoScheduler::nextId_ = 0;
 
 			CoScheduler::CoScheduler()
-				: threadPool_(false)
+				: threadPool_(1)
 				, run_(true)
 				, mainFiber_(nullptr)
 			{
@@ -23,9 +23,9 @@ namespace daxia
 				run_ = false;
 			}
 
-			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)>&& fiber)
+			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void()>&& fiber)
 			{
-				std::shared_ptr<Coroutine> co(new Coroutine(std::forward<std::function<void(CoMethods& coMethods)>>(fiber), makeCoroutineId(), &mainFiber_));
+				std::shared_ptr<Coroutine> co(new Coroutine(std::forward<std::function<void()>>(fiber), makeCoroutineId(), &mainFiber_));
 				addCoroutine(co);
 
 				return co;

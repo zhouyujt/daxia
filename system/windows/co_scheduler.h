@@ -19,7 +19,6 @@
 #include <list>
 #include <mutex>
 #include "coroutine.h"
-#include "co_methods.h"
 #include "../threadpool/thread_pool.h"
 
 namespace daxia
@@ -34,7 +33,7 @@ namespace daxia
 				CoScheduler();
 				~CoScheduler();
 			public:
-				std::shared_ptr<Coroutine> StartCoroutine(std::function<void(CoMethods& coMethods)>&& fiber);
+				std::shared_ptr<Coroutine> StartCoroutine(std::function<void()>&& fiber);
 			private:
 				void run();
 				void addCoroutine(std::shared_ptr<Coroutine> coroutine);

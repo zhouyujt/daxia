@@ -7,20 +7,31 @@ namespace daxia
 		namespace linux
 		{
 			long long CoScheduler::nextId_ = 0;
+			pthread_key_t CoScheduler::currCoroutineKey_;
+			std::once_flag CoScheduler::onceCreateKeyFlag_;
 
 			CoScheduler::CoScheduler()
-				: threadPool_(false)
+				: threadPool_(1)
 				, run_(true)
 			{
 				threadPool_.Post(std::bind(&CoScheduler::run, this));
+
+				// 创建线程局部变量，保存当前运行的协程，以便在this_coroutine中可以正确识别当前的协程
+				std::call_once(onceCreateKeyFlag_, [&]()
+					{
+						pthread_key_create(&currCoroutineKey_, nullptr);
+					});
 			}
 
 			CoScheduler::~CoScheduler()
 			{
 				run_ = false;
+
+				// 等待停止所有协程
+				threadPool_.~ThreadPool();
 			}
 
-			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void(CoMethods& coMethods)> fiber)
+			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void()> fiber)
 			{
 				std::shared_ptr<Coroutine> co(new Coroutine(fiber, makeCoroutineId(), &mainCtx_));
 				addCoroutine(co);
@@ -116,6 +127,10 @@ namespace daxia
 
 					if (work)
 					{
+						// 设置当前协程
+						pthread_setspecific(currCoroutineKey_, work.get());
+
+						// 切换协程
 						++work->wakeupCount_;
 						swapcontext(&mainCtx_, &(work->ctx_));
 					}

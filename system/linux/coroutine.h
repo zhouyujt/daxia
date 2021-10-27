@@ -17,8 +17,8 @@
 #include <future>
 #include <semaphore.h>
 #include <ucontext.h>
-#include "co_methods.h"
 #include "../datetime.h"
+#include "this_coroutine.h"
 
 namespace daxia
 {
@@ -31,9 +31,11 @@ namespace daxia
 			class Coroutine
 			{
 				friend CoScheduler;
-				friend CoMethods;
+				friend void daxia::system::linux::this_coroutine::CoSleep(size_t milliseconds);
+				friend void daxia::system::linux::this_coroutine::CoYield();
+				friend void daxia::system::linux::this_coroutine::CoWait(std::function<bool()>&& wakeupCondition);
 			protected:
-				Coroutine(std::function<void(CoMethods& coMethods)> fiber, long long id, ucontext_t* mainFiber);
+				Coroutine(std::function<void()> fiber, long long id, ucontext_t* mainFiber);
 			public:
 				~Coroutine();
 			public:
@@ -54,8 +56,6 @@ namespace daxia
 				sem_t completeEvent_;
 				// 协程体
 				std::function<void()> fiberStartRoutine_;
-				// 协程体内支持的方法
-				CoMethods methods_;
 				// 当前协程环境
 				ucontext_t ctx_;
 				// 主协程环境

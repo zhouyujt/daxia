@@ -19,8 +19,9 @@
 #include <list>
 #include <mutex>
 #include <ucontext.h>
+#include <pthread.h>
 #include "coroutine.h"
-#include "co_methods.h"
+#include "this_coroutine.h"
 #include "../threadpool/thread_pool.h"
 
 namespace daxia
@@ -31,11 +32,14 @@ namespace daxia
 		{
 			class CoScheduler
 			{
+				friend void daxia::system::linux::this_coroutine::CoSleep(size_t milliseconds);
+				friend void daxia::system::linux::this_coroutine::CoYield();
+				friend void daxia::system::linux::this_coroutine::CoWait(std::function<bool()>&& wakeupCondition);
 			public:
 				CoScheduler();
 				~CoScheduler();
 			public:
-				std::shared_ptr<Coroutine> StartCoroutine(std::function<void(CoMethods& coMethods)> fiber);
+				std::shared_ptr<Coroutine> StartCoroutine(std::function<void()> fiber);
 			private:
 				void run();
 				void addCoroutine(std::shared_ptr<Coroutine> coroutine);
@@ -46,8 +50,10 @@ namespace daxia
 				std::mutex couroutinesLocker_;
 				std::mutex idLocker_;
 				bool run_;
-				static long long nextId_;
 				ucontext_t mainCtx_;
+				static long long nextId_;
+				static pthread_key_t currCoroutineKey_;
+				static std::once_flag onceCreateKeyFlag_;
 			};
 		}
 	}

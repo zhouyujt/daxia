@@ -9,11 +9,10 @@ namespace daxia
 	{
 		namespace windows
 		{
-			Coroutine::Coroutine(std::function<void(CoMethods& coMethods)>&& fiber, long long id, void** mainFiber)
+			Coroutine::Coroutine(std::function<void()>&& fiber, long long id, void** mainFiber)
 				: id_(id)
 				, wakeupCount_(0)
 				, complete_(false)
-				, methods_(this)
 				, mainFiber_(mainFiber)
 				, terminate_(false)
 				, sleepMilliseconds_(0)
@@ -25,7 +24,7 @@ namespace daxia
 				fiberStartRoutine_ = [&, fiber]()
 				{
 					// 调用回调
-					fiber(methods_);
+					fiber();
 
 					// 完成标志
 					complete_ = true;
