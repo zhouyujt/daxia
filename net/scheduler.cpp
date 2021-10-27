@@ -30,170 +30,87 @@ namespace daxia
 
 		long long Scheduler::ScheduleUpdate(scheduleFunc func)
 		{
-			if (enableFps_)
-			{
-				lock_guard locker(scheduleLocker_);
+			lock_guard locker(scheduleLocker_);
 
-				UpdateFunc updateFunc;
-				updateFunc.id = makeScheduleID();
-				updateFunc.f = func;
+			UpdateFunc updateFunc;
+			updateFunc.id = makeScheduleID();
+			updateFunc.f = func;
 
-				updateFuncs_.push_back(updateFunc);
+			updateFuncs_.push_back(updateFunc);
 
-				return updateFunc.id;
-			}
-			else
-			{
-				return -1;
-			}
+			return updateFunc.id;
 		}
 
 		long long Scheduler::Schedule(scheduleFunc func, unsigned long duration)
 		{
 			using namespace std::chrono;
 
-			if (enableFps_)
-			{
-				lock_guard locker(scheduleLocker_);
+			lock_guard locker(scheduleLocker_);
 
-				ScheduleFunc scheduleFunc;
-				scheduleFunc.id = makeScheduleID();
-				scheduleFunc.f = func;
-				scheduleFunc.duration = duration;
-				scheduleFunc.isOnce = false;
-				scheduleFunc.timestamp = time_point_cast<milliseconds>(system_clock::now());
+			ScheduleFunc scheduleFunc;
+			scheduleFunc.id = makeScheduleID();
+			scheduleFunc.f = func;
+			scheduleFunc.duration = duration;
+			scheduleFunc.isOnce = false;
+			scheduleFunc.timestamp = time_point_cast<milliseconds>(system_clock::now());
 
-				scheduleFuncs_.push_back(scheduleFunc);
+			scheduleFuncs_.push_back(scheduleFunc);
 
-				return scheduleFunc.id;
-			}
-			else
-			{
-				lock_guard locker(scheduleLocker_);
-
-				long long id = makeScheduleID();
-
-				timers_[id] = new boost::asio::deadline_timer(logicIoService_, boost::posix_time::milliseconds(duration));
-				timers_[id]->async_wait(std::bind(&Scheduler::asyncWaitCB, this, func, id, duration, std::placeholders::_1));
-
-				return id;
-			}
+			return scheduleFunc.id;
 		}
 
 		long long Scheduler::ScheduleOnce(scheduleFunc func, unsigned long duration)
 		{
 			using namespace std::chrono;
 
-			if (enableFps_)
-			{
+			lock_guard locker(scheduleLocker_);
 
-				lock_guard locker(scheduleLocker_);
+			ScheduleFunc scheduleFunc;
+			scheduleFunc.id = makeScheduleID();
+			scheduleFunc.f = func;
+			scheduleFunc.duration = duration;
+			scheduleFunc.isOnce = true;
+			scheduleFunc.timestamp = time_point_cast<milliseconds>(system_clock::now());
 
-				ScheduleFunc scheduleFunc;
-				scheduleFunc.id = makeScheduleID();
-				scheduleFunc.f = func;
-				scheduleFunc.duration = duration;
-				scheduleFunc.isOnce = true;
-				scheduleFunc.timestamp = time_point_cast<milliseconds>(system_clock::now());
+			scheduleFuncs_.push_back(scheduleFunc);
 
-				scheduleFuncs_.push_back(scheduleFunc);
-
-				return scheduleFunc.id;
-			}
-			else
-			{
-				lock_guard locker(scheduleLocker_);
-
-				long long id = makeScheduleID();
-
-				timers_[id] = new boost::asio::deadline_timer(logicIoService_, boost::posix_time::milliseconds(duration));
-				timers_[id]->async_wait([&, func, id](const boost::system::error_code& ec)
-				{
-					if (!ec)
-					{
-						func();
-					}
-
-					lock_guard locker(scheduleLocker_);
-					std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(id);
-					if (iter != timers_.end())
-					{
-						delete iter->second;
-						timers_.erase(iter);
-					}
-				});
-
-				return id;
-			}
+			return scheduleFunc.id;
 		}
 
 		void Scheduler::UnscheduleUpdate(long long scheduleID)
 		{
-			if (enableFps_)
-			{
-				lock_guard locker(scheduleLocker_);
+			lock_guard locker(scheduleLocker_);
 
-				for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
+			for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
+			{
+				if (iter->id == scheduleID)
 				{
-					if (iter->id == scheduleID)
-					{
-						updateFuncs_.erase(iter);
-						break;
-					}
+					updateFuncs_.erase(iter);
+					break;
 				}
 			}
 		}
 
 		void Scheduler::Unschedule(long long scheduleID)
 		{
-			if (enableFps_)
-			{
-				lock_guard locker(scheduleLocker_);
+			lock_guard locker(scheduleLocker_);
 
-				for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end(); ++iter)
-				{
-					if (iter->id == scheduleID)
-					{
-						scheduleFuncs_.erase(iter);
-						break;
-					}
-				}
-			}
-			else
+			for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end(); ++iter)
 			{
-				lock_guard locker(scheduleLocker_);
-
-				std::map<long long, boost::asio::deadline_timer*>::iterator iter = timers_.find(scheduleID);
-				if (iter != timers_.end())
+				if (iter->id == scheduleID)
 				{
-					iter->second->cancel();
-					delete iter->second;
-					timers_.erase(iter);
+					scheduleFuncs_.erase(iter);
+					break;
 				}
 			}
 		}
 
 		void Scheduler::UnscheduleAll()
 		{
-			if (enableFps_)
-			{
-				lock_guard locker(scheduleLocker_);
+			lock_guard locker(scheduleLocker_);
 
-				updateFuncs_.clear();
-				scheduleFuncs_.clear();
-			}
-			else
-			{
-				lock_guard locker(scheduleLocker_);
-
-				for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
-				{
-					iter->second->cancel();
-					delete iter->second;
-				}
-
-				timers_.clear();
-			}
+			updateFuncs_.clear();
+			scheduleFuncs_.clear();
 		}
 
 		void Scheduler::SetNetDispatch(netDispatchFunc func)
@@ -205,86 +122,23 @@ namespace daxia
 		{
 			lock_guard locker(netRequestLocker_);
 			netRequests_.push(NetRequest(session, msgId, data, finishCallback));
-
-			if (!enableFps_)
-			{
-				logicIoService_.post([&]()
-				{
-					NetRequest r;
-					netRequestLocker_.lock();
-					if (!netRequests_.empty())
-					{
-						r = netRequests_.front();
-						netRequests_.pop();
-					}
-					netRequestLocker_.unlock();
-
-					// 处理网络请求
-					if (r.session != nullptr)
-					{
-						if (dispatch_)
-						{
-							dispatch_(r.session, r.msgId, r.data);
-						}
-
-						if (r.finishCallback)
-						{
-							r.finishCallback();
-						}
-					}
-				});
-			}
 		}
 
 		void Scheduler::Run(bool enableFps)
 		{
 			enableFps_ = enableFps;
 
-			if (enableFps_)
-			{
-				runAsFps();
-			}
-			else
-			{
-				runAsNoFps();
-			}
+			run();
 		}
 
 		void Scheduler::Stop()
 		{
-			if (enableFps_)
+			cosc_.Stop();
+
+			isWorking_ = false;
+			if (workThread_.joinable())
 			{
-
-				isWorking_ = false;
-
-				if (workThread_.joinable())
-				{
-					workThread_.join();
-				}
-			}
-			else
-			{
-				// 停止所有定时器
-				lock_guard locker(scheduleLocker_);
-				for (auto iter = timers_.begin(); iter != timers_.end(); ++iter)
-				{
-					iter->second->cancel();
-					std::this_thread::sleep_for(std::chrono::milliseconds(1));
-					delete iter->second;
-				}
-				timers_.clear();
-
-				// 停止逻辑线程
-				logicIoService_.stop();
-				for (size_t i = 0; i < logicThreads_.size(); ++i)
-				{
-					if (logicThreads_[i].joinable())
-					{
-						logicThreads_[i].join();
-					}
-				}
-
-				logicThreads_.clear();
+				workThread_.join();
 			}
 		}
 
@@ -295,7 +149,7 @@ namespace daxia
 			return nextScheduleID_++;
 		}
 
-		void Scheduler::runAsFps()
+		void Scheduler::run()
 		{
 			isWorking_ = true;
 
@@ -311,28 +165,39 @@ namespace daxia
 					time_point<system_clock, milliseconds> beginTime = time_point_cast<milliseconds>(system_clock::now());
 
 					// 更新调度器
-					for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
-					{
-						iter->f();
-					}
+					cosc_.StartCoroutine([&]()
+						{
+							lock_guard locker(scheduleLocker_);
+
+							for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
+							{
+								iter->f();
+							}
+						});
+			
 
 					// 定时调度器
-					for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end();)
-					{
-						if ((beginTime - iter->timestamp).count() >= static_cast<long>(iter->duration))
+					cosc_.StartCoroutine([&]()
 						{
-							iter->f();
-							iter->timestamp = beginTime;
+							lock_guard locker(scheduleLocker_);
 
-							if (iter->isOnce)
+							for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end();)
 							{
-								iter = scheduleFuncs_.erase(iter);
-								continue;
-							}
-						}
+								if ((beginTime - iter->timestamp).count() >= static_cast<long>(iter->duration))
+								{
+									iter->f();
+									iter->timestamp = beginTime;
 
-						++iter;
-					}
+									if (iter->isOnce)
+									{
+										iter = scheduleFuncs_.erase(iter);
+										continue;
+									}
+								}
+
+								++iter;
+							}
+						});
 
 					// 获取网络请求
 					for (;;)
@@ -349,15 +214,18 @@ namespace daxia
 						// 处理网络请求
 						if (r.session != nullptr)
 						{
-							if (dispatch_)
-							{
-								dispatch_(r.session, r.msgId, r.data);
-							}
+							cosc_.StartCoroutine([&]()
+								{
+									if (dispatch_)
+									{
+										dispatch_(r.session, r.msgId, r.data);
+									}
 
-							if (r.finishCallback)
-							{
-								r.finishCallback();
-							}
+									if (r.finishCallback)
+									{
+										r.finishCallback();
+									}
+								});
 						}
 						else
 						{
@@ -367,29 +235,16 @@ namespace daxia
 						// stop time
 						time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
 
-						if ((stopTime - beginTime).count() >= static_cast<long>(interval))
+						if (enableFps_)
 						{
-							break;
+							if ((stopTime - beginTime).count() >= static_cast<long>(interval))
+							{
+								break;
+							}
 						}
 					}
 				}
 			});
-		}
-
-		void Scheduler::runAsNoFps()
-		{
-			//int coreCount = getCoreCount();
-
-			//for (int i = 0; i < coreCount * 2; ++i)
-			for (int i = 0; i < 1; ++i)
-			{
-				logicThreads_.push_back(std::thread([&]()
-				{
-					boost::asio::io_service::work worker(logicIoService_);
-					logicIoService_.run();
-				}));
-			}
-
 		}
 
 		void Scheduler::asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec)

@@ -17,6 +17,7 @@
 #include <queue>
 #include <chrono>
 #include "common/buffer.h"
+#include "../system/coroutine.h"
 
 namespace daxia
 {
@@ -66,8 +67,7 @@ namespace daxia
 			void Stop();
 		private:
 			long long makeScheduleID();
-			void runAsFps();
-			void runAsNoFps();
+			void run();
 			void asyncWaitCB(scheduleFunc func, long long id, long long duration, const boost::system::error_code& ec);
 		private:
 			// ¸üÐÂº¯Êý
@@ -97,9 +97,8 @@ namespace daxia
 			netDispatchFunc	dispatch_;
 			long long nextScheduleID_;
 			std::mutex nextScheduleIDLocker_;
-			boost::asio::io_service logicIoService_;
-			std::vector<std::thread> logicThreads_;
 			std::map<long long, boost::asio::deadline_timer*> timers_;
+			daxia::system::CoScheduler cosc_;
 		};
 	}// namespace net
 }// namespace daxia
