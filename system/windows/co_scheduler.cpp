@@ -20,7 +20,7 @@ namespace daxia
 
 			CoScheduler::~CoScheduler()
 			{
-				run_ = false;
+				Stop();
 			}
 
 			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void()>&& fiber)
@@ -29,6 +29,14 @@ namespace daxia
 				addCoroutine(co);
 
 				return co;
+			}
+
+			void CoScheduler::Stop()
+			{
+				run_ = false;
+
+				// 等待停止所有协程
+				threadPool_.Stop();
 			}
 
 			void CoScheduler::run()

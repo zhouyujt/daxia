@@ -16,7 +16,21 @@ namespace daxia
 
 		ThreadPool::~ThreadPool()
 		{
-			stop();
+			Stop();
+		}
+
+		void ThreadPool::Stop()
+		{
+			ios_.stop();
+			for (size_t i = 0; i < threads_.size(); ++i)
+			{
+				if (threads_[i].joinable())
+				{
+					threads_[i].join();
+				}
+			}
+			ios_.reset();
+			threads_.clear();
 		}
 
 		size_t ThreadPool::GetCpuCoreCount()
@@ -39,20 +53,6 @@ namespace daxia
 					ios_.run();
 				}));
 			}
-		}
-
-		void ThreadPool::stop()
-		{
-			ios_.stop();
-			for (size_t i = 0; i < threads_.size(); ++i)
-			{
-				if (threads_[i].joinable())
-				{
-					threads_[i].join();
-				}
-			}
-			ios_.reset();
-			threads_.clear();
 		}
 	}
 }

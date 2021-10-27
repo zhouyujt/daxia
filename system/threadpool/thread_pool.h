@@ -52,6 +52,9 @@ namespace daxia
 			{
 				ios_.dispatch(std::forward<std::function<void()>>(fun));
 			}
+
+			// 停止所有线程
+			void Stop();
 		public:
 			// 获取CPU核心数量
 			static size_t GetCpuCoreCount();
@@ -60,7 +63,6 @@ namespace daxia
 			boost::asio::io_service ios_;
 		private:
 			void start(size_t count);
-			void stop();
 		};
 
 	}
