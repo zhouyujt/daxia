@@ -31,7 +31,7 @@ namespace daxia
 			void CoScheduler::run()
 			{
 				// 当没有协程需要调度时的睡眠时间（单位:毫秒）
-				const long idle = 10;
+				const long idle = 1;
 
 				while (run_)
 				{

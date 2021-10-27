@@ -1,7 +1,7 @@
 #ifdef __linux__
 #include "coroutine.h"
 
-#define CO_STACK_SIZE 1024 * 128
+#define CO_STACK_SIZE 1024 * 8
 #include <iostream>
 namespace daxia
 {
