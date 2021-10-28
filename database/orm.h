@@ -67,14 +67,14 @@
 #define DECLARE_ORM_TABLE(name)					daxia::reflect::Reflect<daxia::string> DATABASE_ORM_TABLE_FIELD { DATABASE_ORM_STRING(DATABASE_ORM_MAKE_TABLE_TAG(name)) };
 
 #define ORM "orm"
-#define CO_CALL(xx,...) \
-std::packaged_task(daxia::string()) task([&]()\
+#define CO_CALL(xx) \
+std::packaged_task<daxia::string()> task([&]()\
 {\
-	daxia::string err = xx(__VA_ARGS__);\
+	return xx;\
 });\
 tp_.Post(task);\
 std::future<daxia::string> err = task.get_future();\
-daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));\
+daxia::system::this_coroutine::CoWait(WAIT_FUTURE(err));\
 return err.get();
 
 namespace daxia
@@ -164,7 +164,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoInsert(const ValueType& obj, const FieldFilter* fields = nullptr)
 			{
-				CO_CALL(Insert, obj, fields);
+				CO_CALL(Insert(obj, fields));
 			}
 
 			// 删除
@@ -183,7 +183,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoDelete(const ValueType& obj, const FieldFilter* condition = nullptr)
 			{
-				CO_CALL(Delete, obj, condition);
+				CO_CALL(Delete(obj, condition));
 			}
 
 			// 查询一条
@@ -221,7 +221,7 @@ namespace daxia
 				const char* prefix = nullptr
 				)
 			{
-				CO_CALL(Query, obj, fields, suffix, prefix);
+				CO_CALL(Query(obj, fields, suffix, prefix));
 			}
 
 			// 查询多条
@@ -257,7 +257,7 @@ namespace daxia
 				const char* prefix = nullptr
 				)
 			{
-				CO_CALL(Query, objs, fields, suffix, prefix);
+				CO_CALL(Query(objs, fields, suffix, prefix));
 			}
 
 			// 更新
@@ -278,7 +278,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoUpdate(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
-				CO_CALL(Update, obj, fields, condition);
+				CO_CALL(Update(obj, fields, condition));
 			}
 
 			// 追加更新。	数字类型的字段，新的值为原先的值跟本次指定的值两者之和；字符串及blob类型则在末尾追加。
@@ -299,7 +299,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoAppend(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
 			{
-				CO_CALL(Append, obj, fields, condition);
+				CO_CALL(Append(obj, fields, condition));
 			}
 
 			// 建表
@@ -316,7 +316,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoCreate(const ValueType& obj)
 			{
-				CO_CALL(Create, obj);
+				CO_CALL(Create(obj));
 			}
 
 			// 删表
@@ -333,7 +333,7 @@ namespace daxia
 			template<typename ValueType>
 			daxia::string CoDrop(const ValueType& obj)
 			{
-				CO_CALL(Drop, obj);
+				CO_CALL(Drop(obj));
 			}
 
 			template<typename ValueType>
