@@ -39,9 +39,30 @@ namespace daxia
 			// Õ¯¬Á«Î«Û
 			struct NetRequest
 			{
+				NetRequest(const NetRequest& request)
+				{
+					session = request.session;
+					msgId = request.msgId;
+					data = request.data;
+					finishCallback = request.finishCallback;
+				}
+
 				NetRequest(NetRequest&& request)
 				{
-					*this = std::forward<NetRequest>(request);
+					session.swap(request.session);
+					msgId = request.msgId;
+					data = std::move(request.data);
+					finishCallback.swap(request.finishCallback);
+				}
+					
+				NetRequest& operator=(NetRequest& request)
+				{
+					session = request.session;
+					msgId = request.msgId;
+					data = request.data;
+					finishCallback = request.finishCallback;
+
+					return *this;
 				}
 
 				NetRequest& operator=(NetRequest&& request)
@@ -60,7 +81,7 @@ namespace daxia
 				std::function<void()> finishCallback;
 
 				NetRequest(){}
-				NetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer data, std::function<void()> finishCallback)
+				NetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, const std::function<void()>& finishCallback)
 					: session(session)
 					, msgId(msgId)
 					, data(data)
@@ -77,7 +98,7 @@ namespace daxia
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
-			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer data, std::function<void()> finishCallback = nullptr);
+			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback = nullptr);
 			void Run(bool enableFps);
 			void Stop();
 		private:

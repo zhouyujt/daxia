@@ -32,9 +32,30 @@ namespace daxia
 				memcpy(buff_.get(), data, size);
 			}
 
+			Buffer::Buffer(const Buffer& buffer)
+			{
+				buff_ = buffer.buff_;
+				size_ = buffer.size_;
+				capacity_ = buffer.capacity_;
+				pageInfo_ = buffer.pageInfo_;
+			}
+
 			Buffer::Buffer(Buffer&& buffer)
 			{
-				*this = std::forward<Buffer>(buffer);
+				buff_.swap(buffer.buff_);
+				size_ = buffer.size_;
+				capacity_ = buffer.capacity_;
+				pageInfo_ = buffer.pageInfo_;
+			}
+
+			Buffer& Buffer::operator=(const Buffer& buffer)
+			{
+				buff_ = buffer.buff_;
+				size_ = buffer.size_;
+				capacity_ = buffer.capacity_;
+				pageInfo_ = buffer.pageInfo_;
+
+				return *this;
 			}
 
 			Buffer& Buffer::operator=(Buffer&& buffer)

@@ -52,11 +52,11 @@ namespace daxia
 			void EnableCheckHeartbeat(unsigned long milliseconds);
 			Scheduler& GetScheduler();
 		private:
-			void dispatchMessage(std::shared_ptr<Session>, int msgID, const common::Buffer data);
-			void dispatchHttpMessage(std::shared_ptr<Session>, int msgID, const common::Buffer data);
+			void dispatchMessage(std::shared_ptr<Session>, int msgID, const common::Buffer& data);
+			void dispatchHttpMessage(std::shared_ptr<Session>, int msgID, const common::Buffer& data);
 			int getCoreCount() const;
 			void onAccept(socket_ptr, const error_code&);
-			void onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::Buffer msg);
+			void onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg);
 		private:
 			std::map<int, std::shared_ptr<Controller>> controllers_;
 			std::map<std::string, std::shared_ptr<HttpController>> httpControllers_;

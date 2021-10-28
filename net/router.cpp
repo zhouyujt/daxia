@@ -166,7 +166,7 @@ namespace daxia
 			return scheduler_;
 		}
 
-		void Router::dispatchMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer data)
+		void Router::dispatchMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer& data)
 		{
 			auto iter = controllers_.find(msgID);
 			if (iter != controllers_.end())
@@ -183,7 +183,7 @@ namespace daxia
 			}
 		}
 
-		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer data)
+		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer& data)
 		{
 			using daxia::net::common::BasicSession;
 
@@ -409,7 +409,7 @@ else\
 			}
 		}
 
-		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, common::Buffer msg)
+		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg)
 		{
 			if (err || msgId == common::DefMsgID_DisConnect)
 			{

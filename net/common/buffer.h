@@ -77,8 +77,9 @@ namespace daxia
 				Buffer();
 				Buffer(size_t capacity);
 				Buffer(const char data[], size_t size);
-			public:
+				Buffer(const Buffer& buffer);
 				Buffer(Buffer&& buffer);
+				Buffer& operator=(const Buffer& buffer);
 				Buffer& operator=(Buffer&& buffer);
 			public:
 				void Clear();
