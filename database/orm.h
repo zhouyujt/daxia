@@ -16,11 +16,11 @@
 * {
 *		DECLARE_ORM_TABLE(account);
 *
-*		Reflect<db_int> id = "orm:id(identity primary_key comment=id)";
-*		Reflect<db_text> user = "orm:user(unique_key comment=用户名)";
-*		Reflect<db_text> password = "orm:psw(not_null comment=密码)";
-*		Reflect<db_text> name = "orm:name(key comment=姓名)";
-*		Reflect<db_int> age = "orm:age(default=18 comment=年龄)";
+*		Reflect<db_int> id{ "orm:id(identity primary_key comment=id)" };
+*		Reflect<db_text> user{ "orm:user(unique_key comment=用户名)" };
+*		Reflect<db_text> password{ "orm:psw(not_null comment=密码)" };
+*		Reflect<db_text> name{ "orm:name(key comment=姓名)" };
+*		Reflect<db_int> age{ "orm:age(default=18 comment=年龄)" };
 * };
 *
 * Account account;
@@ -39,6 +39,12 @@
 * default			默认值
 * not_null			不能为空
 * comment			注释
+*
+* 协程支持:
+* 本库提供的方法包含两个版本
+* 同步阻塞版本跟协程版本，可以根据方法名来辨别是何种版本，有前缀“Co”开头的即为协程版本，如:CoInsert
+* 如果需要调用协程版本，请确保调用者已经在运行在协程中，否则会产生未知的结果
+* 关于协程的使用方法请参考协程库的说明(daxia::system::CoScheduler、daxia::system::Coroutine、daxia::system::this_coroutine)
 */
 #ifndef __DAXIA_DATABASE_ORM_H
 #define __DAXIA_DATABASE_ORM_H
@@ -49,6 +55,8 @@
 #include "driver/data_type.hpp"
 #include "../string.hpp"
 #include "../reflect/reflect.hpp"
+#include "../system/threadpool/thread_pool.h"
+#include "../system/coroutine.h"
 
 #define DATABASE_ORM_STRING_HELP(s) #s
 #define DATABASE_ORM_STRING(s) DATABASE_ORM_STRING_HELP(s)
@@ -59,6 +67,15 @@
 #define DECLARE_ORM_TABLE(name)					daxia::reflect::Reflect<daxia::string> DATABASE_ORM_TABLE_FIELD { DATABASE_ORM_STRING(DATABASE_ORM_MAKE_TABLE_TAG(name)) };
 
 #define ORM "orm"
+#define CO_CALL(xx,...) \
+std::packaged_task(daxia::string()) task([&]()\
+{\
+	daxia::string err = xx(__VA_ARGS__);\
+});\
+tp_.Post(task);\
+std::future<daxia::string> err = task.get_future();\
+daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));\
+return err.get();
 
 namespace daxia
 {
@@ -142,6 +159,14 @@ namespace daxia
 				return insert(layout, &obj, fields);
 			}
 
+			// 插入（协程版）
+			// fields: 需要插入的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则插入所有已经初始化的字段。
+			template<typename ValueType>
+			daxia::string CoInsert(const ValueType& obj, const FieldFilter* fields = nullptr)
+			{
+				CO_CALL(Insert, obj, fields);
+			}
+
 			// 删除
 			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有primary_key属性且已初始化的字段删除。
 			template<typename ValueType>
@@ -153,6 +178,13 @@ namespace daxia
 				return delette(layout, &obj, condition);
 			}
 
+			// 删除（协程版）
+			// condition: 删除条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才删除。nullptr则根据具有primary_key属性且已初始化的字段删除。
+			template<typename ValueType>
+			daxia::string CoDelete(const ValueType& obj, const FieldFilter* condition = nullptr)
+			{
+				CO_CALL(Delete, obj, condition);
+			}
 
 			// 查询一条
 			// fields: 需要查询的字段。nullptr则查询所有字段。
@@ -178,6 +210,20 @@ namespace daxia
 				return command_->GetLastError();
 			}
 
+			// 查询一条（协程版）
+			// fields: 需要查询的字段。nullptr则查询所有字段。
+			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 。nullptr则根据具有primary_key属性且已初始化的字段进行查询。
+			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
+			template<typename ValueType>
+			daxia::string CoQuery(ValueType& obj,
+				const FieldFilter* fields = nullptr,
+				const char* suffix = nullptr,
+				const char* prefix = nullptr
+				)
+			{
+				CO_CALL(Query, obj, fields, suffix, prefix);
+			}
+
 			// 查询多条
 			// fields: 需要查询的字段。nullptr则查询所有字段。
 			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 。nullptr则根据具有primary_key属性且已初始化的字段进行查询。
@@ -200,6 +246,20 @@ namespace daxia
 				return command_->GetLastError();
 			}
 
+			// 查询多条（协程版）
+			// fields: 需要查询的字段。nullptr则查询所有字段。
+			// suffix: 后缀字符串，表明查询条件或是排序等。类似 "id < 10 and name is not null order by name" 。nullptr则根据具有primary_key属性且已初始化的字段进行查询。
+			// prefix: 前缀字符串。类似 "top(10)"、"distinct"
+			template<typename ValueType>
+			daxia::string CoQuery(std::vector<ValueType>& objs,
+				const FieldFilter* fields = nullptr,
+				const char* suffix = nullptr,
+				const char* prefix = nullptr
+				)
+			{
+				CO_CALL(Query, objs, fields, suffix, prefix);
+			}
+
 			// 更新
 			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
 			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
@@ -210,6 +270,15 @@ namespace daxia
 
 				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return update(layout, &obj, fields, condition);
+			}
+
+			// 更新（协程版）
+			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
+			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
+			template<typename ValueType>
+			daxia::string CoUpdate(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
+			{
+				CO_CALL(Update, obj, fields, condition);
 			}
 
 			// 追加更新。	数字类型的字段，新的值为原先的值跟本次指定的值两者之和；字符串及blob类型则在末尾追加。
@@ -224,6 +293,15 @@ namespace daxia
 				return append(layout, &obj, fields, condition);
 			}
 
+			// 追加更新。（协程版）	数字类型的字段，新的值为原先的值跟本次指定的值两者之和；字符串及blob类型则在末尾追加。
+			// fields:		指定需要更新的字段(该字段需初始化，未初始化的字段会强制忽略)。nullptr则更新所有已经初始化的字段。
+			// condition:	更新条件，当记录跟指定字段值(该字段需初始化，未初始化的字段会强制忽略)相同才更新。nullptr则根据具有primary_key属性且已初始化的字段更新。
+			template<typename ValueType>
+			daxia::string CoAppend(const ValueType& obj, const FieldFilter* fields = nullptr, const FieldFilter* condition = nullptr)
+			{
+				CO_CALL(Append, obj, fields, condition);
+			}
+
 			// 建表
 			template<typename ValueType>
 			daxia::string Create(const ValueType& obj)
@@ -234,6 +312,13 @@ namespace daxia
 				return create(layout, &obj);
 			}
 
+			// 建表（协程版）
+			template<typename ValueType>
+			daxia::string CoCreate(const ValueType& obj)
+			{
+				CO_CALL(Create, obj);
+			}
+
 			// 删表
 			template<typename ValueType>
 			daxia::string Drop(const ValueType& obj)
@@ -242,6 +327,13 @@ namespace daxia
 
 				auto layout = Reflect<ValueType>::GetLayoutFast();
 				return drop(layout, &obj);
+			}
+
+			// 删表（协程版）
+			template<typename ValueType>
+			daxia::string CoDrop(const ValueType& obj)
+			{
+				CO_CALL(Drop, obj);
 			}
 
 			template<typename ValueType>
@@ -277,6 +369,7 @@ namespace daxia
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
+			static daxia::system::ThreadPool tp_;
 		private:
 			class InitHelper
 			{
@@ -289,5 +382,6 @@ namespace daxia
 }
 
 #undef ORM
+#undef CO_CALL
 
 #endif	// !__DAXIA_DATABASE_ORM_H

@@ -17,6 +17,8 @@ namespace daxia
 {
 	namespace database
 	{
+		daxia::system::ThreadPool Orm::tp_;
+
 		Orm::Orm(Driver driver, const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
 			: driverType_(driver)
 		{
@@ -26,12 +28,12 @@ namespace daxia
 			{
 			case daxia::database::Orm::mysql:
 #ifdef __DAXIA_DATABASE_DRIVER_USE_MYSQL
-				command_ = std::shared_ptr<MySQLDriver>(new MySQLDriver(host, port, db, user, psw));
+				command_ = std::shared_ptr<MySQLDriver>(new MySQLDriver(host, port, db, user, psw, &tp_));
 #endif
 				break;
 			case daxia::database::Orm::sqlite:
 #ifdef	__DAXIA_DATABASE_DRIVER_USE_SQLITE
-				command_ = std::shared_ptr<SqliteDriver>(new SqliteDriver(db));
+				command_ = std::shared_ptr<SqliteDriver>(new SqliteDriver(db, &tp_));
 #endif
 				break;
 			case daxia::database::Orm::sqlserver:

@@ -25,15 +25,15 @@ namespace daxia
 			class MySQLDriver : public BasicDriver
 			{
 			public:
-				MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
+				MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp);
 				~MySQLDriver();
 			public:
 				static void Init();
 				static void Uninit();
-				virtual bool Connnect() override;
-				virtual void ConnnectAsync(connect_callback cb) override;
+				virtual bool Connect() override;
+				virtual bool CoConnect() override;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) override;
-				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
+				virtual std::shared_ptr<BasicRecordset> CoExcute(const daxia::string& sql) override;
 				virtual daxia::string GetLastError() const override;
 				virtual daxia::string TypeName(const std::type_info& type) const override;
 				virtual long long  ScopeIdentity() override;

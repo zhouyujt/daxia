@@ -16,6 +16,7 @@
 #include <memory>
 #include "basic_recordset.h"
 #include "../../string.hpp"
+#include "../../system/threadpool/thread_pool.h"
 
 namespace daxia
 {
@@ -26,16 +27,13 @@ namespace daxia
 			class BasicDriver
 			{
 			public:
-				BasicDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw);
+				BasicDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp);
 				virtual ~BasicDriver();
 			public:
-				typedef std::function<void(const daxia::string& error)> connect_callback;
-				typedef std::function<void(std::shared_ptr<BasicRecordset>, const daxia::string& error)> excute_callback;
-			public:
-				virtual	bool Connnect() = 0;
-				virtual	void ConnnectAsync(connect_callback cb) = 0;
+				virtual	bool Connect() = 0;
+				virtual bool CoConnect() = 0;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) = 0;
-				virtual	void ExcuteAsync(const daxia::string& sql, excute_callback cb) = 0;
+				virtual std::shared_ptr<BasicRecordset> CoExcute(const daxia::string& sql) = 0;
 				virtual daxia::string GetLastError() const = 0;
 				virtual daxia::string TypeName(const std::type_info& type) const = 0;
 				virtual long long  ScopeIdentity() = 0;
@@ -46,6 +44,7 @@ namespace daxia
 				daxia::string user_;
 				daxia::string psw_;
 				unsigned short port_;
+				daxia::system::ThreadPool* tp_;
 			};
 		}
 	}

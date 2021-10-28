@@ -2,6 +2,8 @@
 #include "sqlite_driver.h"
 #include "../../system/windows/path.h"
 #include "sqlite_recordset.h"
+#include "../../system/coroutine.h"
+
 namespace daxia
 {
 	namespace database
@@ -9,8 +11,8 @@ namespace daxia
 		namespace driver
 		{
 
-			SqliteDriver::SqliteDriver(const daxia::string& db)
-				: BasicDriver("",0,db,"","")
+			SqliteDriver::SqliteDriver(const daxia::string& db, daxia::system::ThreadPool* tp)
+				: BasicDriver("",0,db,"","",tp)
 				, sqlite_(nullptr)
 			{
 			}
@@ -44,7 +46,7 @@ namespace daxia
 #endif
 			}
 
-			bool SqliteDriver::Connnect()
+			bool SqliteDriver::Connect()
 			{
 				if (sqlite3_open(db_.ToUtf8().GetString(), &sqlite_) == SQLITE_OK)
 				{
@@ -55,16 +57,26 @@ namespace daxia
 				return false;
 			}
 
-			void SqliteDriver::ConnnectAsync(connect_callback cb)
+			bool SqliteDriver::CoConnect()
 			{
+				std::packaged_task<bool()> task([&]()
+				{
+					return Connect();
+				});
 
+				tp_->Post(task);
+
+				std::future<bool> result = task.get_future();
+				daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));
+
+				return result.get();
 			}
 
 			std::shared_ptr<daxia::database::driver::BasicRecordset> SqliteDriver::Excute(const daxia::string& sql)
 			{
 				if (sqlite_ == nullptr)
 				{
-					if (!Connnect())
+					if (!Connect())
 					{
 						setLastError();
 						return std::shared_ptr<BasicRecordset>();
@@ -110,9 +122,19 @@ namespace daxia
 				}
 			}
 
-			void SqliteDriver::ExcuteAsync(const daxia::string& sql, excute_callback cb)
+			std::shared_ptr<BasicRecordset> SqliteDriver::CoExcute(const daxia::string& sql)
 			{
+				std::packaged_task<std::shared_ptr<BasicRecordset>()> task([&]()
+				{
+					return Excute(sql);
+				});
 
+				tp_->Post(task);
+
+				std::future<std::shared_ptr<BasicRecordset>> result = task.get_future();
+				daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));
+
+				return result.get();
 			}
 
 			daxia::string SqliteDriver::GetLastError() const

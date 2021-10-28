@@ -27,15 +27,15 @@ namespace daxia
 			class SqliteDriver : public BasicDriver
 			{
 			public:
-				SqliteDriver(const daxia::string& db);
+				SqliteDriver(const daxia::string& db, daxia::system::ThreadPool* tp);
 				~SqliteDriver();
 			public:
 				static void Init();
 				static void Uninit();
-				virtual bool Connnect() override;
-				virtual void ConnnectAsync(connect_callback cb) override;
+				virtual bool Connect() override;
+				virtual bool CoConnect() override;
 				virtual std::shared_ptr<BasicRecordset> Excute(const daxia::string& sql) override;
-				virtual void ExcuteAsync(const daxia::string& sql, excute_callback cb) override;
+				virtual std::shared_ptr<BasicRecordset> CoExcute(const daxia::string& sql) override;
 				virtual daxia::string GetLastError() const override;
 				virtual daxia::string TypeName(const std::type_info& type) const override;
 				virtual long long  ScopeIdentity() override;

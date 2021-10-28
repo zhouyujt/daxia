@@ -2,6 +2,7 @@
 #include <memory.h>	// memset
 #include "mysql_driver.h"
 #include "mysql_recordset.h"
+#include "../../system/coroutine.h"
 
 namespace daxia
 {
@@ -9,8 +10,8 @@ namespace daxia
 	{
 		namespace driver
 		{
-			MySQLDriver::MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw)
-				: BasicDriver(host, port, db, user, psw)
+			MySQLDriver::MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp)
+				: BasicDriver(host, port, db, user, psw, tp)
 			{
 				memset(&mysql_, 0, sizeof(mysql_));
 			}
@@ -30,16 +31,26 @@ namespace daxia
 				mysql_library_end();
 			}
 
-			bool MySQLDriver::Connnect()
+			bool MySQLDriver::Connect()
 			{
 				mysql_init(&mysql_);
 				mysql_options(&mysql_, MYSQL_INIT_COMMAND, "SET autocommit=0");
 				return mysql_real_connect(&mysql_, host_.GetString(), user_.GetString(), psw_.GetString(), db_.GetString(), port_, nullptr, 0) != nullptr;
 			}
 
-			void MySQLDriver::ConnnectAsync(connect_callback cb)
+			bool MySQLDriver::CoConnect()
 			{
-				throw std::logic_error("The method or operation is not implemented.");
+				std::packaged_task<bool()> task([&]()
+				{
+					return Connect();
+				});
+
+				tp_->Post(task);
+
+				std::future<bool> result = task.get_future();
+				daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));
+
+				return result.get();
 			}
 
 			std::shared_ptr<BasicRecordset> MySQLDriver::Excute(const daxia::string& sql)
@@ -57,9 +68,19 @@ namespace daxia
 				return std::shared_ptr<BasicRecordset>(new MySQLRecordset(recordset,&mysql_));
 			}
 
-			void MySQLDriver::ExcuteAsync(const daxia::string& sql, excute_callback cb)
+			std::shared_ptr<BasicRecordset> MySQLDriver::CoExcute(const daxia::string& sql)
 			{
-				throw std::logic_error("The method or operation is not implemented.");
+				std::packaged_task<std::shared_ptr<BasicRecordset>()> task([&]()
+				{
+					return Excute(sql);
+				});
+
+				tp_->Post(task);
+
+				std::future<std::shared_ptr<BasicRecordset>> result = task.get_future();
+				daxia::system::this_coroutine::CoWait(WAIT_FUTURE(result));
+
+				return result.get();
 			}
 
 			daxia::string MySQLDriver::GetLastError() const

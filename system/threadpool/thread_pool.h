@@ -12,6 +12,9 @@
 */
 #ifndef __DAXIA_SYSTEM_THREADPOOL_H
 #define __DAXIA_SYSTEM_THREADPOOL_H
+#ifdef _WIN32
+#include <sdkddkver.h>
+#endif
 #include <functional>
 #include <thread>
 #include <vector>
