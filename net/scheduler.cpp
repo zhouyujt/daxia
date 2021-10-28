@@ -206,7 +206,7 @@ namespace daxia
 						netRequestLocker_.lock();
 						if (!netRequests_.empty())
 						{
-							r = netRequests_.front();
+							r = std::move(netRequests_.front());
 							netRequests_.pop();
 						}
 						netRequestLocker_.unlock();
@@ -214,7 +214,7 @@ namespace daxia
 						// ¥¶¿ÌÕ¯¬Á«Î«Û
 						if (r.session != nullptr)
 						{
-							cosc_.StartCoroutine([&]()
+							cosc_.StartCoroutine([&,r]()
 								{
 									if (dispatch_)
 									{

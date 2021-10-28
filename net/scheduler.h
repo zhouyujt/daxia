@@ -39,6 +39,21 @@ namespace daxia
 			// Õ¯¬Á«Î«Û
 			struct NetRequest
 			{
+				NetRequest(NetRequest&& request)
+				{
+					*this = std::forward<NetRequest>(request);
+				}
+
+				NetRequest& operator=(NetRequest&& request)
+				{
+					session.swap(request.session);
+					msgId = request.msgId;
+					data = std::move(request.data);
+					finishCallback.swap(request.finishCallback);
+
+					return *this;
+				}
+
 				std::shared_ptr<Session> session;
 				int msgId;
 				common::Buffer data;
