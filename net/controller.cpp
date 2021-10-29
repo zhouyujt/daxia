@@ -13,6 +13,7 @@ namespace daxia
 		std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> HttpController::DefaultOptions;
 		std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> HttpController::DefaultTrace;
 		std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> HttpController::DefaultConnect;
+		common::HttpParser::RequestHeader HttpController::DefaultRequest;
 		common::HttpParser::ResponseHeader HttpController::DefaultResponser;
 
 		void HttpController::SetContext(std::shared_ptr<Session> session)

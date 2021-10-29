@@ -192,7 +192,7 @@ namespace daxia
 			size_t headerLen = 0;
 			if (data.Page().IsStart())
 			{
-				common::HttpParser::RequestHeader header;
+				common::HttpParser::RequestHeader header(daxia::net::HttpController::DefaultRequest);
 				headerLen = header.InitFromData(data, data.Size());
 
 				if (headerLen == (size_t)-1) return;

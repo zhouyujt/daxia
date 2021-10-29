@@ -442,6 +442,7 @@ namespace daxia
 			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultOptions;
 			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultTrace;
 			static std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> DefaultConnect;
+			static common::HttpParser::RequestHeader DefaultRequest;
 			static common::HttpParser::ResponseHeader DefaultResponser;
 		public:
 			void SetContext(std::shared_ptr<Session> session);
