@@ -9,7 +9,7 @@ namespace daxia
 	{
 		namespace windows
 		{
-			Coroutine::Coroutine(std::function<void()>&& fiber, long long id, void** mainFiber)
+			Coroutine::Coroutine(std::function<void()>&& fiber, size_t stackSize, long long id, void** mainFiber)
 				: id_(id)
 				, wakeupCount_(0)
 				, complete_(false)
@@ -34,8 +34,12 @@ namespace daxia
 					::SwitchToFiber(*mainFiber_);
 				};
 
+				// statckSize取整
+				const size_t defaultSize = static_cast<size_t>(1024) * 4;
+				stackSize = stackSize == 0 ? defaultSize : (stackSize + (defaultSize - 1)) / defaultSize * defaultSize;
+
 				// 设置本协程入口点
-				fiber_ = ::CreateFiber(0, &Coroutine::fiberStartRoutine, this);
+				fiber_ = ::CreateFiber(8193, &Coroutine::fiberStartRoutine, this);
 			}
 
 			Coroutine::~Coroutine()

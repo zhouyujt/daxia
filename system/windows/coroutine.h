@@ -32,7 +32,7 @@ namespace daxia
 				friend void daxia::system::windows::this_coroutine::CoYield();
 				friend void daxia::system::windows::this_coroutine::CoWait(std::function<bool()>&& wakeupCondition);
 			protected:
-				Coroutine(std::function<void()>&& fiber, long long id, void** mainFiber);
+				Coroutine(std::function<void()>&& fiber, size_t stackSize, long long id, void** mainFiber);
 			public:
 				~Coroutine();
 			public:

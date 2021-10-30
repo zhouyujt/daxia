@@ -28,9 +28,9 @@ namespace daxia
 				Stop();
 			}
 
-			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void()> fiber)
+			std::shared_ptr<Coroutine> CoScheduler::StartCoroutine(std::function<void()> fiber, size_t stackSize)
 			{
-				std::shared_ptr<Coroutine> co(new Coroutine(fiber, makeCoroutineId(), &mainCtx_));
+				std::shared_ptr<Coroutine> co(new Coroutine(fiber, stackSize, makeCoroutineId(), &mainCtx_));
 				addCoroutine(co);
 
 				return co;

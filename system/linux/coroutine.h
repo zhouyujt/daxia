@@ -35,7 +35,7 @@ namespace daxia
 				friend void daxia::system::linux::this_coroutine::CoYield();
 				friend void daxia::system::linux::this_coroutine::CoWait(std::function<bool()>&& wakeupCondition);
 			protected:
-				Coroutine(std::function<void()> fiber, long long id, ucontext_t* mainFiber);
+				Coroutine(std::function<void()> fiber, size_t stackSize, long long id, ucontext_t* mainFiber);
 			public:
 				~Coroutine();
 			public:

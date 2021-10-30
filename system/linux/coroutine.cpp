@@ -1,7 +1,5 @@
 #ifdef __linux__
 #include "coroutine.h"
-
-#define CO_STACK_SIZE 1024 * 8
 #include <iostream>
 namespace daxia
 {
@@ -9,7 +7,7 @@ namespace daxia
 	{
 		namespace linux
 		{
-			Coroutine::Coroutine(std::function<void()> fiber, long long id, ucontext_t* mainFiber)
+			Coroutine::Coroutine(std::function<void()> fiber, size_t stackSize, long long id, ucontext_t* mainFiber)
 				: id_(id)
 				, wakeupCount_(0)
 				, complete_(false)
@@ -34,11 +32,15 @@ namespace daxia
 					swapcontext(&ctx_, mainCtx_);
 				};
 
+				// statckSize取整
+				const size_t defaultSize = static_cast<size_t>(1024) * 4;
+				stackSize = stackSize == 0 ? defaultSize : (stackSize + (defaultSize - 1)) / defaultSize * defaultSize;
+
 				// 设置本协程入口点
 				getcontext(&ctx_);
-				stack_ = std::shared_ptr<char>(new char[CO_STACK_SIZE]);
+				stack_ = std::shared_ptr<char>(new char[stackSize]);
 				ctx_.uc_stack.ss_sp = stack_.get();
-				ctx_.uc_stack.ss_size = CO_STACK_SIZE;
+				ctx_.uc_stack.ss_size = stackSize;
 				ctx_.uc_stack.ss_flags = 0;
 				makecontext(&ctx_, (void(*)())(fiberStartRoutine), 1, this);
 			}
