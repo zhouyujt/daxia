@@ -33,8 +33,8 @@ namespace daxia
 				};
 
 				// statckSize取整
-				const size_t defaultSize = static_cast<size_t>(1024) * 4;
-				stackSize = stackSize == 0 ? defaultSize : (stackSize + (defaultSize - 1)) / defaultSize * defaultSize;
+				const size_t mutiple = static_cast<size_t>(1024) * 4;
+				stackSize = stackSize == 0 ? mutiple : (stackSize + (mutiple - 1)) / mutiple * mutiple;
 
 				// 设置本协程入口点
 				getcontext(&ctx_);

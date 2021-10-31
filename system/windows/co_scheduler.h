@@ -34,7 +34,7 @@ namespace daxia
 				~CoScheduler();
 			public:
 				// 创建一个协程
-				std::shared_ptr<Coroutine> StartCoroutine(std::function<void()>&& fiber, size_t stackSize = 1024 * 4/*设置协程栈大小，默认4KB。指定的数值将向上取整为4KB的倍数*/);
+				std::shared_ptr<Coroutine> StartCoroutine(std::function<void()>&& fiber, size_t stackSize = 1024 * 1024/*设置协程栈大小，默认1M。指定的数值将向上取整为4KB的倍数*/);
 				// 停止所有协程
 				void Stop();
 			private:
