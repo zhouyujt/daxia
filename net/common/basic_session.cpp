@@ -24,7 +24,21 @@ namespace daxia
 				Close();
 
 				// 等待写线程处理完毕
-				lock_guard locker(writeLocker_);
+				while (true)
+				{
+					writeLocker_.lock();
+					bool isWriting = !writeBufferCache_.empty();
+					writeLocker_.unlock();
+
+					if (isWriting)
+					{
+						std::this_thread::yield();
+					}
+					else
+					{
+						break;
+					}
+				}
 			}
 
 			void BasicSession::SetParser(std::shared_ptr<Parser> parser)
