@@ -1,6 +1,6 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 3.21)
-project(daxia)
+project(daxia VERSION 1.00)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -65,4 +65,24 @@ add_subdirectory(encode)
 add_subdirectory(reflect)
 add_subdirectory(database)
 add_subdirectory(system)
+
+install(TARGETS net encode reflect database system
+		CONFIGURATIONS Debug
+        LIBRARY DESTINATION lib/debug  # 动态库安装路径
+        ARCHIVE DESTINATION lib/debug  # 静态库安装路径
+        RUNTIME DESTINATION bin/debug  # 可执行文件安装路径
+		CONFIGURATIONS Release
+        LIBRARY DESTINATION lib  # 动态库安装路径
+        ARCHIVE DESTINATION lib  # 静态库安装路径
+        RUNTIME DESTINATION bin  # 可执行文件安装路径
+        )
+
+install(DIRECTORY database encode include net reflect system 
+		DESTINATION include/github.com/zhouyujt/daxia
+		PATTERN "CMakeLists.txt" EXCLUDE
+        )
+
+install(FILES defer.hpp singleton.hpp string.hpp
+		DESTINATION include/github.com/zhouyujt/daxia
+        )
 
