@@ -99,7 +99,7 @@ namespace daxia
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
 			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback = nullptr);
-			void Run(bool enableFps);
+			void Run();
 			void Stop();
 		private:
 			long long makeScheduleID();
@@ -122,7 +122,6 @@ namespace daxia
 			};
 		private:
 			unsigned long fps_;
-			bool enableFps_;
 			std::vector<UpdateFunc> updateFuncs_;
 			std::vector<ScheduleFunc> scheduleFuncs_;
 			std::mutex scheduleLocker_;

@@ -149,7 +149,7 @@ namespace daxia
 			void CoScheduler::addCoroutine(std::shared_ptr<Coroutine> coroutine)
 			{
 				std::lock_guard<std::mutex> locker(couroutinesLocker_);
-				coroutines_.push_front(coroutine);
+				coroutines_.push_back(coroutine);
 			}
 
 			long long CoScheduler::makeCoroutineId()

@@ -41,10 +41,10 @@ namespace daxia
 			Router();
 			~Router();
 		public:
-			void RunAsTCP(short port, bool enableFps);
-			void RunAsUDP(short port, bool enableFps);
-			void RunAsWebsocket(short port, const std::string& path, bool enableFps);
-			void RunAsHTTP(short port, const daxia::string& root, bool enableFps);
+			void RunAsTCP(short port);
+			void RunAsUDP(short port);
+			void RunAsWebsocket(short port, const std::string& path);
+			void RunAsHTTP(short port, const daxia::string& root);
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Stop();
 			void Handle(int msgID, std::shared_ptr<Controller> controller);

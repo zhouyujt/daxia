@@ -10,7 +10,6 @@ namespace daxia
 	{
 		Scheduler::Scheduler()
 			: fps_(20)
-			, enableFps_(false)
 			, isWorking_(false)
 			, nextScheduleID_(0)
 		{
@@ -124,10 +123,8 @@ namespace daxia
 			netRequests_.push(NetRequest(session, msgId, data, finishCallback));
 		}
 
-		void Scheduler::Run(bool enableFps)
+		void Scheduler::Run()
 		{
-			enableFps_ = enableFps;
-
 			run();
 		}
 
@@ -164,7 +161,7 @@ namespace daxia
 					// begin time
 					time_point<system_clock, milliseconds> beginTime = time_point_cast<milliseconds>(system_clock::now());
 
-					// 更新调度器
+					// 更新调度
 					cosc_.StartCoroutine([&]()
 						{
 							lock_guard locker(scheduleLocker_);
@@ -174,9 +171,8 @@ namespace daxia
 								iter->f();
 							}
 						});
-			
 
-					// 定时调度器
+					// 定时调度
 					cosc_.StartCoroutine([&]()
 						{
 							lock_guard locker(scheduleLocker_);
@@ -199,7 +195,7 @@ namespace daxia
 							}
 						});
 
-					// 获取网络请求
+					// 网络调度
 					for (;;)
 					{
 						NetRequest r;
@@ -235,12 +231,9 @@ namespace daxia
 						// stop time
 						time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
 
-						if (enableFps_)
+						if ((stopTime - beginTime).count() >= static_cast<long>(interval))
 						{
-							if ((stopTime - beginTime).count() >= static_cast<long>(interval))
-							{
-								break;
-							}
+							break;
 						}
 					}
 				}
