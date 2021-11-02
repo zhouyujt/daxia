@@ -1,6 +1,6 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 3.21)
-project(daxia VERSION 1.00)
+project(daxia VERSION 1.0.0)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -43,10 +43,6 @@ else()
 	endif()
 endif()
 
-#cmake -DCMAKE_BUILD_TYPE=Debug/Release
-#SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -W3 -g -ggdb ")
-#SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -W3")
-
 if(MSVC AND MT STREQUAL 1)
     add_compile_options(
         $<$<CONFIG:>:/MT> #----------|
@@ -66,23 +62,63 @@ add_subdirectory(reflect)
 add_subdirectory(database)
 add_subdirectory(system)
 
-install(TARGETS net encode reflect database system
-		CONFIGURATIONS Debug
-        LIBRARY DESTINATION lib/debug  # 动态库安装路径
-        ARCHIVE DESTINATION lib/debug  # 静态库安装路径
-        RUNTIME DESTINATION bin/debug  # 可执行文件安装路径
-		CONFIGURATIONS Release
-        LIBRARY DESTINATION lib  # 动态库安装路径
-        ARCHIVE DESTINATION lib  # 静态库安装路径
-        RUNTIME DESTINATION bin  # 可执行文件安装路径
-        )
+# 安装发行库文件
+install(
+	TARGETS net encode reflect database system zlib
+	EXPORT daxia-${PROJECT_VERSION}
+	CONFIGURATIONS Release
+    LIBRARY DESTINATION lib/daxia/release  # 动态库安装路径
+    ARCHIVE DESTINATION lib/daxia/release  # 静态库安装路径
+    RUNTIME DESTINATION bin/daxia/release  # 可执行文件安装路径
+)
 
-install(DIRECTORY database encode include net reflect system 
-		DESTINATION include/github.com/zhouyujt/daxia
-		PATTERN "CMakeLists.txt" EXCLUDE
-        )
+# 安装调试库文件
+install(
+	TARGETS net encode reflect database system zlib
+	CONFIGURATIONS Debug
+    LIBRARY DESTINATION lib/daxia/debug  # 动态库安装路径
+    ARCHIVE DESTINATION lib/daxia/debug  # 静态库安装路径
+    RUNTIME DESTINATION bin/daxia/debug  # 可执行文件安装路径
+)
 
-install(FILES defer.hpp singleton.hpp string.hpp
-		DESTINATION include/github.com/zhouyujt/daxia
-        )
+# 安装源文件
+install(
+	DIRECTORY database encode include net reflect system 
+	DESTINATION include/github.com/zhouyujt/daxia
+	PATTERN "CMakeLists.txt" EXCLUDE
+)
 
+# 安装源文件
+install(
+	FILES defer.hpp singleton.hpp string.hpp
+	DESTINATION include/github.com/zhouyujt/daxia
+)
+
+# 安装导出库
+install(
+	EXPORT daxia-${PROJECT_VERSION}
+    FILE daxiaTargets.cmake
+    DESTINATION lib/cmake/daxia-${PROJECT_VERSION}
+)
+
+# 生成version文件
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+	daxiaConfigVersion.cmake
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY AnyNewerVersion  # 表示该函数库向下兼容
+)
+
+# 生成配置文件
+configure_file(daxiaConfig.cmake.in daxiaConfig.cmake @ONLY)
+
+# 安装version文件及配置文件
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/daxiaConfigVersion.cmake" "${CMAKE_CURRENT_BINARY_DIR}/daxiaConfig.cmake" 
+    DESTINATION lib/cmake/daxia-${PROJECT_VERSION}
+)
+
+
+
+								
+								

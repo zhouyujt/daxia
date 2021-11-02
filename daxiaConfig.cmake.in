@@ -1,0 +1,7 @@
+include(CMakeFindDependencyMacro)
+
+find_dependency(Boost REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/daxiaTargets.cmake")
+
+message(STATUS "Found daxia: ${CMAKE_CURRENT_LIST_DIR}/daxiaConfig.cmake (found version on \"@PROJECT_VERSION@\")")
