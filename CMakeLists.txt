@@ -64,8 +64,8 @@ add_subdirectory(system)
 
 # 安装发行库文件
 install(
-	TARGETS net encode reflect database system zlib
-	EXPORT daxia-${PROJECT_VERSION}
+	TARGETS net encode reflect database system zlib sqlite3
+	EXPORT daxia
 	CONFIGURATIONS Release
     LIBRARY DESTINATION lib/daxia/release  # 动态库安装路径
     ARCHIVE DESTINATION lib/daxia/release  # 静态库安装路径
@@ -74,7 +74,7 @@ install(
 
 # 安装调试库文件
 install(
-	TARGETS net encode reflect database system zlib
+	TARGETS net encode reflect database system zlib sqlite3
 	CONFIGURATIONS Debug
     LIBRARY DESTINATION lib/daxia/debug  # 动态库安装路径
     ARCHIVE DESTINATION lib/daxia/debug  # 静态库安装路径
@@ -96,8 +96,9 @@ install(
 
 # 安装导出库
 install(
-	EXPORT daxia-${PROJECT_VERSION}
+	EXPORT daxia
     FILE daxiaTargets.cmake
+	NAMESPACE daxia::
     DESTINATION lib/cmake/daxia-${PROJECT_VERSION}
 )
 

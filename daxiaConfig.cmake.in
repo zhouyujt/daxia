@@ -1,7 +1,16 @@
 include(CMakeFindDependencyMacro)
-
 find_dependency(Boost REQUIRED)
 
 include("${CMAKE_CURRENT_LIST_DIR}/daxiaTargets.cmake")
+
+set(daxia_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include)
+
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    set(daxia_LIBRARY_DIRS ${CMAKE_INSTALL_PREFIX}/lib/daxia/debug)
+else()
+    set(daxia_LIBRARY_DIRS ${CMAKE_INSTALL_PREFIX}/lib/daxia/release)
+endif()
+
+set(daxia_LIBRARIES daxia::database daxia::net daxia::encode daxia::zlib daxia::reflect daxia::sqlite3 daxia::system)
 
 message(STATUS "Found daxia: ${CMAKE_CURRENT_LIST_DIR}/daxiaConfig.cmake (found version on \"@PROJECT_VERSION@\")")
