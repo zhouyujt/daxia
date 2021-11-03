@@ -16,9 +16,8 @@ namespace daxia
 			Stop();
 		}
 
-		void ThreadPool::Stop()
+		void ThreadPool::Join()
 		{
-			ios_.stop();
 			for (size_t i = 0; i < threads_.size(); ++i)
 			{
 				if (threads_[i].joinable())
@@ -26,6 +25,12 @@ namespace daxia
 					threads_[i].join();
 				}
 			}
+		}
+
+		void ThreadPool::Stop()
+		{
+			ios_.stop();
+			Join();
 			ios_.reset();
 			threads_.clear();
 		}

@@ -55,6 +55,9 @@ namespace daxia
 			{
 				ios_.dispatch(std::forward<std::function<void()>>(fun));
 			}
+			
+			// 等待所有线程
+			void Join();
 
 			// 停止所有线程
 			void Stop();

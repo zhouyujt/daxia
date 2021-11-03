@@ -31,12 +31,34 @@ namespace daxia
 				return co;
 			}
 
+			void CoScheduler::Join()
+			{
+				while (true)
+				{
+					while (!couroutinesLocker_.try_lock())
+					{
+						std::this_thread::sleep_for(std::chrono::milliseconds(1));
+					}
+
+					if (coroutines_.empty())
+					{
+						couroutinesLocker_.unlock();
+						break;
+					}
+					else
+					{
+						couroutinesLocker_.unlock();
+						std::this_thread::sleep_for(std::chrono::milliseconds(1));
+					}
+				}
+			}
+
 			void CoScheduler::Stop()
 			{
 				run_ = false;
 
 				// 等待停止所有协程
-				threadPool_.Stop();
+				threadPool_.Join();
 			}
 
 			void CoScheduler::run()
