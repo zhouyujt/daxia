@@ -161,39 +161,47 @@ namespace daxia
 					// begin time
 					time_point<system_clock, milliseconds> beginTime = time_point_cast<milliseconds>(system_clock::now());
 
-					// 更新调度
-					cosc_.StartCoroutine([&]()
-						{
-							lock_guard locker(scheduleLocker_);
 
-							for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
-							{
-								iter->f();
-							}
-						});
+					// 更新调度
+					{
+						lock_guard locker(scheduleLocker_);
+						for (auto iter = updateFuncs_.begin(); iter != updateFuncs_.end(); ++iter)
+						{
+							UpdateFunc func = *iter;
+							cosc_.StartCoroutine([func]()
+								{
+									func.f();
+								});
+						}
+					}
+
 
 					// 定时调度
-					cosc_.StartCoroutine([&]()
+					{
+						lock_guard locker(scheduleLocker_);
+						for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end();)
 						{
-							lock_guard locker(scheduleLocker_);
-
-							for (auto iter = scheduleFuncs_.begin(); iter != scheduleFuncs_.end();)
+							if ((beginTime - iter->timestamp).count() >= static_cast<long>(iter->duration))
 							{
-								if ((beginTime - iter->timestamp).count() >= static_cast<long>(iter->duration))
-								{
-									iter->f();
-									iter->timestamp = beginTime;
+								iter->timestamp = beginTime;
+								
+								ScheduleFunc func = *iter;
 
-									if (iter->isOnce)
+								cosc_.StartCoroutine([func]()
 									{
-										iter = scheduleFuncs_.erase(iter);
-										continue;
-									}
-								}
+										func.f();
+									});
 
-								++iter;
+								if (iter->isOnce)
+								{
+									iter = scheduleFuncs_.erase(iter);
+									continue;
+								}
 							}
-						});
+
+							++iter;
+						}
+					}
 
 					// 网络调度
 					for (;;)
