@@ -128,6 +128,7 @@ namespace daxia
 			bool isWorking_;
 			std::thread workThread_;
 			std::mutex netRequestLocker_;
+			std::condition_variable netRequestNotify_;
 			std::queue<NetRequest> netRequests_;
 			netDispatchFunc	dispatch_;
 			long long nextScheduleID_;

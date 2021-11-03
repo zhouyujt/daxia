@@ -121,6 +121,7 @@ namespace daxia
 		{
 			lock_guard locker(netRequestLocker_);
 			netRequests_.push(NetRequest(session, msgId, data, finishCallback));
+			netRequestNotify_.notify_one();
 		}
 
 		void Scheduler::Run()
@@ -158,7 +159,7 @@ namespace daxia
 				{
 					using namespace std::chrono;
 
-					// begin time
+					// 当前帧的开始执行时间
 					time_point<system_clock, milliseconds> beginTime = time_point_cast<milliseconds>(system_clock::now());
 
 
@@ -204,41 +205,63 @@ namespace daxia
 					}
 
 					// 网络调度
-					for (;;)
+					while (true)
 					{
-						NetRequest r;
-						netRequestLocker_.lock();
-						if (!netRequests_.empty())
+						NetRequest request;
+
+						// 获取网络请求
 						{
-							r = std::move(netRequests_.front());
-							netRequests_.pop();
+							std::unique_lock<std::mutex> locker(netRequestLocker_);
+							if (!netRequests_.empty())
+							{
+								request = std::move(netRequests_.front());
+								netRequests_.pop();
+							}
+							else
+							{
+								// 尝试等待网络请求到来
+								time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
+								long long waste = (stopTime - beginTime).count();
+								if (waste < interval)
+								{
+									if (std::cv_status::timeout == netRequestNotify_.wait_for(locker, std::chrono::milliseconds(interval - waste)))
+									{
+										// 等待超时，退出网络调度
+										break;
+									}
+									else
+									{
+										// 等待成功，再次获取网络请求
+										continue;
+									}
+								}
+								else
+								{
+									// 当前帧消耗完了时间片，退出网络调度
+									break;
+								}
+							}
 						}
-						netRequestLocker_.unlock();
 
 						// 处理网络请求
-						if (r.session != nullptr)
+						if (request.session != nullptr)
 						{
-							cosc_.StartCoroutine([&,r]()
+							cosc_.StartCoroutine([&,request]()
 								{
 									if (dispatch_)
 									{
-										dispatch_(r.session, r.msgId, r.data);
+										dispatch_(request.session, request.msgId, request.data);
 									}
 
-									if (r.finishCallback)
+									if (request.finishCallback)
 									{
-										r.finishCallback();
+										request.finishCallback();
 									}
 								});
 						}
-						else
-						{
-							std::this_thread::sleep_for(std::chrono::milliseconds(1));
-						}
 
-						// stop time
+						// 检测当前帧是否还有时间片继续执行
 						time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
-
 						if ((stopTime - beginTime).count() >= static_cast<long>(interval))
 						{
 							break;
