@@ -63,7 +63,7 @@ namespace daxia
 				run_ = false;
 
 				// 等待停止所有协程
-				threadPool_.Join();
+				threadPool_.Stop();
 			}
 
 			void CoScheduler::run()
