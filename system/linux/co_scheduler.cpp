@@ -80,7 +80,9 @@ namespace daxia
 					daxia::system::DateTime now = daxia::system::DateTime::Now();
 					std::shared_ptr<Coroutine> work;
 					{
-						couroutinesLocker_.lock();
+						std::unique_lock<std::mutex> locker(couroutinesLocker_);
+						coroutinesNotify_.wait_for(locker, std::chrono::milliseconds(1000));
+
 						for (auto iter = coroutines_.begin(); iter != coroutines_.end();)
 						{
 							Coroutine& co = *(*iter);
@@ -149,7 +151,6 @@ namespace daxia
 							work = *iter;
 							break;
 						}
-						couroutinesLocker_.unlock();
 					}
 
 					if (work)

@@ -47,6 +47,7 @@ namespace daxia
 				daxia::system::ThreadPool threadPool_;
 				std::list<std::shared_ptr<Coroutine>> coroutines_;
 				std::mutex couroutinesLocker_;
+				std::condition_variable coroutinesNotify_;
 				std::mutex idLocker_;
 				bool run_;
 				static long long nextId_;

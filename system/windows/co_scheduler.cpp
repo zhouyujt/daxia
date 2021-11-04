@@ -78,7 +78,9 @@ namespace daxia
 					daxia::system::DateTime now = daxia::system::DateTime::Now();
 					std::shared_ptr<Coroutine> work;
 					{
-						couroutinesLocker_.lock();
+						std::unique_lock<std::mutex> locker(couroutinesLocker_);
+						coroutinesNotify_.wait_for(locker, std::chrono::milliseconds(1000));
+
 						for (auto iter = coroutines_.begin(); iter != coroutines_.end();)
 						{
 							Coroutine& co = *(*iter);
@@ -147,17 +149,12 @@ namespace daxia
 							work = *iter;
 							break;
 						}
-						couroutinesLocker_.unlock();
 					}
 
 					if (work)
 					{
 						++work->wakeupCount_;
 						::SwitchToFiber(work->fiber_);
-					}
-					else
-					{
-						std::this_thread::sleep_for(std::chrono::milliseconds(idle));
 					}
 				}
 			}
@@ -166,6 +163,7 @@ namespace daxia
 			{
 				std::lock_guard<std::mutex> locker(couroutinesLocker_);
 				coroutines_.push_back(coroutine);
+				coroutinesNotify_.notify_one();
 			}
 
 			long long CoScheduler::makeCoroutineId()
