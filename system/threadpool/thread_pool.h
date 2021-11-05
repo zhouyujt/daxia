@@ -12,9 +12,11 @@
 */
 #ifndef __DAXIA_SYSTEM_THREADPOOL_H
 #define __DAXIA_SYSTEM_THREADPOOL_H
+
 #ifdef _WIN32
-#include <sdkddkver.h>
+#include <sdkddkver.h> // boost/asio.hpp需要包含此文件
 #endif
+
 #include <functional>
 #include <thread>
 #include <vector>

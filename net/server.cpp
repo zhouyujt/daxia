@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <sdkddkver.h>
-#endif
 #include "server.h"
 
 namespace daxia

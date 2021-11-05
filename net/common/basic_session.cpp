@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <sdkddkver.h>
-#endif
 #include <boost/format.hpp>
 #include "basic_session.h"
 #include "parser.h"

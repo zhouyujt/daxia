@@ -12,6 +12,10 @@
 #ifndef __DAXIA_NET_CLIENT_H
 #define __DAXIA_NET_CLIENT_H
 
+#ifdef _WIN32
+#include <sdkddkver.h> // boost/asio.hpp需要包含此文件
+#endif
+
 #include <functional>
 #include <map>
 #include <mutex>

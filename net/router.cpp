@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <sdkddkver.h>
-#endif
 #include "router.h"
 #include "sessions_manager.h"
 #include "common/parser.h"

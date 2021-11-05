@@ -71,6 +71,7 @@
 #	endif
 #endif // !_DEBUG
 
+#ifndef DAXIA_DONOT_LINK_LIBRARIES
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,net.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,encode.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,reflect.lib)))
@@ -78,6 +79,7 @@
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,database.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,sqlite3.lib)))
 #pragma comment(lib,dxSTR(dxSTRCAT3(dxPATH,dxPATH2,zlib.lib)))
+#endif
 
 #undef dxPATH
 #undef dxPATH2

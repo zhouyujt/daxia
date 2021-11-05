@@ -12,8 +12,11 @@
 */
 #ifndef __DAXIA_SYSTEM_FIND_FILE_H
 #define __DAXIA_SYSTEM_FIND_FILE_H
+#ifdef _WIN32
 #include "windows/find_file.h"
+#else
 #include "linux/find_file.h"
+#endif
 namespace daxia
 {
 	namespace system

@@ -13,7 +13,7 @@
 #define __DAXIA_NET_COMMON_SHARED_BUFFER_H
 
 #ifdef _WIN32
-#include <sdkddkver.h>
+#include <sdkddkver.h> // boost/asio.hpp需要包含此文件
 #endif
 
 #include <memory>

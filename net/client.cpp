@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <sdkddkver.h>
-#endif
 #include "client.h"
 #include "common/parser.h"
 #include "../encode/strconv.h"

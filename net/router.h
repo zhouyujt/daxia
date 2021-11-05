@@ -12,6 +12,10 @@
 #ifndef __DAXIA_NET_SERVER_ROUTER_H
 #define __DAXIA_NET_SERVER_ROUTER_H
 
+#ifdef _WIN32
+#include <sdkddkver.h> // boost/asio.hpp需要包含此文件
+#endif
+
 #include <memory>
 #include <boost/asio.hpp>
 #include "sessions_manager.h"

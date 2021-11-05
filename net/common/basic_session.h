@@ -12,12 +12,13 @@
 #ifndef __DAXIA_NET_COMMON_BASIC_SESSION_H
 #define __DAXIA_NET_COMMON_BASIC_SESSION_H
 
+#ifdef _WIN32
+#include <sdkddkver.h> // boost/asio.hpp需要包含此文件
+#endif
+
 #include <mutex>
 #include <memory>
 #include <queue>
-#ifdef _WIN32
-#include <sdkddkver.h>
-#endif
 #include <boost/asio.hpp>
 #include <boost/any.hpp>
 #include "buffer.h"
