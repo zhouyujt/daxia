@@ -268,7 +268,7 @@ namespace daxia
 
 				Reflect<DataType<daxia::buffer>>::SetToString(ORM, [](const void* data)
 				{
-					const daxia::buffer& v = static_cast<const daxia::buffer&>(*reinterpret_cast<const DataType<daxia::buffer>*>(data));
+					//const daxia::buffer& v = static_cast<const daxia::buffer&>(*reinterpret_cast<const DataType<daxia::buffer>*>(data));
 
 					//daxia::string result = "\'";
 					//result += daxia::encode::Hex::ToString(v.GetString(), v.GetLength()) + "\'";

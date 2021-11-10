@@ -218,7 +218,7 @@ namespace daxia
 							{
 								// 尝试等待网络请求到来
 								time_point<system_clock, milliseconds> stopTime = time_point_cast<milliseconds>(system_clock::now());
-								long long waste = (stopTime - beginTime).count();
+								unsigned long waste = static_cast<unsigned long>((stopTime - beginTime).count());
 								if (waste < interval)
 								{
 									if (std::cv_status::timeout == netRequestNotify_.wait_for(locker, std::chrono::milliseconds(interval - waste)))
