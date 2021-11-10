@@ -106,10 +106,10 @@ namespace daxia
 			tagStr.Trim();
 
 			// ÕıÔòÆ¥ÅäÔÊĞí"orm:id(identity) json:id other:id(attribute1 attribute2=param attribute3)"
-			std::wstring pattern = L"\\w+:[\\w-]+(\\s*\\(([\\w=]\\s*)*\\))?";
-			std::wregex express(pattern);
+			static const std::wstring pattern = L"\\w+:[\\w-]+(\\s*\\(([\\w=]\\s*)*\\))?";
+			static const std::wregex express(pattern);
 
-			const std::wstring& s = static_cast<std::wstring>(tagStr);
+			const std::wstring& s = static_cast<const std::wstring&>(tagStr);
 			std::regex_token_iterator<std::wstring::const_iterator> tokenize(s.begin(), s.end(), express);
 			for (auto iter = tokenize; iter != std::wsregex_token_iterator(); iter++)
 			{
