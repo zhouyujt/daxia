@@ -90,7 +90,18 @@ namespace daxia
 
 				try
 				{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+					if (sslsock_)
+					{
+						ep = sslsock_->lowest_layer().remote_endpoint();
+					}
+					else
+					{
+						ep = sock_->remote_endpoint();
+					}
+#else
 					ep = sock_->remote_endpoint();
+#endif
 				}
 				catch (...)
 				{
@@ -210,6 +221,13 @@ namespace daxia
 					sock_->close();
 				}
 
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				if (sslsock_ && sslsock_->lowest_layer().is_open())
+				{
+					sslsock_->lowest_layer().close();
+				}
+#endif
+
 				sendPacketCount_ = 0;
 				recvPacketCount_ = 0;
 			}
@@ -219,15 +237,41 @@ namespace daxia
 				sock_ = sock;
 			}
 
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			void BasicSession::initSocket(sslsocket_ptr sslsock)
+			{
+				sslsock_ = sslsock;
+			}
+#endif
+
 			void BasicSession::postRead()
 			{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				if (sslsock_)
+				{
+					sslsock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+				}
+				else
+				{
+					sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+
+				}
+#else
 				sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+#endif
 			}
 
 			BasicSession::socket_ptr BasicSession::getSocket()
 			{
 				return sock_;
 			}
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			BasicSession::sslsocket_ptr BasicSession::getSSLScoket()
+			{
+				return sslsock_;
+			}
+#endif
 
 			void BasicSession::onRead(const boost::system::error_code& err, size_t len)
 			{
@@ -295,7 +339,18 @@ namespace daxia
 				switch (result)
 				{
 				case Parser::Result::Result_Success:
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+					if (sslsock_)
+					{
+						sslsock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					}
+#else
 					sock_->async_read_some(buffer_.GetAsioBuffer(), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+#endif
 					break;
 				case Parser::Result::Result_Fail:
 					// 断开连接
@@ -305,7 +360,18 @@ namespace daxia
 					break;
 				case Parser::Result::Result_Uncomplete:
 					// 继续接收完整的报文
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+					if (sslsock_)
+					{
+						sslsock_->async_read_some(buffer_.GetAsioBuffer(buffer_.Size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sock_->async_read_some(buffer_.GetAsioBuffer(buffer_.Size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+					}
+#else
 					sock_->async_read_some(buffer_.GetAsioBuffer(buffer_.Size()), std::bind(&BasicSession::onRead, this, std::placeholders::_1, std::placeholders::_2));
+#endif
 					break;
 				default:
 					break;
@@ -315,7 +381,8 @@ namespace daxia
 			void BasicSession::doWriteMessage(const common::Buffer& msg)
 			{
 				using namespace std::chrono;
-				boost::asio::async_write(*sock_, msg.GetAsioBuffer(), [&](const boost::system::error_code& ec, std::size_t size)
+
+				auto cb = [&](const boost::system::error_code& ec, std::size_t size)
 				{
 					lock_guard locker(writeLocker_);
 
@@ -336,7 +403,20 @@ namespace daxia
 							doWriteMessage(writeBufferCache_.front());
 						}
 					}
-				});
+				};
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				if (sslsock_)
+				{
+					boost::asio::async_write(*sslsock_, msg.GetAsioBuffer(), cb);
+				}
+				else
+				{
+					boost::asio::async_write(*sock_, msg.GetAsioBuffer(), cb);
+				}
+#else
+				boost::asio::async_write(*sock_, msg.GetAsioBuffer(), cb);
+#endif
 			}
 		}// namespace common
 	}// namespace net

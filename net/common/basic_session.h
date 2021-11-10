@@ -24,6 +24,10 @@
 #include "buffer.h"
 #include "../../string.hpp"
 
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+#include <boost/asio/ssl.hpp>
+#endif
+
 namespace daxia
 {
 	namespace net
@@ -38,6 +42,10 @@ namespace daxia
 				typedef std::lock_guard<std::mutex> lock_guard;
 				typedef boost::asio::ip::tcp::socket socket;
 				typedef std::shared_ptr<socket> socket_ptr;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				typedef boost::asio::ssl::stream<socket> sslsocket;
+				typedef std::shared_ptr<sslsocket> sslsocket_ptr;
+#endif
 				typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> timepoint;
 				typedef boost::asio::ip::tcp::endpoint endpoint;
 			protected:
@@ -119,13 +127,22 @@ namespace daxia
 			protected:
 				virtual void onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer) = 0;
 				void initSocket(socket_ptr sock);
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				void initSocket(sslsocket_ptr sslsock);
+#endif
 				void postRead();
 				socket_ptr getSocket();
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				sslsocket_ptr getSSLScoket();
+#endif
 			private:
 				void onRead(const boost::system::error_code& err, size_t len);
 				void doWriteMessage(const common::Buffer& msg);
 			private:
 				socket_ptr sock_;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				sslsocket_ptr sslsock_;
+#endif
 				std::map<unsigned int, boost::any> userData_;
 				boost::any userData2_[UserDataIndex_End + 10/*框架内部使用*/];
 				std::mutex userDataLocker_;

@@ -13,25 +13,46 @@ namespace daxia
 		{
 			Stop();
 		}
-		void Server::Run(short port, common::Protocol protcol, const char* root)
+
+		bool Server::Run(short port, const ExtraParam* extraParam)
 		{
-			switch (protcol)
+			if (extraParam == nullptr)
+			{
+				static ExtraParam defaultParam;
+				extraParam = &defaultParam;
+			}
+
+			bool result = false;
+
+			switch (extraParam->protocol_)
 			{
 			case common::Protocol_TCP:
-				router_.RunAsTCP(port);
+				result = router_.RunAsTCP(port);
 				break;
 			case common::Protocol_UDP:
-				router_.RunAsUDP(port);
+				result = router_.RunAsUDP(port);
 				break;
 			case common::Protocol_Websocket:
-				router_.RunAsWebsocket(port, root);
 				break;
 			case common::Protocol_HTTP:
-				router_.RunAsHTTP(port, root);
+			{
+				const ExtraParamHttp* param = dynamic_cast<const ExtraParamHttp*>(extraParam);
+				result = router_.RunAsHTTP(port, param->root_);
 				break;
+			}
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			case common::Protocol_HTTPS:
+			{
+				const ExtraParamHttps* param = dynamic_cast<const ExtraParamHttps*>(extraParam);
+				result = router_.RunAsHTTPS(port, param->root_, param->pubCert_, param->priKey_);
+				break;
+			}
+#endif
 			default:
 				break;
 			}
+
+			return result;
 		}
 
 		void Server::Stop()

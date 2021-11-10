@@ -11,6 +11,9 @@ namespace daxia
 		Router::Router()
 			: heartbeatSchedulerId_(-1)
 			, nextSessionId_(1)
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			, sslctx_(boost::asio::ssl::context::sslv23)
+#endif
 		{
 			
 		}
@@ -20,7 +23,7 @@ namespace daxia
 
 		}
 
-		void Router::RunAsTCP(short port)
+		bool Router::RunAsTCP(short port)
 		{
 			if (!parser_)
 			{
@@ -31,7 +34,7 @@ namespace daxia
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
 
 			socket_ptr socketSession(new socket(ios_));
-			acceptor_->async_accept(*socketSession, bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
+			acceptor_->async_accept(*socketSession, std::bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
 
 			// 启动I/O线程
 			int coreCount = getCoreCount();
@@ -47,22 +50,28 @@ namespace daxia
 			// 启动调度器
 			scheduler_.SetNetDispatch(std::bind(&Router::dispatchMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			scheduler_.Run();
+
+			return true;
 		}
 
-		void Router::RunAsUDP(short port)
+		bool Router::RunAsUDP(short port)
 		{
+			throw "尚未实现";
 		}
 
-		void Router::RunAsWebsocket(short port, const std::string& path)
+		bool Router::RunAsWebsocket(short port, const std::string& path)
 		{
+			throw "尚未实现";
 		}
 
-		void Router::RunAsHTTP(short port, const daxia::string& root)
+		bool Router::RunAsHTTP(short port, const daxia::string& root)
 		{
+			using namespace boost::asio;
+
 			parser_ = std::shared_ptr<common::Parser>(new common::HttpServerParser);
 			httpRoot_ = root;
 
-			endpoint ep(boost::asio::ip::tcp::v4(), port);
+			endpoint ep(ip::tcp::v4(), port);
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
 
 			socket_ptr socketSession(new socket(ios_));
@@ -82,7 +91,58 @@ namespace daxia
 			// 启动调度器
 			scheduler_.SetNetDispatch(std::bind(&Router::dispatchHttpMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 			scheduler_.Run();
+
+			return true;
 		}
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+		bool Router::RunAsHTTPS(short port, const daxia::string& root, const daxia::string& pubCert, const daxia::string& priKey)
+		{
+			using namespace boost::asio;
+
+			try
+			{
+				sslctx_.set_options(
+					boost::asio::ssl::context::default_workarounds
+					| boost::asio::ssl::context::no_sslv2
+					| boost::asio::ssl::context::single_dh_use);
+				sslctx_.use_certificate_chain_file(pubCert.GetString());
+				sslctx_.use_private_key_file(priKey.GetString(), boost::asio::ssl::context::pem);
+				//sslctx_.use_tmp_dh_file("dh2048.pem");
+			}
+			catch (const boost::system::system_error&)
+			{
+				//auto msg = err.what();
+				return false;
+			}
+
+			parser_ = std::shared_ptr<common::Parser>(new common::HttpServerParser);
+			httpRoot_ = root;
+
+			endpoint ep(ip::tcp::v4(), port);
+			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
+
+			sslsocket_ptr socketSession(new sslsocket(ios_, sslctx_));
+			acceptor_->async_accept(socketSession->lowest_layer(), std::bind(&Router::onAcceptSSL, this, socketSession, std::placeholders::_1));
+
+			// 启动I/O线程
+			int coreCount = getCoreCount();
+			for (int i = 0; i < coreCount * 2; ++i)
+			{
+				ioThreads_.push_back(
+					std::thread([=]()
+						{
+							ios_.run();
+						}));
+			}
+
+			// 启动调度器
+			scheduler_.SetNetDispatch(std::bind(&Router::dispatchHttpMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+			scheduler_.Run();
+
+			return true;
+		}
+#endif
 
 		void Router::SetParser(std::shared_ptr<common::Parser> parser)
 		{
@@ -388,8 +448,9 @@ else\
 			if (!err)
 			{
 				socket_ptr socketSession(new socket(ios_));
-				acceptor_->async_accept(*socketSession, bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
+				acceptor_->async_accept(*socketSession, std::bind(&Router::onAccept, this, socketSession, std::placeholders::_1));
 
+				// 构造Session对象
 				sessionIdLocker_.lock();
 				Session::ptr  session(new Session(sock, parser_, std::bind(&Router::onMessage,
 					this,
@@ -402,9 +463,45 @@ else\
 				session->UpdateConnectTime();
 				AddSession(session);
 
+				// 投递客户端连接事件
 				scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::Buffer());
 			}
 		}
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+		void Router::onAcceptSSL(sslsocket_ptr sslsock, const error_code& err)
+		{
+			if (!err)
+			{
+				sslsocket_ptr socketSession(new sslsocket(ios_,sslctx_));
+				acceptor_->async_accept(socketSession->lowest_layer(), std::bind(&Router::onAcceptSSL, this, socketSession, std::placeholders::_1));
+
+				// 进行SSL协议握手
+				sslsock->async_handshake(boost::asio::ssl::stream_base::server, [this,sslsock](const boost::system::error_code& error)
+				{
+					// 握手成功
+					if (!error)
+					{
+						// 构造Session对象
+						sessionIdLocker_.lock();
+						Session::ptr  session(new Session(sslsock, parser_, std::bind(&Router::onMessage,
+							this,
+							std::placeholders::_1,
+							std::placeholders::_2,
+							std::placeholders::_3,
+							std::placeholders::_4), nextSessionId_++));
+						sessionIdLocker_.unlock();
+
+						session->UpdateConnectTime();
+						AddSession(session);
+
+						// 投递客户端连接事件
+						scheduler_.PushNetRequest(session, common::DefMsgID_Connect, common::Buffer());
+					}
+				});
+			}
+		}
+#endif
 
 		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg)
 		{

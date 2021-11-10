@@ -23,6 +23,11 @@
 #include "common/http_parser.h"
 #include "scheduler.h"
 
+//  «∑Ò∆Ù”√HTTPS
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+#include <boost/asio/ssl.hpp>
+#endif
+
 namespace daxia
 {
 	namespace net
@@ -38,6 +43,10 @@ namespace daxia
 			typedef boost::asio::ip::tcp::endpoint endpoint;
 			typedef boost::asio::ip::tcp::socket socket;
 			typedef std::shared_ptr<socket> socket_ptr;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			typedef boost::asio::ssl::stream<socket> sslsocket;
+			typedef std::shared_ptr<sslsocket> sslsocket_ptr;
+#endif
 			typedef boost::asio::ip::tcp::acceptor acceptor;
 			typedef std::shared_ptr<acceptor> acceptor_ptr;
 			typedef boost::system::error_code error_code;
@@ -45,10 +54,13 @@ namespace daxia
 			Router();
 			~Router();
 		public:
-			void RunAsTCP(short port);
-			void RunAsUDP(short port);
-			void RunAsWebsocket(short port, const std::string& path);
-			void RunAsHTTP(short port, const daxia::string& root);
+			bool RunAsTCP(short port);
+			bool RunAsUDP(short port);
+			bool RunAsWebsocket(short port, const std::string& path);
+			bool RunAsHTTP(short port, const daxia::string& root);
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			bool RunAsHTTPS(short port, const daxia::string& root, const daxia::string& pubCert, const daxia::string& priKey);
+#endif
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Stop();
 			void Handle(int msgID, std::shared_ptr<Controller> controller);
@@ -60,6 +72,9 @@ namespace daxia
 			void dispatchHttpMessage(std::shared_ptr<Session>, int msgID, const common::Buffer& data);
 			int getCoreCount() const;
 			void onAccept(socket_ptr, const error_code&);
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			void onAcceptSSL(sslsocket_ptr, const error_code&);
+#endif
 			void onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg);
 		private:
 			std::map<int, std::shared_ptr<Controller>> controllers_;
@@ -73,6 +88,9 @@ namespace daxia
 			long long nextSessionId_;
 			std::mutex sessionIdLocker_;
 			daxia::string httpRoot_;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			boost::asio::ssl::context sslctx_;
+#endif
 		};
 	}// namespace net
 }// namespace daxia

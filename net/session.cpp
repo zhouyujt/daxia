@@ -13,6 +13,17 @@ namespace daxia
 			postRead();
 		}
 
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+		Session::Session(common::BasicSession::sslsocket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id)
+			: id_(id)
+			, onMessage_(onMessage)
+		{
+			initSocket(sock);
+			SetParser(parser);
+			postRead();
+		}
+#endif
+
 		Session::~Session()
 		{
 		}

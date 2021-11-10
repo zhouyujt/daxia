@@ -23,7 +23,8 @@ namespace daxia
 				Protocol_TCP,
 				Protocol_UDP,
 				Protocol_Websocket,
-				Protocol_HTTP
+				Protocol_HTTP,
+				Protocol_HTTPS
 			};
 
 			enum DefMsgID : int
