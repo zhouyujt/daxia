@@ -77,4 +77,6 @@ if(MYSQL_FOUND)
   link_directories(${MYSQL_LIBRARY})
 
   MESSAGE(STATUS "Found MYSQL INCLUDE: ${MYSQL_INCLUDE_DIRS} (found version \"${MYSQL_VERSION_STRING}\")")
+else()
+  MESSAGE(FATAL_ERROR "Could not find MySQL!")
 endif()
