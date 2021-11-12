@@ -29,9 +29,7 @@ namespace daxia
 			typedef std::function<void(const boost::system::error_code&, long long, int, common::Buffer)> handler;
 		protected:
 			Session(common::BasicSession::socket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id);
-#ifdef DAXIA_NET_SUPPORT_HTTPS
 			Session(common::BasicSession::sslsocket_ptr sock, std::shared_ptr<common::Parser> parser, handler onMessage, long long id);
-#endif
 		public:
 			~Session();
 

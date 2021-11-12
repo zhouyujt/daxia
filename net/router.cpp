@@ -4,6 +4,11 @@
 #include "common/http_parser.h"
 #include "controller.h"
 
+// 是否启用HTTPS
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+#include <boost/asio/ssl.hpp>
+#endif
+
 namespace daxia
 {
 	namespace net
@@ -12,7 +17,7 @@ namespace daxia
 			: heartbeatSchedulerId_(-1)
 			, nextSessionId_(1)
 #ifdef DAXIA_NET_SUPPORT_HTTPS
-			, sslctx_(boost::asio::ssl::context::sslv23)
+			, sslctx_(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23))
 #endif
 		{
 			
@@ -95,19 +100,19 @@ namespace daxia
 			return true;
 		}
 
-#ifdef DAXIA_NET_SUPPORT_HTTPS
 		bool Router::RunAsHTTPS(short port, const daxia::string& root, const daxia::string& pubCert, const daxia::string& priKey)
 		{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
 			using namespace boost::asio;
 
 			try
 			{
-				sslctx_.set_options(
+				sslctx_->set_options(
 					boost::asio::ssl::context::default_workarounds
 					| boost::asio::ssl::context::no_sslv2
 					| boost::asio::ssl::context::single_dh_use);
-				sslctx_.use_certificate_chain_file(pubCert.GetString());
-				sslctx_.use_private_key_file(priKey.GetString(), boost::asio::ssl::context::pem);
+				sslctx_->use_certificate_chain_file(pubCert.GetString());
+				sslctx_->use_private_key_file(priKey.GetString(), boost::asio::ssl::context::pem);
 				//sslctx_.use_tmp_dh_file("dh2048.pem");
 			}
 			catch (const boost::system::system_error&)
@@ -122,7 +127,7 @@ namespace daxia
 			endpoint ep(ip::tcp::v4(), port);
 			acceptor_ = acceptor_ptr(new acceptor(ios_, ep));
 
-			sslsocket_ptr socketSession(new sslsocket(ios_, sslctx_));
+			sslsocket_ptr socketSession(new sslsocket(ios_, *sslctx_));
 			acceptor_->async_accept(socketSession->lowest_layer(), std::bind(&Router::onAcceptSSL, this, socketSession, std::placeholders::_1));
 
 			// 启动I/O线程
@@ -141,8 +146,11 @@ namespace daxia
 			scheduler_.Run();
 
 			return true;
-		}
+#else
+			return false;
 #endif
+		}
+
 
 		void Router::SetParser(std::shared_ptr<common::Parser> parser)
 		{
@@ -468,12 +476,12 @@ else\
 			}
 		}
 
-#ifdef DAXIA_NET_SUPPORT_HTTPS
 		void Router::onAcceptSSL(sslsocket_ptr sslsock, const error_code& err)
 		{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
 			if (!err)
 			{
-				sslsocket_ptr socketSession(new sslsocket(ios_,sslctx_));
+				sslsocket_ptr socketSession(new sslsocket(ios_,*sslctx_));
 				acceptor_->async_accept(socketSession->lowest_layer(), std::bind(&Router::onAcceptSSL, this, socketSession, std::placeholders::_1));
 
 				// 进行SSL协议握手
@@ -500,8 +508,8 @@ else\
 					}
 				});
 			}
-		}
 #endif
+		}
 
 		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg)
 		{

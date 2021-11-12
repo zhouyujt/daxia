@@ -3,6 +3,10 @@
 #include "parser.h"
 #include "define.h"
 
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+#include <boost/asio/ssl.hpp>
+#endif
+
 namespace daxia
 {
 	namespace net
@@ -237,12 +241,12 @@ namespace daxia
 				sock_ = sock;
 			}
 
-#ifdef DAXIA_NET_SUPPORT_HTTPS
 			void BasicSession::initSocket(sslsocket_ptr sslsock)
 			{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
 				sslsock_ = sslsock;
-			}
 #endif
+			}
 
 			void BasicSession::postRead()
 			{
@@ -266,12 +270,14 @@ namespace daxia
 				return sock_;
 			}
 
-#ifdef DAXIA_NET_SUPPORT_HTTPS
 			BasicSession::sslsocket_ptr BasicSession::getSSLScoket()
 			{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
 				return sslsock_;
-			}
+#else
+				return nullptr;
 #endif
+			}
 
 			void BasicSession::onRead(const boost::system::error_code& err, size_t len)
 			{
