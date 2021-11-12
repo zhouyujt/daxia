@@ -27,7 +27,7 @@ rem ///////////////////////////////////////////////////////////
 rem // 设置运行时库
 rem ///////////////////////////////////////////////////////////
 :INPUT2
-set /p input=-- (2) 选择运行库(MT/MD)：
+set /p input=-- (2) 选择运行库(MT/MD):
 if /i "%input%" == "mt" set runtimelib=-DMT=1
 if /i "%input%" == "md" set runtimelib=-DMT=0
 if "%input%" neq "mt" if "%input%" neq "md" goto ERROR2
@@ -50,7 +50,8 @@ rem ///////////////////////////////////////////////////////////
 rem // 设置是否支持HTTPS
 rem ///////////////////////////////////////////////////////////
 :INPUT5
-set /p ssl=-- (5) net库是否需要支持HTTPS(Y/N):
+set /p input=-- (5) net库是否需要支持HTTPS(Y/N):
+if /i "%input%" == "y" (set https=-DNET_HTTPS=1)  else set https=-DNET_HTTPS=0
 goto EXIT
 
 :ERROR1
@@ -73,11 +74,11 @@ echo.
 echo -- %floder% 在此文件夹中生成
 
 rem // 生成
-set cmakecmd=cmake -G"%vs%" %runtimelib% %mysql% %sqlite3% ../
+set cmakecmd=cmake -G"%vs%" %runtimelib% %mysql% %sqlite3% %https% ../
 echo -- %cmakecmd%
 echo.
 cd %floder%
-cmd /c %cmakecmd% ../
+cmd /c %cmakecmd%
 cd ..
 
 rem // 创建文件夹
@@ -87,11 +88,11 @@ echo.
 echo -- %floder64% 在此文件夹中生成
 
 rem // 生成x64
-set cmakecmd=cmake -G"%vs% Win64" %runtimelib% %mysql% %sqlite3% ../
+set cmakecmd=cmake -G"%vs% Win64" %runtimelib% %mysql% %sqlite3% %https% ../
 echo -- %cmakecmd%
 echo.
 cd %floder64%
-cmd /c %cmakecmd% ../
+cmd /c %cmakecmd%
 cd ..
 
 pause

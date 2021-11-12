@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 project(net)
+
+if (NET_HTTPS STREQUAL 1)
+	include(FindOpenSSL.cmake)
+	add_definitions(-DDAXIA_NET_SUPPORT_HTTPS)
+	message(STATUS "net support https...")
+endif()
+
 add_definitions(-DUNICODE -D_UNICODE)
 
 file(GLOB local_source

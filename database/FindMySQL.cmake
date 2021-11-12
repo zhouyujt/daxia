@@ -78,5 +78,5 @@ if(MYSQL_FOUND)
 
   MESSAGE(STATUS "Found MYSQL INCLUDE: ${MYSQL_INCLUDE_DIRS} (found version \"${MYSQL_VERSION_STRING}\")")
 else()
-  MESSAGE(FATAL_ERROR "Could not find MySQL!")
+  MESSAGE(FATAL_ERROR "无法找到MySQL开发环境，请先安装MySQL开发环境！")
 endif()
