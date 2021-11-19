@@ -142,7 +142,7 @@ namespace daxia
 		String_base& operator=(String_base&& str)
 		{
 			v_.swap(str.v_);
-			utf8_ = str.utf8_;
+			std::swap(utf8_, str.utf8_);
 			return *this;
 		}
 
@@ -790,6 +790,7 @@ namespace daxia
 	String_base<Elem, Traits, Alloc>& daxia::String_base<Elem, Traits, Alloc>::Swap(String_base<Elem, Traits, Alloc>& str)
 	{
 		v_.swap(str.v_);
+		std::swap(utf8_, str.utf8_);
 		return *this;
 	}
 
