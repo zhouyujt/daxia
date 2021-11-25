@@ -30,7 +30,7 @@ rem ///////////////////////////////////////////////////////////
 set /p input=-- (2) 选择运行库(MT/MD):
 if /i "%input%" == "mt" set runtimelib=-DMT=1
 if /i "%input%" == "md" set runtimelib=-DMT=0
-if "%input%" neq "mt" if "%input%" neq "md" goto ERROR2
+if /i "%input%" neq "mt" if /i "%input%" neq "md" goto ERROR2
 
 rem ///////////////////////////////////////////////////////////
 rem // 设置是否支持MySQL
