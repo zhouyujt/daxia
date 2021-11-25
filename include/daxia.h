@@ -3,6 +3,7 @@
 
 // net
 #include "../net/client.h"
+#include "../net/http_client.h"
 #include "../net/server.h"
 #include "../net/common/byte_order.hpp"
 
@@ -26,6 +27,7 @@
 #include "../system/find_file.h"
 #ifdef _WIN32
 #include "../system/windows/find_process.h"
+#include "../system/windows/find_window.h"
 #include "../system/windows/path.h"
 #endif
 

@@ -141,7 +141,7 @@ namespace daxia
 			pushLogciMessage(LogicMessage(error, msgId, buffer));
 		}
 
-		void Client::Handle(int msgId, handler h)
+		void Client::Handle(int msgId, handler&& h)
 		{
 			lock_guard locker(handlerLocker_);
 
@@ -186,17 +186,25 @@ namespace daxia
 			}
 		}
 
-		void Client::Connect(const char* ip, short port)
+		bool Client::Connect(const char* host, short port, bool sync)
 		{
 			Close();
-			endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
-			doConnect();
+			
+			boost::asio::io_service service;
+			boost::asio::ip::tcp::resolver resolver(service);
+			auto result = resolver.resolve(host,"http");
+			if (!result.empty())
+			{
+				endpoint_ = result.begin()->endpoint();
+			}
+			//endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
+			return doConnect(sync);
 		}
 
-		void Client::Connect(const wchar_t* ip, short port)
+		bool Client::Connect(const wchar_t* host, short port, bool sync)
 		{
-			std::string ip2 = daxia::encode::Strconv::Unicode2Ansi(ip);
-			Connect(ip2.c_str(), port);
+			std::string ip2 = daxia::encode::Strconv::Unicode2Ansi(host);
+			return Connect(ip2.c_str(), port, sync);
 		}
 
 		long long Client::Schedule(scheduleFunc func, unsigned long firstDuration, unsigned long loopDuration)
@@ -297,18 +305,36 @@ namespace daxia
 			return "";
 		}
 
-		void Client::doConnect()
+		bool Client::doConnect(bool sync)
 		{
-			getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
+			if (sync)
 			{
-				pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
-
+				boost::system::error_code ec;
+				getSocket()->connect(endpoint_, ec);
 				if (!ec)
 				{
 					UpdateConnectTime();
 					postRead();
+
+					return true;
 				}
-			});
+				return false;
+			}
+			else
+			{
+				getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
+				{
+					pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
+
+					if (!ec)
+					{
+						UpdateConnectTime();
+						postRead();
+					}
+				});
+
+				return true;
+			}
 		}
 
 		void Client::hearbeat()

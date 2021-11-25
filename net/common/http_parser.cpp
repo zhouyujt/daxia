@@ -339,90 +339,208 @@ namespace daxia
 
 			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, int msgId, const void* data, size_t len, const daxia::net::common::PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
 			{
+				throw 1;
+			}
+
+			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, const char* method, const char* url, const void* data, size_t len, const daxia::net::common::PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
+			{
 				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
-				auto response = session->GetUserData<ResponseHeader>(SESSION_USERDATA_RESPONSE_INDEX);
-				if (request == nullptr || response == nullptr) return false;
+				if (request == nullptr) return false;
+
+				daxia::buffer msg;
+
+				if (pageInfo == nullptr || pageInfo->IsStart())
+				{
+					// 校验方法名
+					static const common::HttpParser::Methods methodsHelp;
+					if (!methodsHelp.IsValidMethod(method))
+					{
+						return false;
+					}
+
+					// 写起始行
+					{
+						msg += method;
+						msg += ' ';
+						msg += url;
+						msg += ' ';
+						msg += "HTTP/1.1";
+						msg += CRLF;
+					}
+
+					// 写请求头
+					{
+						// 设置Content-Length
+						if (request->ContentLength->NumericCast<int>() == 0)
+						{
+							if (pageInfo)
+							{
+								request->ContentLength = daxia::string::ToString(pageInfo->total);
+							}
+							else
+							{
+								request->ContentLength = daxia::string::ToString(len);
+							}
+						}
+
+						// 设置所有请求头
+						auto layout = HEADER_HELPER().request_.GetLayoutFast();
+						for (auto iter = layout.Fields().begin(); iter != layout.Fields().end(); ++iter)
+						{
+							const ref_string* field = nullptr;
+							try{ field = dynamic_cast<const ref_string*>(reinterpret_cast<const reflect::Reflect_base*>(reinterpret_cast<const char*>(request)+iter->offset)); }
+							catch (const std::exception&){}
+							if (field == nullptr) continue;
+
+							if (!(*field)->IsEmpty())
+							{
+								daxia::string temp;
+								temp.Format("%s:%s", field->Tag("http").GetString(), (*field)->GetString());
+								msg += temp;
+								msg += CRLF;
+							}
+						}
+
+						// 设置头结束符号
+						msg += CRLF;
+					}
+				}
+
+				// 设置content
+				msg.Append(static_cast<const char*>(data), len);
+
+				daxia::net::common::Buffer buffer(msg.GetString(), msg.GetLength());
+				buffers.push_back(buffer);
 
 				return true;
 			}
 
 			daxia::net::common::Parser::Result HttpClientParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const
 			{
-				daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
-
-				// 获取起始行结束位置
-				size_t startLineEndPos = header.Find(CRLF);
-				if (startLineEndPos == (size_t)-1)
+				static daxia::string lastPageInfoKey("Unmarshal_lastPageInfo");
+				static daxia::string lastMsgIdKey("Unmarshal_lastMsgId");
+				daxia::net::common::PageInfo* lastPageInfo = session->GetUserData<daxia::net::common::PageInfo>(lastPageInfoKey.GetString());
+				if (lastPageInfo == nullptr || lastPageInfo->IsEnd())
 				{
-					if (len >= LIMIT_START_LINE_SIZE)
+					daxia::string header((const char*)data, MIN(len, LIMIT_START_LINE_SIZE));
+
+					// 获取起始行结束位置
+					size_t startLineEndPos = header.Find(CRLF);
+					if (startLineEndPos == (size_t)-1)
 					{
-						// 请求行长度大于起始行大小限制，则解析失败
-						return Parser::Result::Result_Fail;
+						if (len >= LIMIT_START_LINE_SIZE)
+						{
+							// 请求行长度大于起始行大小限制，则解析失败
+							return Parser::Result::Result_Fail;
+						}
+						else
+						{
+							// 返回继续接收
+							return Parser::Result::Result_Uncomplete;
+						}
 					}
-					else
+
+					// 获取起始行各个参数并校验
+					daxia::string stratLine = header.Left(startLineEndPos);
+					std::vector<daxia::string> params;
+					stratLine.Split(" ", params);
+
+					// 校验参数个数
+					if (params.size() != ResponseLineIndex_End) return Parser::Result::Result_Fail;
+
+					// 获取整个头
+					size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
+					if (headerEndPos == (size_t)-1)
 					{
-						// 返回继续接收
-						return Parser::Result::Result_Uncomplete;
+						if (len >= LIMIT_HEAD_SIZE)
+						{
+							// 请求头长度大于消息头大小限制，则解析失败
+							return Parser::Result::Result_Fail;
+						}
+						else
+						{
+							// 返回继续接收
+							return Parser::Result::Result_Uncomplete;
+						}
+					}
+
+					packetLen = headerEndPos + strlen(CRLFCRLF);
+
+					// 获取Content-Length
+					size_t contentLength = 0;
+					daxia::string ContentLengtTag = static_cast<const RequestHeader&>(HEADER_HELPER().request_).ContentLength.Tag("http");
+					ContentLengtTag.MakeLower();
+					size_t lastLineEndPos = startLineEndPos;
+					size_t lineEndPos = -1;
+					while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != (size_t)-1)
+					{
+						daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
+						size_t pos = 0;
+
+						if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
+						{
+							contentLength = line.Tokenize(":", pos).NumericCast<int>();
+							packetLen += contentLength;
+							break;
+						}
+
+						lastLineEndPos = lineEndPos;
+					}
+
+					// 数据不足
+					if (len < packetLen)
+					{
+						if (len < daxia::net::common::MaxBufferSize)
+						{
+							return Parser::Result::Result_Uncomplete;
+						}
+					}
+
+					packetLen = MIN(len, packetLen);
+
+					buffer.Page().startPos = 0;
+					buffer.Page().endPos = static_cast<unsigned int>(packetLen)-1;
+					buffer.Page().total = static_cast<unsigned int>(headerEndPos + strlen(CRLFCRLF) + contentLength);
+
+					msgID = static_cast<int>(params[0].MakeLower().Hash());
+
+					// 构造消息
+					buffer.Resize(packetLen);
+					memcpy(buffer, data, packetLen);
+
+					// 保存msgID
+					if (!buffer.Page().IsEnd())
+					{
+						session->SetUserData(lastPageInfoKey.GetString(), buffer.Page());
+						session->SetUserData(lastMsgIdKey.GetString(), msgID);
 					}
 				}
-
-				// 获取起始行各个参数并校验
-				daxia::string stratLine = header.Left(startLineEndPos);
-				std::vector<daxia::string> params;
-				stratLine.Split(" ", params);
-
-				// 校验参数个数
-				if ( params.size() != ResponseLineIndex_End) return Parser::Result::Result_Fail;
-
-				// 获取整个头
-				size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));
-				if (headerEndPos == (size_t)-1)
+				else
 				{
-					if (len >= LIMIT_HEAD_SIZE)
+					int* lastMsgId = session->GetUserData<int>(lastMsgIdKey.GetString());
+					if (lastMsgId == nullptr) return Parser::Result::Result_Fail;
+
+					len = MIN(lastPageInfo->total - lastPageInfo->endPos - 1, len);
+
+					lastPageInfo->startPos = lastPageInfo->endPos + 1;
+					lastPageInfo->endPos = lastPageInfo->startPos + static_cast<unsigned int>(len)-1;
+
+					buffer.Page() = *lastPageInfo;
+					buffer.Resize(len);
+					memcpy(buffer, data, len);
+
+					packetLen = len;
+					msgID = *lastMsgId;
+
+					if (buffer.Page().IsEnd())
 					{
-						// 请求头长度大于消息头大小限制，则解析失败
-						return Parser::Result::Result_Fail;
-					}
-					else
-					{
-						// 返回继续接收
-						return Parser::Result::Result_Uncomplete;
+						session->DeleteUserData(lastPageInfoKey.GetString());
+						session->DeleteUserData(lastMsgIdKey.GetString());
 					}
 				}
-
-				packetLen = headerEndPos + strlen(CRLFCRLF);
-
-				// 获取Content-Length
-				daxia::string ContentLengtTag = static_cast<RequestHeader&>(HEADER_HELPER().request_).ContentLength.Tag("http");
-				ContentLengtTag.MakeLower();
-				size_t lastLineEndPos = startLineEndPos;
-				size_t lineEndPos = -1;
-				while ((lineEndPos = header.Find(CRLF, lastLineEndPos + strlen(CRLF))) != (size_t)-1)
-				{
-					daxia::string line = header.Mid(lastLineEndPos + strlen(CRLF), lineEndPos - lastLineEndPos - strlen(CRLF));
-					size_t pos = 0;
-
-					if (line.Tokenize(":", pos).MakeLower() == ContentLengtTag)
-					{
-						packetLen += line.Tokenize(":", pos).NumericCast<int>();
-						break;
-					}
-
-					lastLineEndPos = lineEndPos;
-				}
-
-				// 数据不足
-				if (len < packetLen)  return Parser::Result::Result_Uncomplete;
-
-				msgID = params[ResponseLineIndex_StatusCode].NumericCast<int>();
-
-				// 构造消息
-				buffer.Resize(packetLen);
-				memcpy(buffer, data, packetLen);
 
 				return Parser::Result::Result_Success;
 			}
-
 		}
 	}
 }

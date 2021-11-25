@@ -47,10 +47,10 @@ namespace daxia
 		protected:
 			virtual void onPacket(const boost::system::error_code& error, int msgId, const common::Buffer& buffer) override;
 		public:
-			void Handle(int msgId, handler h);
+			void Handle(int msgId, handler&& h);
 			void EnableHeartbeat(unsigned long milliseconds);
-			void Connect(const char* ip, short port);
-			void Connect(const wchar_t* ip, short port);
+			bool Connect(const char* host, short port, bool sync = false);
+			bool Connect(const wchar_t* host, short port, bool sync = false);
 			long long Schedule(scheduleFunc func, unsigned long firstDuration, unsigned long loopDuration);
 			long long ScheduleOnce(scheduleFunc func, unsigned long duration);
 			void Unschedule(long long scheduleID);
@@ -75,7 +75,7 @@ namespace daxia
 				}
 			};
 		private:
-			void doConnect();
+			bool doConnect(bool sync);
 			void hearbeat();
 			void clearMessage();
 			void pushLogciMessage(const LogicMessage& msg);

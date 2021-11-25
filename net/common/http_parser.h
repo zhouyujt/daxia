@@ -345,7 +345,7 @@ namespace daxia
 					ref_string Trace{ "http:TRACE" };			// 追踪路径, 极不常用
 					ref_string Connect{ "http:CONNECT" };		// 要求用隧道协议连接代理
 
-					bool IsValidMethod(const char* method)
+					bool IsValidMethod(const char* method) const
 					{
 						daxia::string temp(method);
 						if (temp.CompareNoCase(Get.Tag("http").GetString()) == 0) return true;
@@ -379,6 +379,14 @@ namespace daxia
 
 						return value;
 					}
+
+					void Swap(RequestStartLine& r)
+					{
+						Method.Swap(r.Method);
+						Url.Swap(r.Url);
+						Version.Swap(r.Version);
+						std::swap(Params, r.Params);
+					}
 				};
 
 				struct ResponseStartLine
@@ -386,6 +394,13 @@ namespace daxia
 					daxia::string Version;
 					daxia::string StatusCode;
 					daxia::string StatusText;
+
+					void Swap(ResponseStartLine& r)
+					{
+						Version.Swap(r.Version);
+						StatusCode.Swap(r.StatusCode);
+						StatusText.Swap(r.StatusText);
+					}
 				};
 
 				// 通用首部字段（General Header Fields）请求报文和响应报文双方都会使用的首部
@@ -423,6 +438,22 @@ namespace daxia
 					ref_string* Find(const daxia::string& key, const void* base) const;
 				protected:
 					size_t InitFromData(const void* data, size_t len, bool isRequest);
+					void Swap(GeneralHeader& header)
+					{
+						std::swap(StartLine, header.StartLine);
+						std::swap(PacketLen, header.PacketLen);
+						std::swap(index_, header.index_);
+
+						CacheControl.Swap(header.CacheControl);
+						Connection.Swap(header.Connection);
+						Date.Swap(header.Date);
+						Pragma.Swap(header.Pragma);
+						Trailer.Swap(header.Trailer);
+						TransferEncoding.Swap(header.TransferEncoding);
+						Upgrade.Swap(header.Upgrade);
+						Via.Swap(header.Via);
+						Warning.Swap(header.Warning);
+					}
 				private:
 					// 加快查找的索引
 					std::unordered_map<daxia::string/*tag*/, size_t/*offset*/> index_;
@@ -505,6 +536,43 @@ namespace daxia
 
 				public:
 					size_t InitFromData(const void* data, size_t len);
+					void Swap(RequestHeader& header)
+					{
+						GeneralHeader::Swap(static_cast<GeneralHeader&>(header));
+						StartLine.Swap(header.StartLine);
+
+						Accept.Swap(header.Accept);
+						AcceptCharset.Swap(header.AcceptCharset);
+						AcceptEncoding.Swap(header.AcceptEncoding);
+						AcceptLanguage.Swap(header.AcceptLanguage);
+						Authorization.Swap(header.Authorization);
+						Expect.Swap(header.Expect);
+						From.Swap(header.From);
+						Host.Swap(header.Host);
+						IfMatch.Swap(header.IfMatch);
+						IfModifiedSince.Swap(header.IfModifiedSince);
+						IfNoneMatch.Swap(header.IfNoneMatch);
+						IfRange.Swap(header.IfRange);
+						IfUnmodifiedSince.Swap(header.IfUnmodifiedSince);
+						MaxForward.Swap(header.MaxForward);
+						ProxyAuthorization.Swap(header.ProxyAuthorization);
+						Range.Swap(header.Range);
+						Referer.Swap(header.Referer);
+						TE.Swap(header.TE);
+						UserAgent.Swap(header.UserAgent);
+
+						Allow.Swap(header.Allow);
+						Cookie.Swap(header.Cookie);
+						ContentEncoding.Swap(header.ContentEncoding);
+						ContentLanguage.Swap(header.ContentLanguage);
+						ContentLength.Swap(header.ContentLength);
+						ContentLocation.Swap(header.ContentLocation);
+						ContentMD5.Swap(header.ContentMD5);
+						ContentRange.Swap(header.ContentRange);
+						ContentType.Swap(header.ContentType);
+						Expires.Swap(header.Expires);
+						LastModified.Swap(header.LastModified);
+					}
 				};
 
 				class ResponseHeader : public GeneralHeader
@@ -570,6 +638,40 @@ namespace daxia
 					ref_string AccessControlAllowCredentials{ "http:Access-Control-Allow-Credentials" };
 				public:
 					size_t InitFromData(const void* data, size_t len);
+					void Swap(ResponseHeader& header)
+					{
+						GeneralHeader::Swap(static_cast<GeneralHeader&>(header));
+						StartLine.Swap(header.StartLine);
+
+						AcceptRanges.Swap(header.AcceptRanges);
+						Age.Swap(header.Age);
+						ETage.Swap(header.ETage);
+						Location.Swap(header.Location);
+						ProxyAuthenticate.Swap(header.ProxyAuthenticate);
+						RetryAfter.Swap(header.RetryAfter);
+						Server.Swap(header.Server);
+						Vary.Swap(header.Vary);
+						WWWAuthenticate.Swap(header.WWWAuthenticate);
+
+						Allow.Swap(header.Allow);
+						SetCookie.Swap(header.SetCookie);
+						ContentEncoding.Swap(header.ContentEncoding);
+						ContentLanguage.Swap(header.ContentLanguage);
+						ContentLength.Swap(header.ContentLength);
+						ContentLocation.Swap(header.ContentLocation);
+						ContentMD5.Swap(header.ContentMD5);
+						ContentRange.Swap(header.ContentRange);
+						ContentType.Swap(header.ContentType);
+						Expires.Swap(header.Expires);
+						LastModified.Swap(header.LastModified);
+
+						AccessControlAllowOrigin.Swap(header.AccessControlAllowOrigin);
+						AccessControlAllowMethods.Swap(header.AccessControlAllowMethods);
+						AccessControlMaxAge.Swap(header.AccessControlMaxAge);
+						AccessControlAllowHeaders.Swap(header.AccessControlAllowHeaders);
+						AccessControlExposeHeaders.Swap(header.AccessControlExposeHeaders);
+						AccessControlAllowCredentials.Swap(header.AccessControlAllowCredentials);
+					}
 				};
 			public:
 				class HeaderHelp
@@ -676,6 +778,16 @@ namespace daxia
 					size_t maxPacketLength
 					) const override;
 
+				bool Marshal(daxia::net::common::BasicSession* session,
+					const char* method,
+					const char* url,
+					const void* data,
+					size_t len,
+					const daxia::net::common::PageInfo* pageInfo,
+					std::vector<daxia::net::common::Buffer>& buffers,
+					size_t maxPacketLength
+					) const;
+
 				virtual Result Unmarshal(daxia::net::common::BasicSession* session,
 					const void* data,
 					size_t len,
@@ -683,6 +795,13 @@ namespace daxia
 					daxia::net::common::Buffer& buffer,
 					size_t& packetLen
 					) const override;
+
+				Result Unmarshal(daxia::net::common::BasicSession* session,
+					const void* data,
+					size_t len,
+					daxia::net::common::Buffer& buffer,
+					size_t& packetLen
+					) const;
 			};
 		}
 	}
