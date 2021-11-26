@@ -3,6 +3,11 @@
 #include "../encode/strconv.h"
 #include "common/http_parser.h"
 
+// 是否启用HTTPS
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+#include <boost/asio/ssl.hpp>
+#endif
+#include <iostream>
 namespace daxia
 {
 	namespace net
@@ -11,12 +16,22 @@ namespace daxia
 			: hearbeatInterval_(0)
 			, heartbeatSchedulerId_(-1)
 			, nextTimerId_(0)
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			, sslctx_(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23))
+#endif
 		{
 			// 所有实例共用
 			static initHelper helper;
 			initHelper_ = &helper;
 
 			initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			BasicSession::sslsocket_ptr sslsocket(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(initHelper_->netIoService_, *sslctx_));
+			sslsocket->set_verify_mode(boost::asio::ssl::verify_none);
+			initSocket(sslsocket);
+#endif
+
 			parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
 		}
 
@@ -192,13 +207,27 @@ namespace daxia
 			
 			boost::asio::io_service service;
 			boost::asio::ip::tcp::resolver resolver(service);
-			auto result = resolver.resolve(host,"http");
+
+			daxia::string protocol(host);
+			auto pos = protocol.Find("://");
+			if (pos == size_t(-1))
+			{
+				protocol = "http";
+			}
+			else
+			{
+				protocol = protocol.Left(pos);
+				protocol.MakeLower();
+			}
+
+			const char* realHost = protocol.IsEmpty() ? host : host + protocol.GetLength() + 3;
+			auto result = resolver.resolve(realHost, protocol);
 			if (!result.empty())
 			{
 				endpoint_ = result.begin()->endpoint();
 			}
 			//endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
-			return doConnect(sync);
+			return doConnect(sync, protocol == "https");
 		}
 
 		bool Client::Connect(const wchar_t* host, short port, bool sync)
@@ -305,33 +334,75 @@ namespace daxia
 			return "";
 		}
 
-		bool Client::doConnect(bool sync)
+		bool Client::doConnect(bool sync, bool ssl)
 		{
 			if (sync)
 			{
 				boost::system::error_code ec;
-				getSocket()->connect(endpoint_, ec);
-				if (!ec)
+				if (ssl)
 				{
-					UpdateConnectTime();
-					postRead();
-
-					return true;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+					getSSLScoket()->lowest_layer().connect(endpoint_, ec);
+#else
+					return false;
+#endif
 				}
-				return false;
+				else
+				{
+					getSocket()->connect(endpoint_, ec);
+					if (ec) return false;
+				}
+
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				if (ssl)
+				{
+					boost::system::error_code ec;
+					getSSLScoket()->handshake(boost::asio::ssl::stream_base::client, ec);
+
+					if (ec) return false;
+				}
+#endif
+
+				UpdateConnectTime();
+				postRead();
+
+				return true;
 			}
 			else
 			{
-				getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
+				if (ssl)
 				{
-					pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+					getSSLScoket()->lowest_layer().async_connect(endpoint_, [&](const boost::system::error_code& ec)
+						{
+							pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
 
-					if (!ec)
-					{
-						UpdateConnectTime();
-						postRead();
-					}
-				});
+							if (!ec)
+							{
+								boost::system::error_code ec;
+								getSSLScoket()->handshake(boost::asio::ssl::stream_base::client, ec);
+
+								UpdateConnectTime();
+								postRead();
+							}
+						});
+#else
+					return false;
+#endif
+				}
+				else
+				{
+					getSocket()->async_connect(endpoint_, [&](const boost::system::error_code& ec)
+						{
+							pushLogciMessage(LogicMessage(ec, common::DefMsgID_Connect, common::Buffer()));
+
+							if (!ec)
+							{
+								UpdateConnectTime();
+								postRead();
+							}
+						});
+				}
 
 				return true;
 			}

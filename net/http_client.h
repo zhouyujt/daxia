@@ -45,6 +45,7 @@ namespace daxia
 					response_.Swap(r.response_);
 					header_.Swap(r.header_);
 					data_.Swap(r.data_);
+					std::swap(success_, r.success_);
 				}
 			public:
 				operator bool() const
@@ -68,8 +69,9 @@ namespace daxia
 			Result Trace(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
 			Result Connect(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
 		private:
-			Result writeMessage(const char* method, const char* url, const void* data, size_t len, const common::PageInfo* pageInfo, size_t maxPacketLength);
 			void init();
+			void setRequest(const RequestHeader* header);
+			Result writeMessage(const char* method, const char* url, const void* data, size_t len, const common::PageInfo* pageInfo, size_t maxPacketLength);
 		private:
 			Client client_;
 			std::shared_ptr<daxia::net::common::HttpClientParser> parser_;

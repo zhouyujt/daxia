@@ -75,7 +75,7 @@ namespace daxia
 				}
 			};
 		private:
-			bool doConnect(bool sync);
+			bool doConnect(bool sync, bool ssl);
 			void hearbeat();
 			void clearMessage();
 			void pushLogciMessage(const LogicMessage& msg);
@@ -112,6 +112,9 @@ namespace daxia
 			std::mutex handlerLocker_;
 			std::map<long long, boost::asio::deadline_timer*> timers_;
 			long long nextTimerId_;
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			std::shared_ptr<boost::asio::ssl::context> sslctx_;
+#endif
 		};
 	}// namespace net
 }// namespace daxia
