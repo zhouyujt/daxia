@@ -23,7 +23,7 @@ namespace daxia
 			for (size_t i = 0; i < size; ++i)
 			{
 				const char& ch = static_cast<const char*>(data)[i];
-				if (isAlpha(ch) || strchr("=!~*'()", ch))
+				if (isAlpha(ch) || strchr("=!~*'()/?", ch))
 				{
 					result += ch;
 				}
