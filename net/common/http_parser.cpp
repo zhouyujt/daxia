@@ -53,11 +53,15 @@ namespace daxia
 				// 获取起始行各个参数并校验
 				daxia::string startLine = header.Left(startLineEndPos);
 				std::vector<daxia::string> params;
-				startLine.Split(" ", params);
-				startLine = daxia::encode::Url::Unmarshal(startLine);
+				size_t pos = 0;
+				params.push_back(startLine.Tokenize(" ", pos));
+				if (pos == size_t(-1)) return Parser::Result::Result_Fail;
+				params.push_back(startLine.Tokenize(" ", pos));
+				if (pos == size_t(-1)) return Parser::Result::Result_Fail;
+				params.push_back(startLine.Mid(pos, -1));
 
 				// 校验参数个数
-				if (params.size() != RequstLineIndex_End && params.size() != ResponseLineIndex_End) return -1;
+				//if (params.size() != RequstLineIndex_End && params.size() != ResponseLineIndex_End) return -1;
 
 				// 参数还原url编码
 				for (auto iter = params.begin(); iter != params.end(); ++iter)
@@ -344,8 +348,11 @@ namespace daxia
 
 			bool HttpClientParser::Marshal(daxia::net::common::BasicSession* session, const char* method, const char* url, const void* data, size_t len, const daxia::net::common::PageInfo* pageInfo, std::vector<daxia::net::common::Buffer>& buffers, size_t maxPacketLength) const
 			{
+				static RequestHeader defaultRequest;
 				auto request = session->GetUserData<RequestHeader>(SESSION_USERDATA_REQUEST_INDEX);
-				if (request == nullptr) return false;
+
+				RequestHeader r(defaultRequest);
+				if (request == nullptr) request = &r;
 
 				daxia::buffer msg;
 
@@ -358,11 +365,15 @@ namespace daxia
 						return false;
 					}
 
+					// URL编码
+					daxia::string tempUrl(url);
+					tempUrl = daxia::encode::Url::Marshal(tempUrl);
+
 					// 写起始行
 					{
 						msg += method;
 						msg += ' ';
-						msg += url;
+						msg += tempUrl;
 						msg += ' ';
 						msg += "HTTP/1.1";
 						msg += CRLF;
@@ -441,12 +452,17 @@ namespace daxia
 					}
 
 					// 获取起始行各个参数并校验
-					daxia::string stratLine = header.Left(startLineEndPos);
+					daxia::string startLine = header.Left(startLineEndPos);
 					std::vector<daxia::string> params;
-					stratLine.Split(" ", params);
+					size_t pos = 0;
+					params.push_back(startLine.Tokenize(" ",pos));
+					if (pos == size_t(-1)) return Parser::Result::Result_Fail;
+					params.push_back(startLine.Tokenize(" ",pos));
+					if (pos == size_t(-1)) return Parser::Result::Result_Fail;
+					params.push_back(startLine.Mid(pos, -1));
 
 					// 校验参数个数
-					if (params.size() != ResponseLineIndex_End) return Parser::Result::Result_Fail;
+					//if (params.size() != ResponseLineIndex_End) return Parser::Result::Result_Fail;
 
 					// 获取整个头
 					size_t headerEndPos = header.Find(CRLFCRLF, startLineEndPos + strlen(CRLF));

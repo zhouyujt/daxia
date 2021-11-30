@@ -22,8 +22,6 @@ namespace daxia
 {
 	namespace net
 	{
-		using RequestHeader = daxia::net::common::HttpParser::RequestHeader;
-
 		// HttpøÕªß∂À¿‡
 		class HttpClient
 		{
@@ -60,20 +58,19 @@ namespace daxia
 				bool success_;
 			};
 		public:
-			Result Get(const char* url, void* data = nullptr, size_t len = 0, const RequestHeader* header = nullptr);
-			Result Post(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Put(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Head(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Delete(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Options(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Trace(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
-			Result Connect(const char* url, void* data, size_t len, const RequestHeader* header = nullptr);
+			Result Get(const char* url, const void* data = nullptr, size_t len = 0, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Post(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Put(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Head(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Delete(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Options(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Trace(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
+			Result Connect(const char* url, const void* data, size_t len, const daxia::net::common::HttpParser::RequestHeader* header = nullptr);
 		private:
 			void init();
-			void setRequest(const RequestHeader* header);
 			Result writeMessage(const char* method, const char* url, const void* data, size_t len, const common::PageInfo* pageInfo, size_t maxPacketLength);
 		private:
-			Client client_;
+			std::shared_ptr<Client> client_;
 			std::shared_ptr<daxia::net::common::HttpClientParser> parser_;
 			daxia::string host_;
 			short port_;
@@ -82,7 +79,6 @@ namespace daxia
 			std::condition_variable cv_;
 			common::Buffer buffer_;
 			bool success_;
-			RequestHeader defaultRequest_;
 		};
 	}// namespace net
 }// namespace daxia

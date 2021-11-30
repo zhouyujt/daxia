@@ -24,14 +24,6 @@ namespace daxia
 			static initHelper helper;
 			initHelper_ = &helper;
 
-			initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
-
-#ifdef DAXIA_NET_SUPPORT_HTTPS
-			BasicSession::sslsocket_ptr sslsocket(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(initHelper_->netIoService_, *sslctx_));
-			sslsocket->set_verify_mode(boost::asio::ssl::verify_none);
-			initSocket(sslsocket);
-#endif
-
 			parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
 		}
 
@@ -57,7 +49,9 @@ namespace daxia
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
-			initSocket(BasicSession::socket_ptr());
+			//initSocket(BasicSession::socket_ptr());
+			getSocket().reset();
+			getSSLScoket().reset();
 		}
 
 		Client::initHelper::initHelper()
@@ -210,23 +204,29 @@ namespace daxia
 
 			daxia::string protocol(host);
 			auto pos = protocol.Find("://");
-			if (pos == size_t(-1))
-			{
-				protocol = "http";
-			}
-			else
+			if (pos != size_t(-1))
 			{
 				protocol = protocol.Left(pos);
 				protocol.MakeLower();
+			}
+			else
+			{
+				protocol.Empty();
 			}
 
 			const char* realHost = protocol.IsEmpty() ? host : host + protocol.GetLength() + 3;
 			auto result = resolver.resolve(realHost, protocol);
 			if (!result.empty())
 			{
-				endpoint_ = result.begin()->endpoint();
+				if (protocol.IsEmpty())
+				{
+					endpoint_ = endpoint(boost::asio::ip::address::from_string(result.begin()->host_name()), port);
+				}
+				else
+				{
+					endpoint_ = result.begin()->endpoint();
+				}
 			}
-			//endpoint_ = endpoint(boost::asio::ip::address::from_string(ip), port);
 			return doConnect(sync, protocol == "https");
 		}
 
@@ -336,6 +336,21 @@ namespace daxia
 
 		bool Client::doConnect(bool sync, bool ssl)
 		{
+			if (ssl)
+			{
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+				BasicSession::sslsocket_ptr sslsocket(new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(initHelper_->netIoService_, *sslctx_));
+				sslsocket->set_verify_mode(boost::asio::ssl::verify_none);
+				initSocket(sslsocket);
+				getSocket().reset();
+#endif
+			}
+			else
+			{
+				initSocket(BasicSession::socket_ptr(new socket(initHelper_->netIoService_)));
+				getSSLScoket().reset();
+			}
+
 			if (sync)
 			{
 				boost::system::error_code ec;
@@ -343,6 +358,7 @@ namespace daxia
 				{
 #ifdef DAXIA_NET_SUPPORT_HTTPS
 					getSSLScoket()->lowest_layer().connect(endpoint_, ec);
+					if (ec) return false;
 #else
 					return false;
 #endif
