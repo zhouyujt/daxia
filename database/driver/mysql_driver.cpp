@@ -10,7 +10,7 @@ namespace daxia
 	{
 		namespace driver
 		{
-			MySQLDriver::MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp)
+			MySQLDriver::MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, std::shared_ptr<daxia::system::ThreadPool> tp)
 				: BasicDriver(host, port, db, user, psw, tp)
 			{
 				memset(&mysql_, 0, sizeof(mysql_));

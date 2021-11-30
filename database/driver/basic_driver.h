@@ -27,7 +27,7 @@ namespace daxia
 			class BasicDriver
 			{
 			public:
-				BasicDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp);
+				BasicDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, std::shared_ptr<daxia::system::ThreadPool> tp);
 				virtual ~BasicDriver();
 			public:
 				virtual	bool Connect() = 0;
@@ -44,7 +44,7 @@ namespace daxia
 				daxia::string user_;
 				daxia::string psw_;
 				unsigned short port_;
-				daxia::system::ThreadPool* tp_;
+				std::shared_ptr<daxia::system::ThreadPool> tp_;
 			};
 		}
 	}

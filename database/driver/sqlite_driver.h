@@ -27,7 +27,7 @@ namespace daxia
 			class SqliteDriver : public BasicDriver
 			{
 			public:
-				SqliteDriver(const daxia::string& db, daxia::system::ThreadPool* tp);
+				SqliteDriver(const daxia::string& db, std::shared_ptr<daxia::system::ThreadPool> tp);
 				~SqliteDriver();
 			public:
 				static void Init();

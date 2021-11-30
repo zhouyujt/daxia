@@ -11,7 +11,7 @@ namespace daxia
 		namespace driver
 		{
 
-			SqliteDriver::SqliteDriver(const daxia::string& db, daxia::system::ThreadPool* tp)
+			SqliteDriver::SqliteDriver(const daxia::string& db, std::shared_ptr<daxia::system::ThreadPool> tp)
 				: BasicDriver("",0,db,"","",tp)
 				, sqlite_(nullptr)
 			{

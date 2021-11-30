@@ -72,7 +72,7 @@ std::packaged_task<daxia::string()> task([&]()\
 {\
 	return xx;\
 });\
-tp_.Post(task);\
+tp_->Post(task);\
 std::future<daxia::string> err = task.get_future();\
 daxia::system::this_coroutine::CoWait(WAIT_FUTURE(err));\
 return err.get();
@@ -369,7 +369,7 @@ namespace daxia
 		private:
 			std::shared_ptr<Command> command_;
 			Driver driverType_;
-			static daxia::system::ThreadPool tp_;
+			static std::shared_ptr<daxia::system::ThreadPool> tp_;
 		private:
 			class InitHelper
 			{

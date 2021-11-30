@@ -14,6 +14,7 @@
 #ifndef __DAXIA_DATABASE_DRIVER_MYSQL_H
 #define __DAXIA_DATABASE_DRIVER_MYSQL_H
 #include <mysql.h>
+#include <memory>
 #include "basic_driver.h"
 
 namespace daxia
@@ -25,7 +26,7 @@ namespace daxia
 			class MySQLDriver : public BasicDriver
 			{
 			public:
-				MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, daxia::system::ThreadPool* tp);
+				MySQLDriver(const daxia::string& host, unsigned short port, const daxia::string& db, const daxia::string& user, const daxia::string& psw, std::shared_ptr<daxia::system::ThreadPool> tp);
 				~MySQLDriver();
 			public:
 				static void Init();
