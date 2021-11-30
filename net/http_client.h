@@ -38,6 +38,15 @@ namespace daxia
 				Result() : success_(false){}
 			public:
 				~Result(){}
+				Result(const Result& r)
+					: response_(r.response_)
+					, header_(r.header_)
+					, data_(r.data_)
+					, success_(r.success_)
+				{
+					
+				}
+
 				Result(Result&& r)
 				{
 					response_.Swap(r.response_);
