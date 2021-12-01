@@ -12,6 +12,7 @@
 #include "../encode/strconv.h"
 #include "../encode/base64.h"
 #include "../encode/md5.h"
+#include "../encode/sha1.h"
 #include "../encode/uuid.h"
 #include "../encode/hex.h"
 #include "../encode/url.h"

@@ -3,11 +3,11 @@
  * Copyright (c) 2018 漓江里的大虾.
  * All rights reserved.
  *
- * \file md5.h
+ * \file sha1.h
  * \author 漓江里的大虾
- * \date 七月 2021
+ * \date 十二月 2021
  *
- * 封装boost库的md5编码
+ * 封装boost库的sha1编码
  *
  */
 #ifndef __DAXIA_ENCODE_MD5_H
@@ -22,7 +22,7 @@ namespace boost
 	{
 		namespace detail
 		{
-			class md5;
+			class sha1;
 		}
 	}
 }
@@ -31,11 +31,11 @@ namespace daxia
 {
 	namespace encode
 	{
-		class Md5
+		class Sha1
 		{
 		public:
-			Md5();
-			~Md5(){};
+			Sha1();
+			~Sha1(){};
 		public:
 			daxia::string Update(const char* data, size_t size);
 			daxia::string Update(const std::string& data);
@@ -43,9 +43,9 @@ namespace daxia
 			static daxia::string Marshal(const void* data, size_t size);
 			static daxia::string Marshal(const std::string& data);
 		private:
-			static daxia::string update(const void* data, size_t size, std::shared_ptr<boost::uuids::detail::md5> md5);
-			std::shared_ptr<boost::uuids::detail::md5> md5_;
-		};// class Md5
+			static daxia::string update(const void* data, size_t size, std::shared_ptr<boost::uuids::detail::sha1> sha1);
+			std::shared_ptr<boost::uuids::detail::sha1> sha1_;
+		};// class Sha1
 	}// namespace encode
 }// namespace daxia
 
