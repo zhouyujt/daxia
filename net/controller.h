@@ -468,6 +468,16 @@ namespace daxia
 		};
 #undef HTTP_MIME_MAP
 
+		class DefaultWebsocketControllor : public HttpController
+		{
+		public:
+			DefaultWebsocketControllor();
+		public:
+			virtual void InitMethods() override;
+		private:
+			std::shared_ptr<common::Parser> websocketParser_;
+		};
+
 	}// namespace net
 }// namespace daxia
 

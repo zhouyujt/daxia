@@ -69,6 +69,35 @@ namespace daxia
 			daxia::string priKey_;
 		};
 
+		// Websocket 服务器启动需要的额外参数
+		class ExtraParamWebsocket : public ExtraParam
+		{
+		public:
+			ExtraParamWebsocket(const char* path)
+				: path_(path)
+			{
+				ExtraParam::protocol_ = common::Protocol_Websocket;
+			}
+		public:
+			daxia::string path_;
+		};
+
+		// WebsocketSSL 服务器启动需要的额外参数
+		class ExtraParamWebsocketSSL : public ExtraParamWebsocket
+		{
+		public:
+			ExtraParamWebsocketSSL(const char* path, const char* pubCert, const char* priKey)
+				: ExtraParamWebsocket(path)
+				, pubCert_(pubCert)
+				, priKey_(priKey)
+			{
+				ExtraParam::protocol_ = common::Protocol_WebsocketSSL;
+			}
+		public:
+			daxia::string pubCert_;
+			daxia::string priKey_;
+		};
+
 		class Server
 		{
 		public:

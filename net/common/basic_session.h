@@ -78,6 +78,7 @@ namespace daxia
 			public:
 				// 设置消息解析器
 				void SetParser(std::shared_ptr<Parser> parser);
+				std::weak_ptr<Parser> GetParser() const;
 
 				// 设置自定义数据
 				void SetUserData(const char* key, boost::any data);

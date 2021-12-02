@@ -47,6 +47,11 @@ namespace daxia
 				parser_ = parser;
 			}
 
+			std::weak_ptr<Parser> BasicSession::GetParser() const
+			{
+				return parser_;
+			}
+
 			void BasicSession::SetUserData(const char* key, boost::any data)
 			{
 				lock_guard locker(userDataLocker_);

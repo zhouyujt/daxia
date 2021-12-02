@@ -1,5 +1,6 @@
 #include <fstream>
 #include "controller.h"
+#include "common/websocket_parser.h"
 
 namespace daxia
 {
@@ -156,6 +157,27 @@ namespace daxia
 					ServeNone(404);
 				}
 			}
+		}
+
+		DefaultWebsocketControllor::DefaultWebsocketControllor()
+		{
+			websocketParser_ = std::shared_ptr<common::Parser>(new common::WebsocketServerParser);
+		}
+
+		void DefaultWebsocketControllor::InitMethods()
+		{
+			Get = [&](Session* session, SessionsManager* sessionsMgr, const common::Buffer& data)
+			{
+				if (common::WebsocketServerParser::Handshake(session))
+				{
+					// 握手成功，更改协议
+					session->SetParser(websocketParser_);
+				}
+				else
+				{
+					session->Close();
+				}
+			};
 		}
 
 	}// namespace net

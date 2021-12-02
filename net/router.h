@@ -63,7 +63,7 @@ namespace daxia
 		public:
 			bool RunAsTCP(short port);
 			bool RunAsUDP(short port);
-			bool RunAsWebsocket(short port, const std::string& path);
+			bool RunAsWebsocket(short port, const daxia::string& path);
 			bool RunAsHTTP(short port, const daxia::string& root);
 			bool RunAsHTTPS(short port, const daxia::string& root, const daxia::string& pubCert, const daxia::string& priKey);
 			void SetParser(std::shared_ptr<common::Parser> parser);

@@ -213,8 +213,8 @@ namespace daxia
 
 			daxia::net::common::Parser::Result HttpServerParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const
 			{
-				static daxia::string lastPageInfoKey("Unmarshal_lastPageInfo");
-				static daxia::string lastMsgIdKey("Unmarshal_lastMsgId");
+				static daxia::string lastPageInfoKey("HttpServerParser::lastPageInfo");
+				static daxia::string lastMsgIdKey("HttpServerParser::lastMsgId");
 				daxia::net::common::PageInfo* lastPageInfo = session->GetUserData<daxia::net::common::PageInfo>(lastPageInfoKey.GetString());
 				if (lastPageInfo == nullptr || lastPageInfo->IsEnd())
 				{
@@ -428,8 +428,8 @@ namespace daxia
 
 			daxia::net::common::Parser::Result HttpClientParser::Unmarshal(daxia::net::common::BasicSession* session, const void* data, size_t len, int& msgID, daxia::net::common::Buffer& buffer, size_t& packetLen) const
 			{
-				static daxia::string lastPageInfoKey("Unmarshal_lastPageInfo");
-				static daxia::string lastMsgIdKey("Unmarshal_lastMsgId");
+				static daxia::string lastPageInfoKey("HttpClientParser::lastPageInfo");
+				static daxia::string lastMsgIdKey("HttpClientParser::lastMsgId");
 				daxia::net::common::PageInfo* lastPageInfo = session->GetUserData<daxia::net::common::PageInfo>(lastPageInfoKey.GetString());
 				if (lastPageInfo == nullptr || lastPageInfo->IsEnd())
 				{

@@ -32,8 +32,6 @@ namespace daxia
 			case common::Protocol_UDP:
 				result = router_.RunAsUDP(port);
 				break;
-			case common::Protocol_Websocket:
-				break;
 			case common::Protocol_HTTP:
 			{
 				const ExtraParamHttp* param = dynamic_cast<const ExtraParamHttp*>(extraParam);
@@ -47,6 +45,19 @@ namespace daxia
 				result = router_.RunAsHTTPS(port, param->root_, param->pubCert_, param->priKey_);
 				break;
 			}
+#endif
+			case common::Protocol_Websocket:
+			{
+				const ExtraParamWebsocket* param = dynamic_cast<const ExtraParamWebsocket*>(extraParam);
+				if (param->path_.At(0) == '/')
+				{
+					result = router_.RunAsWebsocket(port, param->path_);
+				}
+				break;
+			}
+#ifdef DAXIA_NET_SUPPORT_HTTPS
+			case  common::Protocol_WebsocketSSL:
+				break;
 #endif
 			default:
 				break;

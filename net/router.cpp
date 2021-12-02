@@ -2,6 +2,7 @@
 #include "sessions_manager.h"
 #include "common/parser.h"
 #include "common/http_parser.h"
+#include "common/websocket_parser.h"
 #include "controller.h"
 
 // 是否启用HTTPS
@@ -64,9 +65,13 @@ namespace daxia
 			throw "尚未实现";
 		}
 
-		bool Router::RunAsWebsocket(short port, const std::string& path)
+		bool Router::RunAsWebsocket(short port, const daxia::string& path)
 		{
-			throw "尚未实现";
+			using namespace boost::asio;
+
+			Handle(path.GetString(), std::shared_ptr<HttpController>(new DefaultWebsocketControllor));
+
+			return RunAsHTTP(port, path);
 		}
 
 		bool Router::RunAsHTTP(short port, const daxia::string& root)
@@ -251,6 +256,16 @@ namespace daxia
 		void Router::dispatchHttpMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer& data)
 		{
 			using daxia::net::common::BasicSession;
+
+			// 使用websocket协议的客户端走tcp路由
+			if (!client->GetParser().expired())
+			{
+				if (std::dynamic_pointer_cast<daxia::net::common::WebsocketServerParser>(client->GetParser().lock()))
+				{
+					dispatchMessage(client, msgID, data);
+					return;
+				}
+			}
 
 			if (data.Size() == 0) return;
 

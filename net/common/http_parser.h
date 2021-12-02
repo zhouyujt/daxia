@@ -534,6 +534,11 @@ namespace daxia
 					ref_string Expires{ "http:Expires" };
 					ref_string LastModified{ "http:Last-Modified" };
 
+					// Websocket专用
+				public:
+					ref_string SecWebSocketKey{ "http:Sec-WebSocket-Key" };
+					ref_string SecWebSocketVersion{ "http:Sec-WebSocket-Version" };
+
 				public:
 					size_t InitFromData(const void* data, size_t len);
 					void Swap(RequestHeader& header)
@@ -572,6 +577,9 @@ namespace daxia
 						ContentType.Swap(header.ContentType);
 						Expires.Swap(header.Expires);
 						LastModified.Swap(header.LastModified);
+
+						SecWebSocketKey.Swap(header.SecWebSocketKey);
+						SecWebSocketVersion.Swap(header.SecWebSocketVersion);
 					}
 				};
 
@@ -636,6 +644,10 @@ namespace daxia
 					ref_string AccessControlAllowHeaders{ "http:Access-Control-Allow-Headers" };
 					ref_string AccessControlExposeHeaders{ "http:Access-Control-Expose-Headers" };
 					ref_string AccessControlAllowCredentials{ "http:Access-Control-Allow-Credentials" };
+
+					// Websocket专用
+				public:
+					ref_string SecWebSocketAccept{ "http:Sec-WebSocket-Accept" };
 				public:
 					size_t InitFromData(const void* data, size_t len);
 					void Swap(ResponseHeader& header)
@@ -671,6 +683,8 @@ namespace daxia
 						AccessControlAllowHeaders.Swap(header.AccessControlAllowHeaders);
 						AccessControlExposeHeaders.Swap(header.AccessControlExposeHeaders);
 						AccessControlAllowCredentials.Swap(header.AccessControlAllowCredentials);
+
+						SecWebSocketAccept.Swap(header.SecWebSocketAccept);
 					}
 				};
 			public:

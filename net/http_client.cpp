@@ -5,10 +5,10 @@ namespace daxia
 	namespace net
 	{
 		HttpClient::HttpClient(const char* host, short port)
-			: host_(host)
+			: client_(new daxia::net::Client)
+			, host_(host)
 			, port_(port)
 			, success_(false)
-			, client_(new daxia::net::Client)
 		{
 			init();
 		}
