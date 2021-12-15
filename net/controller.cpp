@@ -1,6 +1,7 @@
 #include <fstream>
 #include "controller.h"
 #include "common/websocket_parser.h"
+#include "router.h"
 
 namespace daxia
 {
@@ -172,6 +173,18 @@ namespace daxia
 				{
 					// 握手成功，更改协议
 					session->SetParser(websocketParser_);
+
+					// 转发连接成功消息
+					Router* router = dynamic_cast<Router*>(sessionsMgr);
+					if (router)
+					{
+						std::shared_ptr<Session> sp(session, [](Session* p)
+							{
+								// 不做任何析构
+							});
+
+						router->GetScheduler().PushNetRequest(sp, daxia::net::common::DefMsgID_Connect, daxia::net::common::Buffer());
+					}
 				}
 				else
 				{

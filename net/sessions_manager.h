@@ -27,7 +27,7 @@ namespace daxia
 			typedef std::shared_ptr<SessionsManager> ptr;
 		public:
 			SessionsManager();
-			~SessionsManager(){}
+			virtual ~SessionsManager(){}
 		public:
 			// 增加一个客户端
 			void AddSession(Session::ptr session);
