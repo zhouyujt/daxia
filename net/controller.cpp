@@ -178,12 +178,7 @@ namespace daxia
 					Router* router = dynamic_cast<Router*>(sessionsMgr);
 					if (router)
 					{
-						std::shared_ptr<Session> sp(session, [](Session* p)
-							{
-								// 不做任何析构
-							});
-
-						router->GetScheduler().PushNetRequest(sp, daxia::net::common::DefMsgID_Connect, daxia::net::common::Buffer());
+						router->GetScheduler().PushNetRequest(sessionsMgr->GetSession(session->GetSessionID()), daxia::net::common::DefMsgID_Connect, daxia::net::common::Buffer());
 					}
 				}
 				else

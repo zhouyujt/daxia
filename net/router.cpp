@@ -181,12 +181,15 @@ namespace daxia
 
 		void Router::Handle(int msgID, std::shared_ptr<Controller> controller)
 		{
+			lock_guard locker(controllLoker_);
 			controllers_[msgID] = controller;
 		}
 
 		void Router::Handle(const char* url, std::shared_ptr<HttpController> controller)
 		{
 			controller->InitMethods();
+
+			lock_guard locker(controllLoker_);
 			httpControllers_[url] = controller;
 		}
 
@@ -238,18 +241,28 @@ namespace daxia
 
 		void Router::dispatchMessage(std::shared_ptr<Session> client, int msgID, const common::Buffer& data)
 		{
+			// 查找控制器
+			std::shared_ptr<Controller> controller;
+			controllLoker_.lock();
 			auto iter = controllers_.find(msgID);
 			if (iter != controllers_.end())
 			{
-				iter->second->Proc(msgID, client.get(), this, data);
+				controller = iter->second;
 			}
 			else
 			{
 				auto iter = controllers_.find(common::DefMsgID_UnHandle);
 				if (iter != controllers_.end())
 				{
-					iter->second->Proc(msgID, client.get(), this, data);
+					controller = iter->second;
 				}
+			}
+			controllLoker_.unlock();
+
+			// 执行控制器
+			if (controller)
+			{
+				controller->Proc(msgID, client.get(), this, data);
 			}
 		}
 
@@ -286,8 +299,17 @@ namespace daxia
 
 			const daxia::string& url = requestHeader->StartLine.Url;
 
+			// 查找控制器
+			std::shared_ptr<HttpController> controller;
+			controllLoker_.lock();
 			auto iter = httpControllers_.find(url.GetString());
 			if (iter != httpControllers_.end())
+			{
+				controller = iter->second;
+			}
+			controllLoker_.unlock();
+
+			if (controller)
 			{
 				static const common::HttpParser::Methods methodsHelp;
 				static const daxia::string methodGetHelp = daxia::string(methodsHelp.Get.Tag("http")).MakeLower();
@@ -299,7 +321,7 @@ namespace daxia
 				static const daxia::string methodTraceHelp = daxia::string(methodsHelp.Trace.Tag("http")).MakeLower();
 				static const daxia::string methodConnectHelp = daxia::string(methodsHelp.Connect.Tag("http")).MakeLower();
 
-				iter->second->SetContext(client);
+				controller->SetContext(client);
 
 				common::Buffer buffer;
 				if (headerLen != 0)
@@ -321,9 +343,9 @@ namespace daxia
 				}
 
 #define CallHttpMethod(xxx) \
-if(iter->second->xxx)\
+if(controller->xxx)\
 {\
-	iter->second->xxx(client.get(), this, headerLen != 0 ? buffer : data);\
+	controller->xxx(client.get(), this, headerLen != 0 ? buffer : data);\
 }\
 else\
 {\

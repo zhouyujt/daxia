@@ -92,6 +92,7 @@ namespace daxia
 			std::mutex sessionIdLocker_;
 			daxia::string httpRoot_;
 			std::shared_ptr<boost::asio::ssl::context> sslctx_;
+			std::mutex controllLoker_;
 		};
 	}// namespace net
 }// namespace daxia
