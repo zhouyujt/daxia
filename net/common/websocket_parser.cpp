@@ -54,8 +54,17 @@ namespace daxia
 					Buffer buffer;
 					unsigned int contentLength = MIN(static_cast<unsigned int>(len)-offset, maxContentLength);
 					buffer.Resize(contentLength + headLen);
-					head.fin = offset + contentLength == static_cast<unsigned int>(len) ? 1 : 0;
-					head.op = offset == 0 ? CASTBIT(msgId,4) : 0;
+					if (pageInfo == nullptr)
+					{
+						head.fin = offset + contentLength == static_cast<unsigned int>(len) ? 1 : 0;
+						head.op = offset == 0 ? CASTBIT(msgId, 4) : 0;
+					}
+					else
+					{
+						head.fin = pageInfo->IsEnd() ? 1 : 0;
+						head.op = pageInfo->IsStart() ? CASTBIT(msgId, 4) : 0;
+					}
+					
 					head.len = contentLength < 126 ? CASTBIT(contentLength,7) : 126;
 					if (head.len == 126)
 					{
