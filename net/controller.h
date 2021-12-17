@@ -411,18 +411,26 @@ namespace daxia
 		class Controller
 		{
 		public:
-			Controller(){}
+			Controller() : useCoroutine_(true){}
 			virtual ~Controller(){}
 		public:
+			void SetCoroutine(bool useCoroutine){ useCoroutine_ = useCoroutine; }
+			bool IsCoroutine() const { return useCoroutine_; }
+		public:
 			virtual void Proc(int msgId, daxia::net::Session* session, daxia::net::SessionsManager* sessionsMgr, const daxia::net::common::Buffer& data) = 0;
+		private:
+			bool useCoroutine_;
 		};
 
 		// HTTP逻辑控制器接口类
 		class HttpController
 		{
 		public:
-			HttpController(){}
+			HttpController() : useCoroutine_(true){}
 			virtual ~HttpController(){}
+		public:
+			void SetCoroutine(bool useCoroutine){ useCoroutine_ = useCoroutine; }
+			bool IsCoroutine() const { return useCoroutine_; }
 		public:
 			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Get;
 			std::function<void(daxia::net::Session*, daxia::net::SessionsManager*, const daxia::net::common::Buffer&)> Post;
@@ -465,6 +473,7 @@ namespace daxia
 			void ServeFile(const daxia::string& filename);
 		private:
 			std::weak_ptr<Session> context_;
+			bool useCoroutine_;
 		};
 #undef HTTP_MIME_MAP
 

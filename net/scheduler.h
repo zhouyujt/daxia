@@ -45,6 +45,7 @@ namespace daxia
 					msgId = request.msgId;
 					data = request.data;
 					finishCallback = request.finishCallback;
+					useCoroutine = request.useCoroutine;
 				}
 
 				NetRequest(NetRequest&& request)
@@ -53,6 +54,7 @@ namespace daxia
 					msgId = request.msgId;
 					data = std::move(request.data);
 					finishCallback.swap(request.finishCallback);
+					useCoroutine = request.useCoroutine;
 				}
 					
 				NetRequest& operator=(NetRequest& request)
@@ -61,6 +63,7 @@ namespace daxia
 					msgId = request.msgId;
 					data = request.data;
 					finishCallback = request.finishCallback;
+					useCoroutine = request.useCoroutine;
 
 					return *this;
 				}
@@ -71,6 +74,7 @@ namespace daxia
 					msgId = request.msgId;
 					data = std::move(request.data);
 					finishCallback.swap(request.finishCallback);
+					useCoroutine = request.useCoroutine;
 
 					return *this;
 				}
@@ -79,13 +83,15 @@ namespace daxia
 				int msgId;
 				common::Buffer data;
 				std::function<void()> finishCallback;
+				bool useCoroutine;
 
 				NetRequest(){}
-				NetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, const std::function<void()>& finishCallback)
+				NetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, const std::function<void()>& finishCallback, bool coroutine = true)
 					: session(session)
 					, msgId(msgId)
 					, data(data)
 					, finishCallback(finishCallback)
+					, useCoroutine(coroutine)
 				{
 				}
 			};
@@ -98,7 +104,7 @@ namespace daxia
 			void Unschedule(long long scheduleID);
 			void UnscheduleAll();
 			void SetNetDispatch(netDispatchFunc func);
-			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback = nullptr);
+			void PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback = nullptr, bool useCoroutine = true);
 			void Run();
 			void Stop();
 		private:

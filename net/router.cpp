@@ -69,7 +69,7 @@ namespace daxia
 		{
 			using namespace boost::asio;
 
-			Handle(path.GetString(), std::shared_ptr<HttpController>(new DefaultWebsocketControllor));
+			Handle(path.GetString(), std::shared_ptr<HttpController>(new DefaultWebsocketControllor), true);
 
 			return RunAsHTTP(port, path);
 		}
@@ -179,14 +179,17 @@ namespace daxia
 			scheduler_.Stop();
 		}
 
-		void Router::Handle(int msgID, std::shared_ptr<Controller> controller)
+		void Router::Handle(int msgID, std::shared_ptr<Controller> controller, bool useCoroutine)
 		{
+			controller->SetCoroutine(useCoroutine);
+
 			lock_guard locker(controllLoker_);
 			controllers_[msgID] = controller;
 		}
 
-		void Router::Handle(const char* url, std::shared_ptr<HttpController> controller)
+		void Router::Handle(const char* url, std::shared_ptr<HttpController> controller, bool useCoroutine)
 		{
+			controller->SetCoroutine(useCoroutine);
 			controller->InitMethods();
 
 			lock_guard locker(controllLoker_);
@@ -550,16 +553,26 @@ else\
 
 		void Router::onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg)
 		{
+			bool useCoroutine = true;
+			std::shared_ptr<Controller> controller;
+			controllLoker_.lock();
+			auto iter = controllers_.find(msgId);
+			if (iter != controllers_.end())
+			{
+				useCoroutine = iter->second->IsCoroutine();
+			}
+			controllLoker_.unlock();
+
 			if (err || msgId == common::DefMsgID_DisConnect)
 			{
 				scheduler_.PushNetRequest(GetSession(sessionId), common::DefMsgID_DisConnect, common::Buffer(), [&, sessionId]()
 				{
 					DeleteSession(sessionId);
-				});
+				},useCoroutine);
 			}
 			else
 			{
-				scheduler_.PushNetRequest(GetSession(sessionId), msgId, msg);
+				scheduler_.PushNetRequest(GetSession(sessionId), msgId, msg,nullptr,useCoroutine);
 			}
 		}
 	}// namespace net

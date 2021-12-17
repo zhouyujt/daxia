@@ -76,14 +76,14 @@ namespace daxia
 			router_.SetParser(parser);
 		}
 
-		void Server::Handle(int msgId, std::shared_ptr<Controller> controller)
+		void Server::Handle(int msgId, std::shared_ptr<Controller> controller, bool useCoroutine)
 		{
-			router_.Handle(msgId, controller);
+			router_.Handle(msgId, controller, useCoroutine);
 		}
 
-		void Server::Handle(const char* url, std::shared_ptr<HttpController> controller)
+		void Server::Handle(const char* url, std::shared_ptr<HttpController> controller, bool useCoroutine)
 		{
-			router_.Handle(url, controller);
+			router_.Handle(url, controller, useCoroutine);
 		}
 
 		void Server::EnableCheckHeartbeat(unsigned long milliseconds)

@@ -114,10 +114,10 @@ namespace daxia
 			dispatch_ = func;
 		}
 
-		void Scheduler::PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback)
+		void Scheduler::PushNetRequest(std::shared_ptr<Session> session, int msgId, const common::Buffer& data, std::function<void()> finishCallback, bool useCoroutine)
 		{
 			lock_guard locker(netRequestLocker_);
-			netRequests_.push(NetRequest(session, msgId, data, finishCallback));
+			netRequests_.push(NetRequest(session, msgId, data, finishCallback, useCoroutine));
 			netRequestNotify_.notify_one();
 		}
 
@@ -243,7 +243,9 @@ namespace daxia
 						// 处理网络请求
 						if (request.session != nullptr)
 						{
-							cosc_.StartCoroutine([&,request]()
+							if (request.useCoroutine)
+							{
+								cosc_.StartCoroutine([&, request]()
 								{
 									if (dispatch_)
 									{
@@ -255,6 +257,19 @@ namespace daxia
 										request.finishCallback();
 									}
 								});
+							}
+							else
+							{
+								if (dispatch_)
+								{
+									dispatch_(request.session, request.msgId, request.data);
+								}
+
+								if (request.finishCallback)
+								{
+									request.finishCallback();
+								}
+							}
 						}
 
 						// 检测当前帧是否还有时间片继续执行

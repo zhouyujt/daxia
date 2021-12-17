@@ -68,8 +68,8 @@ namespace daxia
 			bool RunAsHTTPS(short port, const daxia::string& root, const daxia::string& pubCert, const daxia::string& priKey);
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			void Stop();
-			void Handle(int msgID, std::shared_ptr<Controller> controller);
-			void Handle(const char* url, std::shared_ptr<HttpController> controller);
+			void Handle(int msgID, std::shared_ptr<Controller> controller, bool useCoroutine);
+			void Handle(const char* url, std::shared_ptr<HttpController> controller, bool useCoroutine);
 			void EnableCheckHeartbeat(unsigned long milliseconds);
 			Scheduler& GetScheduler();
 		private:
@@ -80,8 +80,8 @@ namespace daxia
 			void onAcceptSSL(sslsocket_ptr, const error_code&);
 			void onMessage(const boost::system::error_code& err, long long sessionId, int msgId, const common::Buffer& msg);
 		private:
-			std::map<int, std::shared_ptr<Controller>> controllers_;
-			std::map<std::string, std::shared_ptr<HttpController>> httpControllers_;
+			std::unordered_map<int, std::shared_ptr<Controller>> controllers_;
+			std::unordered_map<std::string, std::shared_ptr<HttpController>> httpControllers_;
 			boost::asio::io_service ios_;
 			acceptor_ptr acceptor_;
 			std::shared_ptr<common::Parser> parser_;

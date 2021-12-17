@@ -111,9 +111,9 @@ namespace daxia
 			// 设置协议解析器
 			void SetParser(std::shared_ptr<common::Parser> parser);
 			// 设置消息处理控制器
-			void Handle(int msgId, std::shared_ptr<Controller> controller);
+			void Handle(int msgId, std::shared_ptr<Controller> controller, bool useCoroutine = true);
 			// 设置消息处理控制器
-			void Handle(const char* url, std::shared_ptr<HttpController> controller);
+			void Handle(const char* url, std::shared_ptr<HttpController> controller, bool useCoroutine = true);
 			// 开启心跳检测，当milliseconds为0时，则关闭
 			void EnableCheckHeartbeat(unsigned long milliseconds);
 			// 设置帧率
