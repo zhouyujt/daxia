@@ -36,6 +36,26 @@ namespace daxia
 				return co;
 			}
 
+			void CoScheduler::SendTask(std::function<void()>&& fun)
+			{
+				std::condition_variable notify;
+				{
+					std::lock_guard<std::mutex> locker(couroutinesLocker_);
+					task_.push(Task(std::move(fun), &notify));
+					coroutinesNotify_.notify_one();
+				}
+
+				std::unique_lock<std::mutex> locker(taskDoneNotifyLocker_);
+				notify.wait(locker);
+			}
+
+			void CoScheduler::PostTask(std::function<void()>&& fun)
+			{
+				std::lock_guard<std::mutex> locker(couroutinesLocker_);
+				task_.push(Task(std::forward<std::function<void()>>(fun)));
+				coroutinesNotify_.notify_one();
+			}
+
 			void CoScheduler::Join()
 			{
 				while (true)
@@ -68,20 +88,25 @@ namespace daxia
 
 			void CoScheduler::run()
 			{
-				// 当没有协程需要调度时的睡眠时间（单位:毫秒）
-				const long idle = 1;
-
 				while (run_)
 				{
-					// 调度协程
-					// 调度规则：
-					// 新建立的协程立即执行
-					// 协程主动让出执行权
 					daxia::system::DateTime now = daxia::system::DateTime::Now();
+
+					// 调度Task及协程
+					Task task;
 					std::shared_ptr<Coroutine> work;
 					{
 						std::unique_lock<std::mutex> locker(couroutinesLocker_);
-						coroutinesNotify_.wait_for(locker, std::chrono::milliseconds(1000));
+						if (task_.empty() && coroutines_.empty())
+						{
+							coroutinesNotify_.wait_for(locker, std::chrono::milliseconds(1000));
+						}
+
+						if (!task_.empty())
+						{
+							task = std::move(task_.front());
+							task_.pop();
+						}
 
 						for (auto iter = coroutines_.begin(); iter != coroutines_.end();)
 						{
@@ -153,6 +178,16 @@ namespace daxia
 						}
 					}
 
+					if (task.fun)
+					{
+						task.fun();
+						if (task.notify)
+						{
+							std::lock_guard<std::mutex> locker(taskDoneNotifyLocker_);
+							task.notify->notify_one();
+						}
+					}
+
 					if (work)
 					{
 						// 设置当前协程
@@ -161,10 +196,6 @@ namespace daxia
 						// 切换协程
 						++work->wakeupCount_;
 						swapcontext(&mainCtx_, &(work->ctx_));
-					}
-					else
-					{
-						std::this_thread::sleep_for(std::chrono::milliseconds(idle));
 					}
 				}
 			}
