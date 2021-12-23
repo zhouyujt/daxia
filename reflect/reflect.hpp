@@ -387,6 +387,8 @@ namespace daxia
 		using ref_unsigned_long = Reflect < unsigned long > ;
 		using ref_long_long = Reflect < long long > ;
 		using ref_unsigned_long_long = Reflect<unsigned long long>;
+		using ref_float = Reflect < float >;
+		using ref_double = Reflect < double >;
 		using ref_string = Reflect < daxia::string > ;
 		template<typename T> using ref_vector = Reflect < std::vector<T> > ;
 			
