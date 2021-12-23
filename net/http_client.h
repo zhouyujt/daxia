@@ -88,6 +88,7 @@ namespace daxia
 			std::condition_variable cv_;
 			common::Buffer buffer_;
 			bool success_;
+			const static HttpClient::Result resultCache_;
 		};
 	}// namespace net
 }// namespace daxia

@@ -4,6 +4,8 @@ namespace daxia
 {
 	namespace net
 	{
+		const HttpClient::Result HttpClient::resultCache_;
+
 		HttpClient::HttpClient(const char* host, short port)
 			: client_(new daxia::net::Client)
 			, host_(host)
@@ -92,10 +94,8 @@ namespace daxia
 		{
 			using namespace daxia::net::common;
 
-			static HttpClient::Result resultCache;
-
 			// 避免每次构造tag,提升效率
-			HttpClient::Result result(resultCache);
+			HttpClient::Result result(resultCache_);
 
 			// 连接
 			if (!client_->Connect(host_.GetString(), port_, true)) return result;
