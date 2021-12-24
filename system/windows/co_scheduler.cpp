@@ -33,6 +33,8 @@ namespace daxia
 
 			void CoScheduler::SendTask(std::function<void()>&& fun)
 			{
+				std::unique_lock<std::mutex> locker(taskDoneNotifyLocker_);
+
 				std::condition_variable notify;
 				{
 					std::lock_guard<std::mutex> locker(couroutinesLocker_);
@@ -40,7 +42,6 @@ namespace daxia
 					coroutinesNotify_.notify_one();
 				}
 
-				std::unique_lock<std::mutex> locker(taskDoneNotifyLocker_);
 				notify.wait(locker);
 			}
 
