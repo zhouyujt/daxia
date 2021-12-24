@@ -262,12 +262,18 @@ namespace daxia
 							{
 								if (dispatch_)
 								{
-									dispatch_(request.session, request.msgId, request.data);
+									cosc_.SendTask([&]()
+									{
+										dispatch_(request.session, request.msgId, request.data);
+									});
 								}
 
 								if (request.finishCallback)
 								{
-									request.finishCallback();
+									cosc_.SendTask([&]()
+									{
+										request.finishCallback();
+									});
 								}
 							}
 						}
