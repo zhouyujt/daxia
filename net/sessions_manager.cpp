@@ -10,9 +10,12 @@ namespace daxia
 
 		void SessionsManager::AddSession(Session::ptr session)
 		{
-			lock_guard locker(sessionsLocker_);
+			if (session)
+			{
+				lock_guard locker(sessionsLocker_);
 
-			sessions_[session->GetSessionID()] = session;
+				sessions_[session->GetSessionID()] = session;
+			}
 		}
 
 		void SessionsManager::DeleteSession(long long id)
@@ -44,20 +47,22 @@ namespace daxia
 			return session;
 		}
 
-		void SessionsManager::Broadcast(int msgId, const std::string& name, const std::string& msg)
+		SessionsManager::ptr SessionsManager::Broadcast(int msgId, const daxia::string& name, const daxia::string& msg, const common::PageInfo* pageInfo/* = nullptr*/, size_t maxPacketLength/* = common::MaxBufferSize*/)
 		{
 			auto group = GetGroup(name);
 			if (group)
 			{
 				group->EnumSession([&](Session::ptr session)
 				{
-					session->WriteMessage(msgId, msg);
+					session->WriteMessage(msgId, msg, pageInfo, maxPacketLength);
 					return true;
 				});
 			}
+
+			return group;
 		}
 
-		SessionsManager::ptr SessionsManager::CreateGroup(const std::string& name)
+		SessionsManager::ptr SessionsManager::CreateGroup(const daxia::string& name)
 		{
 			lock_guard locker(groupLocker_);
 
@@ -65,12 +70,15 @@ namespace daxia
 			if (iter == group_.end())
 			{
 				group_[name] = std::shared_ptr<SessionsManager>(new SessionsManager);
+				return group_[name];
 			}
-
-			return GetGroup(name);
+			else
+			{
+				return iter->second;
+			}
 		}
 
-		void SessionsManager::DeleteGroup(const std::string& name)
+		void SessionsManager::DeleteGroup(const daxia::string& name)
 		{
 			lock_guard locker(groupLocker_);
 
@@ -85,7 +93,7 @@ namespace daxia
 			group_.clear();
 		}
 
-		SessionsManager::ptr SessionsManager::GetGroup(const std::string& name)
+		SessionsManager::ptr SessionsManager::GetGroup(const daxia::string& name)
 		{
 			lock_guard locker(groupLocker_);
 
@@ -125,5 +133,11 @@ namespace daxia
 				}
 			}
 		}
+
+		size_t SessionsManager::SessionSize() const
+		{
+			return sessions_.size();
+		}
+
 	}// namespace net
 }// namespace daxia
