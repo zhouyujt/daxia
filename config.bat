@@ -31,6 +31,7 @@ set /p input=-- (2) 选择运行库(MT/MD):
 if /i "%input%" == "mt" set runtimelib=-DMT=1
 if /i "%input%" == "md" set runtimelib=-DMT=0
 if /i "%input%" neq "mt" if /i "%input%" neq "md" goto ERROR2
+if /i "%input%" == "mt" (set flodersuffix=MT) else set flodersuffix=MD
 
 rem ///////////////////////////////////////////////////////////
 rem // 设置是否支持MySQL
@@ -68,7 +69,7 @@ goto INPUT2
 
 :EXIT 
 rem // 创建文件夹
-set floder="%vs%" 
+set floder="%vs% %flodersuffix%" 
 mkdir %floder% >nul 2>nul
 echo.
 echo -- %floder% 在此文件夹中生成
@@ -82,7 +83,7 @@ cmd /c %cmakecmd%
 cd ..
 
 rem // 创建文件夹
-set floder64="%vs% Win64"
+set floder64="%vs% Win64 %flodersuffix%"
 mkdir %floder64% >nul 2>nul
 echo.
 echo -- %floder64% 在此文件夹中生成
