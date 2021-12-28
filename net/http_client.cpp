@@ -83,10 +83,30 @@ namespace daxia
 
 			client_->Handle(common::DefMsgID_UnHandle, [&](int msgId, const boost::system::error_code& err, const common::Buffer& data)
 			{
-				std::unique_lock<std::mutex> locker(locker_);
-				success_ = !err;
-				buffer_ = data;
-				cv_.notify_one();
+				if (err)
+				{
+					std::unique_lock<std::mutex> locker(locker_);
+					success_ = !err;
+					buffer_.Clear();
+					cv_.notify_one();
+				}
+				else
+				{
+					if (data.Page().IsStart())
+					{
+						buffer_.Resize(data.Page().total);
+					}
+
+					memcpy((char*)buffer_ + data.Page().startPos, data, data.Size());
+
+					if (data.Page().IsEnd())
+					{
+						std::unique_lock<std::mutex> locker(locker_);
+						success_ = !err;
+						cv_.notify_one();
+					}
+				}
+
 			});
 		}
 
