@@ -218,14 +218,7 @@ namespace daxia
 			auto result = resolver.resolve(realHost, protocol);
 			if (!result.empty())
 			{
-				if (protocol.IsEmpty())
-				{
-					endpoint_ = endpoint(boost::asio::ip::address::from_string(result.begin()->host_name()), port);
-				}
-				else
-				{
-					endpoint_ = result.begin()->endpoint();
-				}
+				endpoint_ = endpoint(result.begin()->endpoint().address(), port);
 			}
 			return doConnect(sync, protocol == "https");
 		}
