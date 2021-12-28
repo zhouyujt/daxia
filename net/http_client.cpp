@@ -7,7 +7,7 @@ namespace daxia
 		const HttpClient::Result HttpClient::resultCache_;
 
 		HttpClient::HttpClient(const char* host, short port)
-			: client_(new daxia::net::Client)
+			: client_(new daxia::net::Client(true))
 			, host_(host)
 			, port_(port)
 			, success_(false)
@@ -16,7 +16,8 @@ namespace daxia
 		}
 
 		HttpClient::HttpClient(const wchar_t* host, short port /*= 80*/)
-			: host_(daxia::wstring(host).ToAnsi())
+			: client_(new daxia::net::Client(true))
+			, host_(daxia::wstring(host).ToAnsi())
 			, port_(port)
 			, success_(false)
 		{

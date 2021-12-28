@@ -12,17 +12,25 @@ namespace daxia
 {
 	namespace net
 	{
-		Client::Client()
-			: hearbeatInterval_(0)
+		Client::Client(bool ownThreads)
+			: ownThreads_(ownThreads)
+			, hearbeatInterval_(0)
 			, heartbeatSchedulerId_(-1)
 			, nextTimerId_(0)
 #ifdef DAXIA_NET_SUPPORT_HTTPS
 			, sslctx_(new boost::asio::ssl::context(boost::asio::ssl::context::sslv23))
 #endif
 		{
-			// 所有实例共用
-			static initHelper helper;
-			initHelper_ = &helper;
+			if (ownThreads)
+			{
+				initHelper_ = new initHelper;
+			}
+			else
+			{
+				// 所有实例共用
+				static initHelper helper;
+				initHelper_ = &helper;
+			}
 
 			parser_ = std::shared_ptr<common::Parser>(new common::DefaultParser);
 		}
@@ -50,8 +58,16 @@ namespace daxia
 
 			// 基类的sock_析构时依赖本类的netIoService_,这里使之提前析构
 			//initSocket(BasicSession::socket_ptr());
-			getSocket().reset();
-			getSSLScoket().reset();
+			//getSocket().reset();
+			//getSSLScoket().reset();
+			initSocket(BasicSession::sslsocket_ptr());
+			initSocket(BasicSession::socket_ptr());
+
+			if (ownThreads_)
+			{
+				delete initHelper_;
+				initHelper_ = nullptr;
+			}
 		}
 
 		Client::initHelper::initHelper()

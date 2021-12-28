@@ -41,7 +41,7 @@ namespace daxia
 			typedef std::chrono::time_point <std::chrono::system_clock, std::chrono::milliseconds> timepoint;
 			typedef std::function<void()> scheduleFunc;
 		public:
-			Client();
+			Client(bool ownThreads = false);
 			~Client();
 			Client(const Client&) = delete;
 		protected:
@@ -100,6 +100,7 @@ namespace daxia
 				std::vector<std::thread> logicThreads_;
 			};
 		private:
+			bool ownThreads_;
 			initHelper* initHelper_;
 			std::shared_ptr<common::Parser> parser_;
 			std::map<int, handler> handler_;
