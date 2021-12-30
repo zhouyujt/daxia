@@ -369,7 +369,6 @@ else\
 				else if (msgID == static_cast<int>(methodPutHelp.Hash()))
 				{ 
 					CallHttpMethod(Put);
-					if (iter->second->Put)  iter->second->Put(client.get(), this, headerLen != 0 ? buffer : data);
 				}
 				else if (msgID == static_cast<int>(methodHeadHelp.Hash()))
 				{ 
