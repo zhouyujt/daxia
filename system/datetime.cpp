@@ -58,7 +58,16 @@ namespace daxia
 				std::tm tm;
 				std::stringstream ss(time);
 				ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-				tp_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+				if (ss.fail())
+				{
+					ss.clear();
+					ss >> std::get_time(&tm, "%a, %d %b %Y %H:%M:%S GMT");
+				}
+
+				if (!ss.fail())
+				{
+					tp_ = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+				}
 			}
 		}
 
