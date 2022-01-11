@@ -1,11 +1,11 @@
 #!/bin/bash
 echo /\*
 echo " "\* daxia 库
-echo " "\* 版本: 1.0.0
+echo " "\* 版本: 1.1.0
 echo " "\*
 echo " "\* 依赖库:（请自行前往官网下载安装）
-echo " "\* boost 1.76 https://www.boost.org/
-echo " "\* openssl 1.1.1 https://www.openssl.org/
+echo " "\* boost 1.76 https://www.boost.org
+echo " "\* openssl 1.1.1 https://www.openssl.org
 echo " "\*
 echo " "\*/
 
